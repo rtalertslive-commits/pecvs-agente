@@ -450,7 +450,7 @@
                 Entrar con Google
             </button>
             <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.8;">
-                v1.0.9 — Sincronización mediante Google Firebase
+                v1.1.1 — Sincronización mediante Google Firebase
             </div>
         </div>
     </div>
@@ -460,7 +460,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
-                        style="font-size:10px; color:var(--slate);">v1.1.0</small></h1>
+                        style="font-size:10px; color:var(--slate);">v1.1.1</small></h1>
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
@@ -572,18 +572,23 @@
         <!-- TAB: KPIs -->
         <div id="tab-kpis" class="tab-panel">
             <div class="card">
-                <div class="charts-controls" style="margin-bottom:15px;">
-                    <select id="kpi-mes-sel" onchange="renderKPIs()">
-                        <option value="">Todos los meses</option>
+                <div
+                    style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <h2 style="margin:0;"><i class="fa fa-chart-pie"></i> Mis KPIs</h2>
+                    <select id="kpi-period-sel" class="num-input" style="width:auto; height:35px;"
+                        onchange="renderKPIs()">
+                        <option value="week">Esta Semana</option>
+                        <option value="month">Este Mes</option>
+                        <option value="all">Todo el Historial</option>
                     </select>
                 </div>
                 <div class="charts-grid">
                     <div class="chart-card">
-                        <h3><i class="fa fa-bullseye"></i> % Eficiencia: Conversión de P ➔ V (Cierre)</h3>
+                        <h3><i class="fa fa-percentage"></i> Eficiencia: Conversión P ➔ V</h3>
                         <div class="chart-wrap"><canvas id="kpiEfectividad"></canvas></div>
                     </div>
                     <div class="chart-card">
-                        <h3><i class="fa fa-arrows-to-circle"></i> Volumen Mensual</h3>
+                        <h3><i class="fa fa-arrows-to-circle"></i> Volumen</h3>
                         <div class="chart-wrap"><canvas id="kpiVolumeFull"></canvas></div>
                     </div>
                     <div class="chart-card">
@@ -964,7 +969,7 @@
 
         window.refreshMonthFilters = function () {
             const meses = [...new Set(state.entries.map(e => e.mes))];
-            ['kpi-mes-sel', 'chart-mes-sel'].forEach(id => {
+            ['chart-mes-sel'].forEach(id => {
                 const el = document.getElementById(id); const cur = el.value;
                 el.innerHTML = '<option value="">Todos los meses</option>' + meses.map(m => `<option value="${m}">${m}</option>`).join('');
                 el.value = cur;
@@ -975,17 +980,40 @@
         function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
 
         window.renderKPIs = function () {
-            const mes = document.getElementById('kpi-mes-sel').value;
-            const entries = state.entries.filter(e => !mes || e.mes === mes);
-            const totals = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
-            entries.forEach(e => { COLS.forEach(c => totals[c] += e.totales[c]); totals.prima += e.totales.prima; });
+            const period = document.getElementById('kpi-period-sel').value;
+            let kTotals = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
+
+            if (period === 'week') {
+                const m = parseInt(document.getElementById('sel-month').value);
+                const y = parseInt(document.getElementById('inp-year').value);
+                const mes = MONTHS_ES[m - 1] + ' ' + y;
+                const semana = document.getElementById('sel-semana').value;
+                const entry = state.entries.find(e => e.mes === mes && e.semana == semana);
+                if (entry) kTotals = { ...entry.totales };
+            } else if (period === 'month') {
+                const m = parseInt(document.getElementById('sel-month').value);
+                const y = parseInt(document.getElementById('inp-year').value);
+                const currentMes = MONTHS_ES[m - 1] + ' ' + y;
+                state.entries.forEach(e => {
+                    if (e.mes === currentMes) {
+                        COLS.forEach(c => kTotals[c] += e.totales[c]);
+                        kTotals.prima += e.totales.prima;
+                    }
+                });
+            } else {
+                state.entries.forEach(e => {
+                    COLS.forEach(c => kTotals[c] += e.totales[c]);
+                    kTotals.prima += e.totales.prima;
+                });
+            }
+
             destroyChart('kpiEfe');
             charts['kpiEfe'] = new Chart(document.getElementById('kpiEfectividad'), {
                 type: 'doughnut',
-                data: { labels: ['Cierres (V)', 'Contactos (P)'], datasets: [{ data: [totals.V, Math.max(0, totals.P - totals.V)], backgroundColor: [CHART_COLORS.V, CHART_COLORS.P], borderWidth: 0 }] },
+                data: { labels: ['Cierres (V)', 'Contactos (P)'], datasets: [{ data: [kTotals.V, Math.max(0, kTotals.P - kTotals.V)], backgroundColor: [CHART_COLORS.V, CHART_COLORS.P], borderWidth: 0 }] },
                 options: {
                     plugins: {
-                        title: { display: true, text: `Efectividad: ${totals.P > 0 ? (totals.V / totals.P * 100).toFixed(1) : 0}%`, color: '#fff' },
+                        title: { display: true, text: `Efectividad: ${kTotals.P > 0 ? (kTotals.V / kTotals.P * 100).toFixed(1) : 0}%`, color: '#fff' },
                         legend: { position: 'top', align: 'center', labels: { boxWidth: 12, padding: 15, color: '#fff', font: { weight: 'bold' } } }
                     },
                     cutout: '70%'
@@ -994,7 +1022,8 @@
             destroyChart('kpiVol');
             charts['kpiVol'] = new Chart(document.getElementById('kpiVolumeFull'), {
                 type: 'bar',
-                data: { labels: COLS, datasets: [{ label: 'Cantidad', data: COLS.map(c => totals[c]), backgroundColor: COLS.map(c => CHART_COLORS[c]) }] }
+                data: { labels: ['P', 'E', 'C', 'V', 'S'], datasets: [{ label: 'Volumen', data: [kTotals.P, kTotals.E, kTotals.C, kTotals.V, kTotals.S], backgroundColor: [CHART_COLORS.P, CHART_COLORS.E, CHART_COLORS.C, CHART_COLORS.V, CHART_COLORS.S] }] },
+                options: { plugins: { legend: { display: false } } }
             });
             destroyChart('kpiRat');
             charts['kpiRat'] = new Chart(document.getElementById('kpiRatios'), {
@@ -1004,9 +1033,9 @@
                     datasets: [{
                         label: '% Eficiencia',
                         data: [
-                            totals.P > 0 ? totals.E / totals.P : 0,
-                            totals.E > 0 ? totals.C / totals.E : 0,
-                            totals.C > 0 ? totals.V / totals.C : 0
+                            kTotals.P > 0 ? kTotals.E / kTotals.P : 0,
+                            kTotals.E > 0 ? kTotals.C / kTotals.E : 0,
+                            kTotals.C > 0 ? kTotals.V / kTotals.C : 0
                         ],
                         borderColor: '#fef08a',
                         backgroundColor: 'rgba(212,175,55,.4)',
@@ -1032,7 +1061,8 @@
             destroyChart('kpiPri');
             charts['kpiPri'] = new Chart(document.getElementById('kpiPrimaAvg'), {
                 type: 'bar',
-                data: { labels: ['$/V', '$/S'], datasets: [{ data: [totals.V > 0 ? totals.prima / totals.V : 0, totals.S > 0 ? totals.prima / totals.S : 0], backgroundColor: ['#d4af37', '#10b981'] }] }
+                data: { labels: ['$/V', '$/S'], datasets: [{ data: [kTotals.V > 0 ? kTotals.prima / kTotals.V : 0, kTotals.S > 0 ? kTotals.prima / kTotals.S : 0], backgroundColor: [CHART_COLORS.V, CHART_COLORS.S] }] },
+                options: { plugins: { legend: { display: false } } }
             });
         }
 
