@@ -1,3 +1,4 @@
+// v1.0.2 - SW Update
 const CACHE_NAME = 'pecvs-agent-v1';
 const assets = ['./', './index.html'];
 
