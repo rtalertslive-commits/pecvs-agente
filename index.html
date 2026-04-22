@@ -460,7 +460,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
-                        style="font-size:10px; color:var(--slate);">v1.0.9</small></h1>
+                        style="font-size:10px; color:var(--slate);">v1.1.0</small></h1>
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
@@ -563,10 +563,8 @@
                     </table>
                 </div>
 
-                <div style="margin-top:20px; display:flex; justify-content: space-between; align-items:center;">
+                <div style="margin-top:20px; display:flex; justify-content: flex-end; align-items:center;">
                     <div class="save-msg" id="save-msg"><i class="fa fa-check"></i> Guardado</div>
-                    <button class="btn btn-blue btn-sm" onclick="openHistory()"><i class="fa fa-clock-rotate-left"></i>
-                        Historial</button>
                 </div>
             </div>
         </div>
@@ -1056,8 +1054,8 @@
 
             destroyChart('lineP');
             charts['lineP'] = new Chart(document.getElementById('chartPrima'), {
-                type: 'bar',
-                data: { labels, datasets: [{ label: 'Prima Bruta', data: entries.map(e => e.totales.prima), backgroundColor: 'rgba(212,175,55,.5)' }] },
+                type: 'line',
+                data: { labels, datasets: [{ label: 'Prima Bruta', data: entries.map(e => e.totales.prima), borderColor: 'rgba(212,175,55,.8)', backgroundColor: 'rgba(212,175,55,.2)', fill: true, tension: 0.3 }] },
                 options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
             });
 
@@ -1079,12 +1077,12 @@
             // TENDENCIA PRIMA PROMEDIO
             destroyChart('priT');
             charts['priT'] = new Chart(document.getElementById('chartPrimaTrend'), {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels,
                     datasets: [
-                        { label: '$/Vta', data: entries.map(e => e.totales.V > 0 ? (e.totales.prima / e.totales.V).toFixed(0) : 0), backgroundColor: CHART_COLORS.V },
-                        { label: '$/Sol', data: entries.map(e => e.totales.S > 0 ? (e.totales.prima / e.totales.S).toFixed(0) : 0), backgroundColor: CHART_COLORS.S }
+                        { label: '$/Vta', data: entries.map(e => e.totales.V > 0 ? (e.totales.prima / e.totales.V).toFixed(0) : 0), borderColor: CHART_COLORS.V, tension: 0.3 },
+                        { label: '$/Sol', data: entries.map(e => e.totales.S > 0 ? (e.totales.prima / e.totales.S).toFixed(0) : 0), borderColor: CHART_COLORS.S, tension: 0.3 }
                     ]
                 },
                 options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
