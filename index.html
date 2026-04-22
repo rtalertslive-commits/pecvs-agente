@@ -460,7 +460,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
-                        style="font-size:10px; color:var(--slate);">v1.0.7</small></h1>
+                        style="font-size:10px; color:var(--slate);">v1.0.8</small></h1>
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
@@ -609,13 +609,25 @@
                     </select>
                 </div>
                 <div class="charts-grid">
-                    <div class="chart-card full">
-                        <h3><i class="fa fa-chart-line"></i> Evolución de Prima Neta</h3>
+                    <div class="chart-card">
+                        <h3><i class="fa fa-line-chart"></i> Tendencia de Volumen (P-E-C-V-S)</h3>
+                        <div class="chart-wrap"><canvas id="chartVolume"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3><i class="fa fa-money-bill-trend-up"></i> Tendencia de Primas Brutas</h3>
                         <div class="chart-wrap"><canvas id="chartPrima"></canvas></div>
                     </div>
+                    <div class="chart-card">
+                        <h3><i class="fa fa-gauge-high"></i> Tendencia de Eficiencia (%)</h3>
+                        <div class="chart-wrap"><canvas id="chartEffTrend"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3><i class="fa fa-hand-holding-dollar"></i> Tendencia de Primas Promedio ($)</h3>
+                        <div class="chart-wrap"><canvas id="chartPrimaTrend"></canvas></div>
+                    </div>
                     <div class="chart-card full">
-                        <h3><i class="fa fa-bars-progress"></i> Volumen PECVS Temporal</h3>
-                        <div class="chart-wrap"><canvas id="chartVolume"></canvas></div>
+                        <h3><i class="fa fa-users-gear"></i> Ratios de Esfuerzo (Prospectos por Cierre)</h3>
+                        <div class="chart-wrap"><canvas id="chartRatioTrend"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -1008,17 +1020,68 @@
 
         window.renderCharts = function () {
             const mes = document.getElementById('chart-mes-sel').value;
-            const entries = state.entries.filter(e => !mes || e.mes === mes).sort((a, b) => a.mes.localeCompare(b.mes) || a.semana - b.semana);
-            const labels = entries.map(e => `S${e.semana} ${e.mes.split(' ')[0]}`);
+            const entries = state.entries.filter(e => !mes || e.mes === mes).sort((a, b) => {
+                const ma = MONTHS_ES.indexOf(a.mes.split(' ')[0]), mb = MONTHS_ES.indexOf(b.mes.split(' ')[0]);
+                const ya = parseInt(a.mes.split(' ')[1]), yb = parseInt(b.mes.split(' ')[1]);
+                return ya - yb || ma - mb || a.semana - b.semana;
+            });
+            const labels = entries.map(e => `S${e.semana} ${e.mes.split(' ')[0].substring(0, 3)}`);
+
             destroyChart('lineV');
             charts['lineV'] = new Chart(document.getElementById('chartVolume'), {
                 type: 'line',
-                data: { labels, datasets: COLS.map(c => ({ label: c, data: entries.map(e => e.totales[c]), borderColor: CHART_COLORS[c], tension: 0.3 })) }
+                data: { labels, datasets: COLS.map(c => ({ label: c, data: entries.map(e => e.totales[c]), borderColor: CHART_COLORS[c], tension: 0.3, pointRadius: 4 })) },
+                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
             });
+
             destroyChart('lineP');
             charts['lineP'] = new Chart(document.getElementById('chartPrima'), {
                 type: 'bar',
-                data: { labels, datasets: [{ label: 'Prima Neta', data: entries.map(e => e.totales.prima), backgroundColor: 'rgba(212,175,55,.5)' }] }
+                data: { labels, datasets: [{ label: 'Prima Bruta', data: entries.map(e => e.totales.prima), backgroundColor: 'rgba(212,175,55,.5)' }] },
+                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+            });
+
+            // TENDENCIA EFICIENCIA
+            destroyChart('effT');
+            charts['effT'] = new Chart(document.getElementById('chartEffTrend'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'P ➔ E', data: entries.map(e => e.totales.P > 0 ? (e.totales.E / e.totales.P * 100).toFixed(1) : 0), borderColor: CHART_COLORS.E, tension: 0.3 },
+                        { label: 'E ➔ C', data: entries.map(e => e.totales.E > 0 ? (e.totales.C / e.totales.E * 100).toFixed(1) : 0), borderColor: CHART_COLORS.C, tension: 0.3 },
+                        { label: 'C ➔ V', data: entries.map(e => e.totales.C > 0 ? (e.totales.V / e.totales.C * 100).toFixed(1) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }
+                    ]
+                },
+                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8', callback: v => v + '%' } }, x: { ticks: { color: '#94a3b8' } } } }
+            });
+
+            // TENDENCIA PRIMA PROMEDIO
+            destroyChart('priT');
+            charts['priT'] = new Chart(document.getElementById('chartPrimaTrend'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: '$/Vta', data: entries.map(e => e.totales.V > 0 ? (e.totales.prima / e.totales.V).toFixed(0) : 0), backgroundColor: CHART_COLORS.V },
+                        { label: '$/Sol', data: entries.map(e => e.totales.S > 0 ? (e.totales.prima / e.totales.S).toFixed(0) : 0), backgroundColor: CHART_COLORS.S }
+                    ]
+                },
+                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
+            });
+
+            // TENDENCIA RATIO ESFUERZO
+            destroyChart('ratT');
+            charts['ratT'] = new Chart(document.getElementById('chartRatioTrend'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'P / V (Cierre)', data: entries.map(e => e.totales.V > 0 ? (e.totales.P / e.totales.V).toFixed(1) : 0), borderColor: '#f8fafc', tension: 0.3 },
+                        { label: 'P / S (Solicitud)', data: entries.map(e => e.totales.S > 0 ? (e.totales.P / e.totales.S).toFixed(1) : 0), borderColor: CHART_COLORS.P, tension: 0.3 }
+                    ]
+                },
+                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
             });
         }
 
