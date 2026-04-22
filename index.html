@@ -460,7 +460,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
-                        style="font-size:10px; color:var(--slate);">v1.0.1</small></h1>
+                        style="font-size:10px; color:var(--slate);">v1.0.2</small></h1>
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
@@ -1033,10 +1033,6 @@
             };
             reader.readAsText(file);
         }
-
-        window.addEventListener('beforeunload', (e) => {
-            if (state.entries.length) { e.preventDefault(); e.returnValue = ''; }
-        });
 
         // init(); <--- ELIMINADO EL LLAMADO GLOBAL PARA EVITAR POPUPS ANTES DEL LOGIN
     </script>
