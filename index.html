@@ -450,7 +450,7 @@
                 Entrar con Google
             </button>
             <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.8;">
-                v1.1.2 — Sincronización mediante Google Firebase
+                v1.2.0 — Sincronización mediante Google Firebase
             </div>
         </div>
     </div>
@@ -460,7 +460,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
-                        style="font-size:10px; color:var(--slate);">v1.1.2</small></h1>
+                        style="font-size:10px; color:var(--slate);">v1.2.0</small></h1>
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
@@ -486,6 +486,8 @@
                 KPIs</button>
             <button class="tab-btn" onclick="switchTab('charts',this)"><i class="fa fa-chart-area"></i>
                 Tendencias</button>
+            <button class="tab-btn" onclick="switchTab('conceptos',this)"><i class="fa fa-lightbulb"></i>
+                Conceptos</button>
         </div>
 
         <!-- TAB: BITACORA -->
@@ -631,6 +633,114 @@
                     <div class="chart-card full">
                         <h3><i class="fa fa-users-gear"></i> Ratios de Esfuerzo (Prospectos por Cierre)</h3>
                         <div class="chart-wrap"><canvas id="chartRatioTrend"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: CONCEPTOS -->
+        <div id="tab-conceptos" class="tab-panel">
+            <div class="card" style="padding: 25px;">
+                <h2
+                    style="font-family:'Playfair Display',serif; color:var(--gold); border-bottom: 2px solid var(--gold); padding-bottom:10px; margin-bottom:25px; font-size:22px;">
+                    <i class="fa fa-graduation-cap-solid"></i> EL EMBUDO DE EFECTIVIDAD
+                </h2>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                    <!-- COLUMNA DEFINICIONES -->
+                    <div>
+                        <div style="margin-bottom:24px;">
+                            <strong style="color:var(--gold); font-size:1.2em;">P - Contactos del día</strong><br>
+                            <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong>
+                                Personas buscadas activamente. En abordaje en frío, debes obtener nombre, teléfono, etc.
+                                No cuenta un simple saludo superficial.</p>
+                            <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Prospección y abordaje
+                                inicial.</em>
+                        </div>
+
+                        <div style="margin-bottom:24px;">
+                            <strong style="color:var(--gold); font-size:1.2em;">E - Entrevistas</strong><br>
+                            <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong>
+                                Registra si lograste comunicar el valor del producto según sus necesidades. Si hubo
+                                negativa antes de esto, no cuenta.</p>
+                            <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Tu habilidad para detectar
+                                necesidades y comunicar valor.</em>
+                        </div>
+
+                        <div style="margin-bottom:24px;">
+                            <strong style="color:var(--gold); font-size:1.2em;">C - Cotizaciones</strong><br>
+                            <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong>
+                                Personas a las que entregaste una propuesta formal con costos; si entregaste múltiples
+                                propuestas a una misma persona, cuenta como una sola cotización.</p>
+                            <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Tu capacidad para presentar y
+                                hablar de PRECIOS.</em>
+                        </div>
+
+                        <div style="margin-bottom:24px;">
+                            <strong style="color:var(--gold); font-size:1.2em;">V - Personas con cierre</strong><br>
+                            <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong>
+                                Número de individuos (almas) a los que vendiste; si le vendiste varias solicitudes a la
+                                misma persona, cuenta como un solo cierre.</p>
+                            <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Efectividad de cierre y
+                                convicción.</em>
+                        </div>
+
+                        <h2
+                            style="font-family:'Playfair Display',serif; color:var(--gold); border-bottom: 2px solid var(--gold); padding-bottom:10px; margin:40px 0 25px; font-size:22px;">
+                            <i class="fa fa-chart-line"></i> MÉTRICAS DE VOLUMEN Y VALOR
+                        </h2>
+
+                        <div style="margin-bottom:24px;">
+                            <strong style="color:var(--gold); font-size:1.2em;">S - Número de solicitudes</strong><br>
+                            <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong>
+                                Suma de solicitudes vendidas. Aquí SÍ se cuentan todos los folios, ya sean nuevos
+                                negocios, incrementos o inclusiones, sin importar si son de la misma persona.</p>
+                            <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Productividad y venta
+                                cruzada.</em>
+                        </div>
+
+                        <div style="margin-bottom:24px;">
+                            <strong style="color:var(--gold); font-size:1.2em;">$ - Prima total</strong><br>
+                            <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong>
+                                Suma de la Prima Neta total vendida en el día.</p>
+                            <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Rentabilidad financiera.</em>
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA VISUAL -->
+                    <div
+                        style="background: rgba(255,255,255,0.03); border-radius:15px; padding:25px; text-align:center; border: 1px solid rgba(255,255,255,0.05); height: fit-content; position: sticky; top: 20px;">
+                        <h2 style="font-family:'Playfair Display',serif; color:var(--white); margin-top:0;">EMBUDO
+                            MATEMÁTICO</h2>
+                        <div
+                            style="background:var(--gold); color:var(--bg); padding:4px 15px; border-radius:20px; display:inline-block; font-weight:bold; font-size:12px; margin-bottom:30px;">
+                            REGLA: P ≥ E ≥ C ≥ V
+                        </div>
+
+                        <!-- FUNNEL VISUAL CSS -->
+                        <div
+                            style="display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 250px; margin: 0 auto;">
+                            <div
+                                style="width: 100%; height: 45px; background: #108a7b; clip-path: polygon(0% 0%, 100% 0%, 90% 100%, 10% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">
+                                P - Contactos</div>
+                            <div
+                                style="width: 80%; height: 45px; background: #d76e48; clip-path: polygon(0% 0%, 100% 0%, 85% 100%, 15% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">
+                                E - Entrevistas</div>
+                            <div
+                                style="width: 60%; height: 45px; background: #10a891; clip-path: polygon(0% 0%, 100% 0%, 80% 100%, 20% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">
+                                C - Cotizaciones</div>
+                            <div
+                                style="width: 40%; height: 50px; background: #020617; border: 2px solid var(--gold); border-top:none; clip-path: polygon(0% 0%, 100% 0%, 75% 100%, 25% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:var(--gold);">
+                                V - Cierres</div>
+                        </div>
+
+                        <p
+                            style="font-size:13px; color:var(--slate); margin-top:35px; line-height:1.6; text-align:justify; border-top: 1px solid rgba(255,255,255,0.1); padding-top:20px;">
+                            En sentido estricto el número debe ir de mayor a menor (o como máximo igual) en cada etapa
+                            del proceso. Es decir: <strong>nunca puede haber más entrevistas que prospectos
+                                contactados</strong>, ni más cotizaciones que entrevistas realizadas, ni más ventas
+                            concretadas que cotizaciones.
+                        </p>
                     </div>
                 </div>
             </div>
