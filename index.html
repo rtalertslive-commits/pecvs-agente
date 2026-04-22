@@ -449,8 +449,8 @@
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
                 Entrar con Google
             </button>
-            <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.6;">
-                Sincronización segura mediante Google Firebase
+            <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.8;">
+                v1.0.6 — Sincronización mediante Google Firebase
             </div>
         </div>
     </div>
@@ -460,7 +460,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
-                        style="font-size:10px; color:var(--slate);">v1.0.5</small></h1>
+                        style="font-size:10px; color:var(--slate);">v1.0.6</small></h1>
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
@@ -652,7 +652,7 @@
         const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
         const COLS = ['P', 'E', 'C', 'V', 'S'];
         const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        const CHART_COLORS = { P: '#3b82f6', E: '#06b6d4', C: '#a855f7', V: '#10b981', S: '#f59e0b' };
+        const CHART_COLORS = { P: '#3b82f6', E: '#f59e0b', C: '#d4af37', V: '#10b981', S: '#06b6d4' };
 
         let state = { agentName: '', entries: [] };
         let currentWeeks = [];
@@ -905,8 +905,13 @@
             destroyChart('kpiEfe');
             charts['kpiEfe'] = new Chart(document.getElementById('kpiEfectividad'), {
                 type: 'doughnut',
-                data: { labels: ['Cierres (V)', 'Contactos (P)'], datasets: [{ data: [totals.V, Math.max(0, totals.P - totals.V)], backgroundColor: [CHART_COLORS.V, '#1e293b'] }] },
-                options: { plugins: { title: { display: true, text: `Efectividad: ${totals.P > 0 ? (totals.V / totals.P * 100).toFixed(1) : 0}%`, color: '#fff' } } }
+                data: { labels: ['Cierres (V)', 'Contactos (P)'], datasets: [{ data: [totals.V, Math.max(0, totals.P - totals.V)], backgroundColor: [CHART_COLORS.V, CHART_COLORS.P] }] },
+                options: {
+                    plugins: {
+                        title: { display: true, text: `Efectividad: ${totals.P > 0 ? (totals.V / totals.P * 100).toFixed(1) : 0}%`, color: '#fff' },
+                        legend: { position: 'top', align: 'center', labels: { boxWidth: 12, padding: 20, color: '#94a3b8' } }
+                    }
+                }
             });
             destroyChart('kpiVol');
             charts['kpiVol'] = new Chart(document.getElementById('kpiVolumeFull'), {
@@ -917,14 +922,13 @@
             charts['kpiRat'] = new Chart(document.getElementById('kpiRatios'), {
                 type: 'radar',
                 data: {
-                    labels: ['P ➔ E', 'E ➔ C', 'C ➔ V', 'V ➔ S'],
+                    labels: ['P ➔ E', 'E ➔ C', 'C ➔ V'],
                     datasets: [{
                         label: '% Eficiencia',
                         data: [
                             totals.P > 0 ? totals.E / totals.P : 0,
                             totals.E > 0 ? totals.C / totals.E : 0,
-                            totals.C > 0 ? totals.V / totals.C : 0,
-                            totals.V > 0 ? totals.S / totals.V : 0
+                            totals.C > 0 ? totals.V / totals.C : 0
                         ],
                         borderColor: '#d4af37', backgroundColor: 'rgba(212,175,55,.2)'
                     }]
