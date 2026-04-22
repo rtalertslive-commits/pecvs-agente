@@ -464,14 +464,14 @@
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
-                <span
-                    style="font-size:9px; color:var(--red); font-weight:700; max-width:120px; text-align:right; line-height:1;">AVISO:
-                    Siempre guarda todos los cambios. Si refrescas la página, se borra todo.</span>
                 <button class="btn btn-blue btn-sm" onclick="document.getElementById('import-file').click()"><i
                         class="fa fa-file-import"></i>Importar</button>
                 <button class="btn btn-green btn-sm" onclick="shareJSON()"><i
                         class="fa-solid fa-share-nodes"></i>Compartir Reporte</button>
                 <button class="btn btn-sm" onclick="openConfig()"><i class="fa fa-user-gear"></i>Mi Perfil</button>
+                <button id="logout-btn" class="btn btn-sm"
+                    style="border-color:var(--red) !important; color:var(--red) !important; display:inline-flex !important;"
+                    onclick="logout()"><i class="fa fa-right-from-bracket"></i>Salir</button>
             </div>
             <div style="display:none">
                 <input type="file" id="import-file" accept=".json" onchange="importJSON(event)">
@@ -710,6 +710,15 @@
             }
         });
 
+        window.logout = function () {
+            if (confirm("¿Cerrar sesión?")) {
+                auth.signOut().then(() => {
+                    localStorage.removeItem('pecvs_agent_data');
+                    location.reload();
+                });
+            }
+        }
+
         async function loadFromCloud() {
             if (!user) return;
             const docRef = doc(db, "users", user.email);
@@ -736,7 +745,18 @@
             refreshUI();
             if (!state.agentName) openConfig();
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log("SW error:", err));
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    reg.onupdatefound = () => {
+                        const sw = reg.installing;
+                        sw.onstatechange = () => {
+                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                if (confirm("¡Nueva versión disponible! ¿Actualizar ahora?")) {
+                                    location.reload();
+                                }
+                            }
+                        };
+                    };
+                }).catch(err => console.log("SW error:", err));
             }
         }
 
@@ -1136,11 +1156,7 @@
             reader.readAsText(file);
         }
 
-        window.addEventListener('beforeunload', (e) => {
-            if (state.entries.length) { e.preventDefault(); e.returnValue = ''; }
-        });
-
-        init();
+        // init(); <--- Desactivado para que solo corra en Auth gate
     </script>
 </body>
 
