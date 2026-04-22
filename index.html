@@ -471,8 +471,9 @@
                 <button class="btn btn-green btn-sm" onclick="shareJSON()"><i
                         class="fa-solid fa-share-nodes"></i>Compartir Reporte</button>
                 <button class="btn btn-sm" onclick="openConfig()"><i class="fa fa-user-gear"></i>Mi Perfil</button>
-                <button class="btn btn-sm" style="border-color:var(--red); color:var(--red);" onclick="logout()"><i
-                        class="fa fa-right-from-bracket"></i>Salir</button>
+                <button id="logout-btn" class="btn btn-sm"
+                    style="border-color:var(--red) !important; color:var(--red) !important; display:inline-flex !important;"
+                    onclick="logout()"><i class="fa fa-right-from-bracket"></i>Salir</button>
             </div>
             <div style="display:none">
                 <input type="file" id="import-file" accept=".json" onchange="importJSON(event)">
@@ -682,7 +683,7 @@
                 user = u;
                 document.getElementById('login-overlay').classList.add('hidden');
                 await loadFromCloud();
-                init();
+                init(); // AHORA SOLO SE INICIALIZA AQUÍ
             } else {
                 user = null;
                 document.getElementById('login-overlay').classList.remove('hidden');
@@ -1039,7 +1040,7 @@
             if (state.entries.length) { e.preventDefault(); e.returnValue = ''; }
         });
 
-        init();
+        // init(); <--- ELIMINADO EL LLAMADO GLOBAL PARA EVITAR POPUPS ANTES DEL LOGIN
     </script>
 </body>
 
