@@ -471,6 +471,8 @@
                 <button class="btn btn-green btn-sm" onclick="shareJSON()"><i
                         class="fa-solid fa-share-nodes"></i>Compartir Reporte</button>
                 <button class="btn btn-sm" onclick="openConfig()"><i class="fa fa-user-gear"></i>Mi Perfil</button>
+                <button class="btn btn-sm" style="border-color:var(--red); color:var(--red);" onclick="logout()"><i
+                        class="fa fa-right-from-bracket"></i>Salir</button>
             </div>
             <div style="display:none">
                 <input type="file" id="import-file" accept=".json" onchange="importJSON(event)">
@@ -652,7 +654,7 @@
 
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Initialize
@@ -686,6 +688,14 @@
                 document.getElementById('login-overlay').classList.remove('hidden');
             }
         });
+
+        window.logout = function () {
+            if (confirm("¿Cerrar sesión?")) {
+                signOut(auth).then(() => {
+                    location.reload();
+                }).catch(err => alert("Error al salir: " + err.message));
+            }
+        }
 
         async function loadFromCloud() {
             if (!user) return;
