@@ -450,7 +450,7 @@
                 Entrar con Google
             </button>
             <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.8;">
-                v1.2.4 — Sincronización mediante Google Firebase
+                v1.2.5 — Sincronización mediante Google Firebase
             </div>
         </div>
     </div>
@@ -460,7 +460,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
-                        style="font-size:10px; color:var(--slate);">v1.2.4</small></h1>
+                        style="font-size:10px; color:var(--slate);">v1.2.5</small></h1>
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
@@ -631,7 +631,7 @@
                         <div class="chart-wrap"><canvas id="chartPrimaTrend"></canvas></div>
                     </div>
                     <div class="chart-card full">
-                        <h3><i class="fa fa-users-gear"></i> Ratios de Esfuerzo (Prospectos por Cierre)</h3>
+                        <h3><i class="fa fa-users-gear"></i> Eficiencia Total (Conversión P ➔ V % y P ➔ S %)</h3>
                         <div class="chart-wrap"><canvas id="chartRatioTrend"></canvas></div>
                     </div>
                 </div>
@@ -1228,18 +1228,18 @@
                 options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
             });
 
-            // TENDENCIA RATIO ESFUERZO
+            // TENDENCIA EFICIENCIA TOTAL
             destroyChart('ratT');
             charts['ratT'] = new Chart(document.getElementById('chartRatioTrend'), {
                 type: 'line',
                 data: {
                     labels,
                     datasets: [
-                        { label: 'P / V (Cierre)', data: entries.map(e => e.totales.V > 0 ? (e.totales.P / e.totales.V).toFixed(1) : 0), borderColor: '#f8fafc', tension: 0.3 },
-                        { label: 'P / S (Solicitud)', data: entries.map(e => e.totales.S > 0 ? (e.totales.P / e.totales.S).toFixed(1) : 0), borderColor: CHART_COLORS.P, tension: 0.3 }
+                        { label: '% P ➔ V (Cierre)', data: entries.map(e => e.totales.P > 0 ? (e.totales.V / e.totales.P * 100).toFixed(1) : 0), borderColor: CHART_COLORS.V, tension: 0.3 },
+                        { label: '% P ➔ S (Solicitud)', data: entries.map(e => e.totales.P > 0 ? (e.totales.S / e.totales.P * 100).toFixed(1) : 0), borderColor: CHART_COLORS.S, tension: 0.3 }
                     ]
                 },
-                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
+                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8', callback: v => v + '%' } }, x: { ticks: { color: '#94a3b8' } } } }
             });
         }
 
