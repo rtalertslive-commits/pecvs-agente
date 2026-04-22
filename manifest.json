@@ -1,0 +1,17 @@
+{
+    "name": "PECVS$ Agente",
+    "short_name": "PECVS$",
+    "description": "Bitácora Estratégica PECVS$",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#0f172a",
+    "theme_color": "#d4af37",
+    "icons": [
+        {
+            "src": "https://cdn-icons-png.flaticon.com/512/2666/2666065.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
