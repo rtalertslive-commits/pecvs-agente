@@ -450,7 +450,7 @@
                 Entrar con Google
             </button>
             <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.8;">
-                v1.2.7 — Sincronización mediante Google Firebase
+                v1.2.8 — Sincronización mediante Google Firebase
             </div>
         </div>
     </div>
@@ -460,7 +460,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
-                        style="font-size:10px; color:var(--slate);">v1.2.7</small></h1>
+                        style="font-size:10px; color:var(--slate);">v1.2.8</small></h1>
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
@@ -849,7 +849,13 @@
         window.init = function () {
             const saved = localStorage.getItem('pecvs_agent_data');
             if (!state.entries.length && saved) state = JSON.parse(saved);
-            if (!state.agentName && user) state.agentName = user.displayName;
+
+            // Si no hay nombre pero Google nos lo da, lo tomamos y guardamos de una vez
+            if (!state.agentName && user && user.displayName) {
+                state.agentName = user.displayName;
+                saveState(); // Forzamos persistencia inmediata en nube
+            }
+
             updateBitacoraCalendar();
             refreshUI();
             if (!state.agentName) openConfig();
