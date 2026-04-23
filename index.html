@@ -450,7 +450,7 @@
                 Entrar con Google
             </button>
             <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.8;">
-                v1.2.8 — Sincronización mediante Google Firebase
+                v1.3.0 — Sincronización mediante Google Firebase
             </div>
         </div>
     </div>
@@ -460,7 +460,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
-                        style="font-size:10px; color:var(--slate);">v1.2.8</small></h1>
+                        style="font-size:10px; color:var(--slate);">v1.3.0</small></h1>
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
@@ -752,6 +752,10 @@
                     <label style="font-size:11px; color:var(--slate); font-weight:700;">MI NOMBRE COMPLETO</label>
                     <input type="text" id="inp-myname" placeholder="Ej. Franco Jr">
                 </div>
+                <div>
+                    <label style="font-size:11px; color:var(--slate); font-weight:700;">CÓDIGO DE EQUIPO (COACH)</label>
+                    <input type="text" id="inp-teamcode" placeholder="Ej. TEAM-AVILA-2024">
+                </div>
                 <button class="btn btn-green" onclick="saveConfig()">Guardar Perfil</button>
                 <button class="btn btn-sm"
                     onclick="document.getElementById('config-modal').classList.remove('open')">Cerrar</button>
@@ -798,7 +802,7 @@
         const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         const CHART_COLORS = { P: '#3b82f6', E: '#06b6d4', C: '#a855f7', V: '#10b981', S: '#f59e0b' };
 
-        let state = { agentName: '', entries: [] };
+        let state = { agentName: '', teamCode: '', entries: [] };
         let currentWeeks = [];
         let user = null;
 
@@ -858,7 +862,7 @@
 
             updateBitacoraCalendar();
             refreshUI();
-            if (!state.agentName) openConfig();
+            if (!state.agentName || !state.teamCode) openConfig();
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').then(reg => {
                     reg.onupdatefound = () => {
@@ -896,11 +900,13 @@
 
         window.openConfig = function () {
             document.getElementById('inp-myname').value = state.agentName;
+            document.getElementById('inp-teamcode').value = state.teamCode || '';
             document.getElementById('config-modal').classList.add('open');
         }
 
         window.saveConfig = function () {
             state.agentName = document.getElementById('inp-myname').value.trim();
+            state.teamCode = document.getElementById('inp-teamcode').value.trim().toUpperCase();
             saveState();
             refreshUI();
             document.getElementById('config-modal').classList.remove('open');

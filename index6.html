@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PECVS$ — Coach Analytics Hub (v1.3.0)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #020617;
+            --panel: #0f172a;
+            --panel2: #1e293b;
+            --gold: #d4af37;
+            --gold-l: #fef08a;
+            --white: #f8fafc;
+            --slate: #94a3b8;
+            --border: rgba(212, 175, 55, 0.2);
+            --green: #10b981;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --teal: #06b6d4;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html,
+        body {
+            background: var(--bg);
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            transition: .5s;
+        }
+
+        .login-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .login-card {
+            background: var(--panel);
+            border: 1px solid var(--gold);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .app {
+            width: 100%;
+            max-width: 1500px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-left h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 30px;
+            margin: 0;
+            background: linear-gradient(90deg, var(--white), var(--gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-left p {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: var(--slate);
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            border-radius: 6px;
+            border: 1px solid var(--gold);
+            background: rgba(15, 23, 42, .8);
+            color: var(--gold-l);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .25s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: var(--gold);
+            color: var(--bg);
+        }
+
+        .btn.active {
+            background: var(--gold);
+            color: var(--bg);
+        }
+
+        .btn-green {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .btn-green:hover {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .btn-red {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .btn-red:hover {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+
+        /* TABS NAV */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0;
+        }
+
+        .tab-btn {
+            padding: 11px 22px;
+            font-size: 13px;
+            font-weight: 600;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--slate);
+            cursor: pointer;
+            transition: .2s;
+            margin-bottom: -1px;
+        }
+
+        .tab-btn:hover {
+            color: var(--white);
+        }
+
+        .tab-btn.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+
+        /* PANELS */
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+        }
+
+        .card-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gold);
+            font-weight: 800;
+            margin: 0 0 18px;
+        }
+
+        label.field-label {
+            display: block;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        input[type=text],
+        input[type=number],
+        select,
+        textarea {
+            background: rgba(2, 6, 23, .6);
+            border: 1px solid rgba(255, 255, 255, .1);
+            color: var(--white);
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            transition: .2s;
+            width: 100%;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, .1);
+        }
+
+        /* TABLE */
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        .lb-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+
+        .lb-table th {
+            padding: 13px 10px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--gold);
+            background: rgba(0, 0, 0, .2);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .lb-table td {
+            padding: 11px 10px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255, 255, 255, .04);
+            text-align: center;
+        }
+
+        .lb-table tbody tr:hover {
+            background: rgba(255, 255, 255, .02);
+        }
+
+        .lb-table tfoot tr {
+            background: rgba(212, 175, 55, .08);
+            border-top: 2px solid var(--gold);
+        }
+
+        .lb-table tfoot td {
+            color: var(--gold-l);
+            font-weight: 700;
+            padding: 13px 10px;
+        }
+
+        .rank-num {
+            font-weight: 800;
+            color: var(--slate);
+            font-size: 12px;
+        }
+
+        .agent-name-cell {
+            font-weight: 600;
+            text-align: left !important;
+        }
+
+        /* CHARTS */
+        .charts-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .charts-controls select {
+            width: auto;
+            min-width: 180px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .chart-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .chart-card.full {
+            grid-column: 1/-1;
+        }
+
+        .chart-card h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: var(--gold-l);
+            margin: 0 0 16px;
+        }
+
+        .chart-wrap {
+            height: 280px;
+            position: relative;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, .9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--panel);
+            border: 1px solid var(--gold);
+            border-radius: 12px;
+            padding: 36px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+
+        .modal-box h2 {
+            margin: 0 0 20px;
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 26px;
+            cursor: pointer;
+        }
+
+        .info-box {
+            background: rgba(6, 182, 212, .06);
+            border: 1px solid rgba(6, 182, 212, .2);
+            border-radius: 8px;
+            padding: 14px 18px;
+            font-size: 12px;
+            color: var(--teal);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--slate);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        .tab-panel.active {
+            animation: fadeIn .3s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LOGIN OVERLAY -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <h1 style="font-family:'Playfair Display',serif; color:var(--gold); margin-bottom:10px;">PECVS$ Analytics
+            </h1>
+            <p style="color:var(--slate); font-size:13px; margin-bottom:30px;">Tablero de Control del Coach (v1.3.0)</p>
+            <button id="login-btn" class="btn" style="width:100%; justify-content:center; padding:12px;">
+                <i class="fa-brands fa-google"></i> Entrar con Google
+            </button>
+            <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.8;">
+                Sincronización en tiempo real vía Firebase
+            </div>
+        </div>
+    </div>
+
+    <div class="app">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <h1><i class="fa-solid fa-chart-line" style="font-size:22px;margin-right:10px;"></i>PECVS$ Analytics
+                    <small style="font-size:10px; color:var(--slate);">v1.3.0</small>
+                </h1>
+                <p id="coach-display">Coach: —</p>
+                <p id="team-display" style="font-size:11px; color:var(--teal); margin-top:2px; font-weight:700;"></p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-sm" onclick="openConfig()"><i class="fa fa-cog"></i>Configuración</button>
+                <button class="btn btn-sm btn-red" onclick="logout()"><i
+                        class="fa-solid fa-right-from-bracket"></i>Salir</button>
+            </div>
+        </div>
+
+        <!-- TAB NAV -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('leaderboard',this)"><i class="fa fa-table"></i>
+                Leaderboard / Ratios</button>
+            <button class="tab-btn" onclick="switchTab('kpis',this)"><i class="fa fa-chart-column"></i> KPIs
+                (Barras)</button>
+            <button class="tab-btn" onclick="switchTab('charts',this)"><i class="fa fa-chart-area"></i>
+                Tendencias</button>
+        </div>
+
+        <!-- TAB: LEADERBOARD -->
+        <div id="tab-leaderboard" class="tab-panel active">
+            <div class="card">
+                <div class="charts-controls">
+                    <div>
+                        <label class="field-label">Mes</label>
+                        <select id="lb-mes-filter" onchange="renderLeaderboard()">
+                            <option value="">Todos los meses</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-scroll">
+                    <table class="lb-table">
+                        <thead id="lb-thead"></thead>
+                        <tbody id="lb-body"></tbody>
+                        <tfoot id="lb-foot"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: KPIs -->
+        <div id="tab-kpis" class="tab-panel">
+            <div class="card">
+                <div class="charts-controls">
+                    <div><label class="field-label">Mes</label><select id="kpi-mes-sel" onchange="renderKPIs()">
+                            <option value="">Todos los meses</option>
+                        </select></div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card full">
+                        <h3>Prima Neta por Agente</h3>
+                        <div class="chart-wrap"><canvas id="kpiPrima"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>% Eficiencia: Conversión P ➔ V</h3>
+                        <div class="chart-wrap"><canvas id="kpiEfectividad"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Cierres vs Contactos</h3>
+                        <div class="chart-wrap"><canvas id="kpiVolumen"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: TENDENCIAS -->
+        <div id="tab-charts" class="tab-panel">
+            <div class="card">
+                <div class="charts-controls">
+                    <div><label class="field-label">Agente</label><select id="chart-agent-sel"
+                            onchange="renderCharts()"></select></div>
+                    <div><label class="field-label">Mes</label><select id="chart-mes-sel"
+                            onchange="renderCharts()"></select></div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card full">
+                        <h3>Volumen PECVS Semanal</h3>
+                        <div class="chart-wrap"><canvas id="chartVolume"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Eficiencia Total (% P ➔ V)</h3>
+                        <div class="chart-wrap"><canvas id="chartEfeTotal"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Prima Neta</h3>
+                        <div class="chart-wrap"><canvas id="chartPrima"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIG MODAL -->
+    <div class="modal-overlay" id="config-modal">
+        <div class="modal-box">
+            <button class="modal-close"
+                onclick="document.getElementById('config-modal').classList.remove('open')">&times;</button>
+            <h2><i class="fa fa-cog"></i> Configuración</h2>
+            <div style="display:flex;flex-direction:column;gap:20px;">
+                <div>
+                    <label class="field-label">CÓDIGO DE EQUIPO (ÚNICO)</label>
+                    <input type="text" id="inp-team-code" placeholder="Ej. EQUIPO-ESTRELLA-2024">
+                </div>
+                <button class="btn btn-green" onclick="saveConfig()">Guardar Configuración</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPNoWHEktWMcxHTnxpGrbtzYz4wEf2EHo",
+            authDomain: "bitacora-agente.firebaseapp.com",
+            projectId: "bitacora-agente",
+            storageBucket: "bitacora-agente.firebasestorage.app",
+            messagingSenderId: "322544925589",
+            appId: "1:322544925589:web:25021c345574e9ee0c149c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        const COLS = ['P', 'E', 'C', 'V', 'S'];
+        const CHART_COLORS = { P: '#3b82f6', E: '#06b6d4', C: '#a855f7', V: '#10b981', S: '#f59e0b' };
+        const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+        let coachState = { teamCode: '' };
+        let allAgentsData = [];
+        let user = null;
+        let unsub = null;
+
+        document.getElementById('login-btn').addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(err => alert("Error: " + err.message));
+        });
+
+        window.logout = () => { if (confirm("¿Salir?")) auth.signOut().then(() => location.reload()); };
+
+        onAuthStateChanged(auth, async (u) => {
+            if (u) {
+                user = u;
+                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('coach-display').textContent = 'Coach: ' + u.displayName;
+                await loadCoachConfig();
+                initRealtimeSync();
+            } else {
+                document.getElementById('login-overlay').classList.remove('hidden');
+            }
+        });
+
+        async function loadCoachConfig() {
+            const ref = doc(db, "coaches", user.email);
+            const snap = await getDoc(ref);
+            if (snap.exists()) {
+                coachState = snap.data();
+                document.getElementById('team-display').textContent = 'Equipo: ' + (coachState.teamCode || 'Sin Código');
+            } else {
+                openConfig();
+            }
+        }
+
+        function initRealtimeSync() {
+            if (unsub) unsub();
+            if (!coachState.teamCode) return;
+            const q = query(collection(db, "users"), where("teamCode", "==", coachState.teamCode));
+            unsub = onSnapshot(q, (snap) => {
+                allAgentsData = [];
+                snap.forEach(doc => allAgentsData.push(doc.data()));
+                refreshUI();
+            });
+        }
+
+        window.openConfig = () => {
+            document.getElementById('inp-team-code').value = coachState.teamCode || '';
+            document.getElementById('config-modal').classList.add('open');
+        };
+
+        window.saveConfig = async () => {
+            const code = document.getElementById('inp-team-code').value.trim().toUpperCase();
+            if (!code) return alert("Ingresa un código");
+            coachState.teamCode = code;
+            await setDoc(doc(db, "coaches", user.email), coachState);
+            document.getElementById('config-modal').classList.remove('open');
+            document.getElementById('team-display').textContent = 'Equipo: ' + code;
+            initRealtimeSync();
+        };
+
+        function refreshUI() {
+            refreshMonthFilters();
+            refreshAgentSelects();
+            renderLeaderboard();
+            renderKPIs();
+            renderCharts();
+        }
+
+        function refreshAgentSelects() {
+            const agents = [...new Set(allAgentsData.map(a => a.agentName))].sort();
+            const el = document.getElementById('chart-agent-sel');
+            const cur = el.value;
+            el.innerHTML = '<option value="__all__">Todo el Equipo</option>' + agents.map(a => `<option value="${a}">${a}</option>`).join('');
+            if (agents.includes(cur)) el.value = cur;
+        }
+
+        function refreshMonthFilters() {
+            let meses = [];
+            allAgentsData.forEach(a => a.entries.forEach(e => meses.push(e.mes)));
+            meses = [...new Set(meses)].sort((a, b) => {
+                const [ma, ya] = a.split(' '), [mb, yb] = b.split(' ');
+                return ya - yb || MONTHS_ES.indexOf(ma) - MONTHS_ES.indexOf(mb);
+            });
+            ['lb-mes-filter', 'kpi-mes-sel', 'chart-mes-sel'].forEach(id => {
+                const el = document.getElementById(id);
+                const cur = el.value;
+                el.innerHTML = '<option value="">Todos los meses</option>' + meses.map(m => `<option value="${m}">${m}</option>`).join('');
+                el.value = cur;
+            });
+        }
+
+        window.switchTab = (name, btn) => {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            btn.classList.add('active');
+            if (name === 'kpis') renderKPIs();
+            if (name === 'charts') renderCharts();
+        };
+
+        // --- DASHBOARD LOGIC (SIMILAR TO ORIGINAL BUT ADAPTED FOR COMPOSITE STATE) ---
+        function getFilteredEntries(mes, agent = '__all__') {
+            let entries = [];
+            allAgentsData.forEach(a => {
+                if (agent === '__all__' || a.agentName === agent) {
+                    a.entries.forEach(e => {
+                        if (!mes || e.mes === mes) entries.push(e);
+                    });
+                }
+            });
+            return entries;
+        }
+
+        window.renderLeaderboard = () => {
+            const mes = document.getElementById('lb-mes-filter').value;
+            const entries = getFilteredEntries(mes);
+            const agMap = {};
+            entries.forEach(e => {
+                if (!agMap[e.agent]) agMap[e.agent] = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
+                COLS.forEach(c => agMap[e.agent][c] += e.totales[c]);
+                agMap[e.agent].prima += (e.totales.prima || e.totales.$ || 0);
+            });
+
+            const agents = Object.keys(agMap).sort((a, b) => agMap[b].prima - agMap[a].prima);
+            const tbody = document.getElementById('lb-body');
+            const thead = document.getElementById('lb-thead');
+            const tfoot = document.getElementById('lb-foot');
+
+            thead.innerHTML = `<tr><th>#</th><th>Agente</th><th>P</th><th>E</th><th>C</th><th>V</th><th>S</th><th>P➔V%</th><th>Prima Total</th></tr>`;
+            tbody.innerHTML = agents.length ? agents.map((ag, i) => {
+                const d = agMap[ag];
+                return `<tr>
+                    <td>${i + 1}</td><td class="agent-name-cell">${ag}</td>
+                    <td>${d.P}</td><td>${d.E}</td><td>${d.C}</td><td>${d.V}</td><td>${d.S}</td>
+                    <td>${d.P > 0 ? (d.V / d.P * 100).toFixed(1) : 0}%</td>
+                    <td style="color:var(--green); font-weight:700;">$${d.prima.toLocaleString()}</td>
+                </tr>`;
+            }).join('') : '<tr><td colspan="9" class="empty-state">Sin datos</td></tr>';
+
+            const totals = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
+            agents.forEach(ag => { COLS.forEach(c => totals[c] += agMap[ag][c]); totals.prima += agMap[ag].prima; });
+            tfoot.innerHTML = agents.length ? `<tr><td></td><td>EQUIPO TOTAL</td><td>${totals.P}</td><td>${totals.E}</td><td>${totals.C}</td><td>${totals.V}</td><td>${totals.S}</td><td>${totals.P > 0 ? (totals.V / totals.P * 100).toFixed(1) : 0}%</td><td>$${totals.prima.toLocaleString()}</td></tr>` : '';
+        };
+
+        let charts = {};
+        function destroyChart(id) { if (charts[id]) charts[id].destroy(); }
+
+        window.renderKPIs = () => {
+            const mes = document.getElementById('kpi-mes-sel').value;
+            const entries = getFilteredEntries(mes);
+            const data = {};
+            entries.forEach(e => {
+                if (!data[e.agent]) data[e.agent] = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
+                COLS.forEach(c => data[e.agent][c] += e.totales[c]);
+                data[e.agent].prima += (e.totales.prima || 0);
+            });
+            const agents = Object.keys(data).sort((a, b) => data[b].prima - data[a].prima);
+            const labels = agents;
+
+            destroyChart('kpiP');
+            charts['kpiP'] = new Chart(document.getElementById('kpiPrima'), {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Prima Neta $', data: agents.map(a => data[a].prima), backgroundColor: '#d4af37' }] },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+
+            destroyChart('kpiEfe');
+            charts['kpiEfe'] = new Chart(document.getElementById('kpiEfectividad'), {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Eficiencia % (P➔V)', data: agents.map(a => a.P > 0 ? (data[a].V / data[a].P * 100).toFixed(1) : 0), backgroundColor: CHART_COLORS.V }] },
+                options: { scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+
+            destroyChart('kpiV');
+            charts['kpiV'] = new Chart(document.getElementById('kpiVolumen'), {
+                type: 'bar',
+                data: {
+                    labels, datasets: [
+                        { label: 'Cierres (V)', data: agents.map(a => data[a].V), backgroundColor: CHART_COLORS.V },
+                        { label: 'Contactos (P)', data: agents.map(a => data[a].P), backgroundColor: CHART_COLORS.P }
+                    ]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+        };
+
+        window.renderCharts = () => {
+            const ag = document.getElementById('chart-agent-sel').value;
+            const mes = document.getElementById('chart-mes-sel').value;
+            const entries = getFilteredEntries(mes, ag).sort((a, b) => {
+                const [ma, ya] = a.mes.split(' '), [mb, yb] = b.mes.split(' ');
+                return ya - yb || MONTHS_ES.indexOf(ma) - MONTHS_ES.indexOf(mb) || a.semana - b.semana;
+            });
+
+            const labels = entries.map(e => `S${e.semana} ${e.mes.split(' ')[0].substring(0, 3)}`);
+
+            destroyChart('lineV');
+            charts['lineV'] = new Chart(document.getElementById('chartVolume'), {
+                type: 'line',
+                data: { labels, datasets: COLS.map(c => ({ label: c, data: entries.map(e => e.totales[c]), borderColor: CHART_COLORS[c], tension: 0.3 })) },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+
+            destroyChart('lineE');
+            charts['lineE'] = new Chart(document.getElementById('chartEfeTotal'), {
+                type: 'line',
+                data: { labels, datasets: [{ label: 'Eficiencia % (P➔V)', data: entries.map(e => e.totales.P > 0 ? (e.totales.V / e.totales.P * 100).toFixed(1) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }] },
+                options: { scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+
+            destroyChart('lineP');
+            charts['lineP'] = new Chart(document.getElementById('chartPrima'), {
+                type: 'line',
+                data: { labels, datasets: [{ label: 'Prima Neta $', data: entries.map(e => e.totales.prima || 0), borderColor: '#d4af37', tension: 0.3 }] },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+        };
+
+    </script>
+</body>
+
+</html>
