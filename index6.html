@@ -622,6 +622,8 @@
             if (snap.exists()) {
                 coachState = snap.data();
                 document.getElementById('team-display').textContent = 'Equipo: ' + (coachState.teamCode || 'Sin Código');
+                renderReporteHistory();
+                tryLoadReporte(); // Load current month if exists
             } else {
                 openConfig();
             }
@@ -811,7 +813,53 @@
             });
         };
 
-    </script>
-</body>
+        window.tryLoadReporte = () => {
+            const mes = document.getElementById('rpt-mes').value + ' ' + document.getElementById('rpt-year').value;
+            const r = (coachState.reportes || []).find(r => r.mes === mes);
+            document.getElementById('rpt-analisis').value = r ? r.analisis : '';
+            document.getElementById('rpt-agentes').value = r ? r.agentes : '';
+            document.getElementById('rpt-compromisos').value = r ? r.compromisos : '';
+            document.getElementById('rpt-notas').value = r ? r.notas : '';
+        };
 
-</html>
+        window.saveReporte = async () => {
+            const mes = document.getElementById('rpt-mes').value + ' ' + document.getElementById('rpt-year').value;
+            const rpt = {
+                mes,
+                analisis: document.getElementById('rpt-analisis').value,
+                agentes: document.getElementById('rpt-agentes').value,
+                compromisos: document.getElementById('rpt-compromisos').value,
+                notas: document.getElementById('rpt-notas').value,
+                fecha: new Date().toISOString()
+            };
+            if (!coachState.reportes) coachState.reportes = [];
+            const idx = coachState.reportes.findIndex(r => r.mes === mes);
+            if (idx >= 0) coachState.reportes[idx] = rpt; else coachState.reportes.push(rpt);
+
+            await setDoc(doc(db, "coaches", user.email), coachState);
+            renderReporteHistory();
+            const msg = document.getElementById('rpt-msg');
+            msg.style.display = 'inline-flex'; setTimeout(() => msg.style.display = 'none', 2500);
+        };
+
+        window.loadReporte = (mes) => {
+            const parts = mes.split(' ');
+            document.getElementById('rpt-mes').value = parts[0];
+            document.getElementById('rpt-year').value = parts[1];
+            tryLoadReporte();
+            document.getElementById('modal-reporte-log').classList.remove('open');
+        };
+
+        function renderReporteHistory() {
+            const el = document.getElementById('rpt-history');
+            const list = coachState.reportes || [];
+            if (!list.length) { el.innerHTML = '<div class="empty-state">Sin reportes</div>'; return; }
+            el.innerHTML = list.map(r => `
+                <div class="history-chip" onclick="loadReporte('${r.mes}')" style="cursor:pointer; padding:10px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+                    <span style="font-weight:700;color:var(--gold)">${r.mes}</span>
+                    <span style="color:var(--slate);font-size:11px;">${new Date(r.fecha).toLocaleDateString()}</span>
+                </div>`).join('');
+        }
+</body >
+
+</html >

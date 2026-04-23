@@ -826,7 +826,6 @@
         window.logout = function () {
             if (confirm("¿Cerrar sesión?")) {
                 auth.signOut().then(() => {
-                    localStorage.removeItem('pecvs_agent_data');
                     location.reload();
                 });
             }
@@ -851,18 +850,20 @@
         }
 
         window.init = function () {
-            const saved = localStorage.getItem('pecvs_agent_data');
-            if (!state.entries.length && saved) state = JSON.parse(saved);
-
-            // Si no hay nombre pero Google nos lo da, lo tomamos y guardamos de una vez
+            // Priority: if Cloud data didn't have a name/teamCode, check DISPLAY NAME from Google as fallback
             if (!state.agentName && user && user.displayName) {
                 state.agentName = user.displayName;
-                saveState(); // Forzamos persistencia inmediata en nube
+                saveState(); // Persist Google name to cloud immediately
             }
 
             updateBitacoraCalendar();
             refreshUI();
-            if (!state.agentName || !state.teamCode) openConfig();
+
+            // ONLY show config if BOTH critical fields are still missing after Cloud + Google fallback
+            if (!state.agentName || !state.teamCode) {
+                openConfig();
+            }
+
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').then(reg => {
                     reg.onupdatefound = () => {
@@ -880,7 +881,6 @@
         }
 
         window.saveState = function () {
-            localStorage.setItem('pecvs_agent_data', JSON.stringify(state));
             syncToCloud();
         }
 
