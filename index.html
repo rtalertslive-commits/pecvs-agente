@@ -464,17 +464,10 @@
                 <p id="agent-display">Agente: —</p>
             </div>
             <div class="header-right">
-                <button class="btn btn-blue btn-sm" onclick="document.getElementById('import-file').click()"><i
-                        class="fa fa-file-import"></i>Importar</button>
-                <button class="btn btn-green btn-sm" onclick="shareJSON()"><i
-                        class="fa-solid fa-share-nodes"></i>Compartir Reporte</button>
                 <button class="btn btn-sm" onclick="openConfig()"><i class="fa fa-user-gear"></i>Mi Perfil</button>
                 <button id="logout-btn" class="btn btn-sm"
                     style="border-color:var(--red) !important; color:var(--red) !important; display:inline-flex !important;"
                     onclick="logout()"><i class="fa fa-right-from-bracket"></i>Salir</button>
-            </div>
-            <div style="display:none">
-                <input type="file" id="import-file" accept=".json" onchange="importJSON(event)">
             </div>
         </div>
 
@@ -572,11 +565,17 @@
             <div class="card">
                 <div
                     style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                    <h2 style="margin:0;"><i class="fa fa-chart-pie"></i> Mis KPIs</h2>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <h2 style="margin:0;"><i class="fa fa-chart-pie"></i> Mis KPIs</h2>
+                        <span id="kpi-week-indicator" style="font-size:11px; color:var(--teal); font-weight:600; padding:4px 8px; background:rgba(6,182,212,0.1); border-radius:4px; display:none;"></span>
+                    </div>
                     <select id="kpi-period-sel" class="num-input" style="width:auto; height:35px;"
                         onchange="renderKPIs()">
                         <option value="week">Esta Semana</option>
                         <option value="month">Este Mes</option>
+                        <option value="quarter">Este Trimestre</option>
+                        <option value="semester">Este Semestre</option>
+                        <option value="year">Este Año</option>
                         <option value="all">Todo el Historial</option>
                     </select>
                 </div>
@@ -605,8 +604,13 @@
         <div id="tab-charts" class="tab-panel">
             <div class="card">
                 <div class="charts-controls" style="margin-bottom:15px;">
-                    <select id="chart-mes-sel" onchange="renderCharts()">
-                        <option value="">Todos los meses</option>
+                    <label style="font-size:10px; color:var(--slate); display:block; margin-bottom:6px;">PERÍODO</label>
+                    <select id="chart-period-sel" onchange="renderCharts()" style="width:100%; max-width:300px;">
+                        <option value="12m">Últimos 12 meses (por defecto)</option>
+                        <option value="3m">Últimos 3 meses</option>
+                        <option value="6m">Últimos 6 meses</option>
+                        <option value="1y">1 año</option>
+                        <option value="all">Todos los meses</option>
                     </select>
                 </div>
                 <div class="charts-grid">
@@ -778,13 +782,13 @@
     <script type="module">
         // --- FIREBASE CONFIG ---
         const firebaseConfig = {
-            apiKey: "AIzaSyDPNoWHEktWMcxHTnxpGrbtzYz4wEf2EHo",
-            authDomain: "bitacora-agente.firebaseapp.com",
-            projectId: "bitacora-agente",
-            storageBucket: "bitacora-agente.firebasestorage.app",
-            messagingSenderId: "322544925589",
-            appId: "1:322544925589:web:25021c345574e9ee0c149c"
-        };
+                apiKey: "AIzaSyCnhYA0Jq-1_b6nqQVx3BN47WXgg2YEDxs",
+                authDomain: "pecvs-testnet.firebaseapp.com",
+                projectId: "pecvs-testnet",
+                storageBucket: "pecvs-testnet.firebasestorage.app",
+                messagingSenderId: "76206458151",
+                appId: "1:76206458151:web:464559030e00d060c11502"
+            };
 
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -849,6 +853,42 @@
             } catch (err) { console.error("Sync error:", err); }
         }
 
+        window.loadLastWeekWithData = function () {
+            if (!state.entries || state.entries.length === 0) {
+                // Sin datos, usar defaults
+                updateBitacoraCalendar();
+                return;
+            }
+
+            // Encontrar la última entrada disponible
+            let lastEntry = state.entries[0];
+            state.entries.forEach(entry => {
+                const [lastMes, lastYear] = lastEntry.mes.split(' ');
+                const [entryMes, entryYear] = entry.mes.split(' ');
+                const lastYearNum = parseInt(lastYear);
+                const entryYearNum = parseInt(entryYear);
+                const lastMonthIdx = MONTHS_ES.indexOf(lastMes);
+                const entryMonthIdx = MONTHS_ES.indexOf(entryMes);
+
+                // Comparar: año primero, luego mes, luego semana
+                if (entryYearNum > lastYearNum ||
+                    (entryYearNum === lastYearNum && entryMonthIdx > lastMonthIdx) ||
+                    (entryYearNum === lastYearNum && entryMonthIdx === lastMonthIdx && parseInt(entry.semana) > parseInt(lastEntry.semana))) {
+                    lastEntry = entry;
+                }
+            });
+
+            // Establecer selectores a la última entrada encontrada
+            const [mes, year] = lastEntry.mes.split(' ');
+            const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+            document.getElementById('sel-month').value = monthIdx;
+            document.getElementById('inp-year').value = year;
+            updateBitacoraCalendar();
+            document.getElementById('sel-semana').value = lastEntry.semana;
+            updateWeekTable();
+            autoLoadBitacora();
+        }
+
         window.init = function () {
             // Priority: if Cloud data didn't have a name/teamCode, check DISPLAY NAME from Google as fallback
             if (!state.agentName && user && user.displayName) {
@@ -856,7 +896,7 @@
                 saveState(); // Persist Google name to cloud immediately
             }
 
-            updateBitacoraCalendar();
+            loadLastWeekWithData();
             refreshUI();
 
             // ONLY show config if BOTH critical fields are still missing after Cloud + Google fallback
@@ -886,7 +926,6 @@
 
         window.refreshUI = function () {
             document.getElementById('agent-display').textContent = 'Agente: ' + (state.agentName || '—');
-            refreshMonthFilters();
         }
 
         window.switchTab = function (name, btn) {
@@ -1100,6 +1139,8 @@
         window.renderKPIs = function () {
             const period = document.getElementById('kpi-period-sel').value;
             let kTotals = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
+            const indicator = document.getElementById('kpi-week-indicator');
+            let indicatorText = '';
 
             if (period === 'week') {
                 const m = parseInt(document.getElementById('sel-month').value);
@@ -1108,6 +1149,7 @@
                 const semana = document.getElementById('sel-semana').value;
                 const entry = state.entries.find(e => e.mes === mes && e.semana == semana);
                 if (entry) kTotals = { ...entry.totales };
+                indicatorText = `${mes} - Sem ${semana}`;
             } else if (period === 'month') {
                 const m = parseInt(document.getElementById('sel-month').value);
                 const y = parseInt(document.getElementById('inp-year').value);
@@ -1118,11 +1160,59 @@
                         kTotals.prima += e.totales.prima;
                     }
                 });
+                indicatorText = currentMes;
+            } else if (period === 'quarter') {
+                const m = parseInt(document.getElementById('sel-month').value);
+                const y = parseInt(document.getElementById('inp-year').value);
+                const quarter = Math.ceil(m / 3);
+                const quarterMonths = [(quarter-1)*3+1, (quarter-1)*3+2, (quarter-1)*3+3];
+                state.entries.forEach(e => {
+                    const [mes, year] = e.mes.split(' ');
+                    const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                    if (parseInt(year) === y && quarterMonths.includes(monthIdx)) {
+                        COLS.forEach(c => kTotals[c] += e.totales[c]);
+                        kTotals.prima += e.totales.prima;
+                    }
+                });
+                indicatorText = `Q${quarter} ${y}`;
+            } else if (period === 'semester') {
+                const m = parseInt(document.getElementById('sel-month').value);
+                const y = parseInt(document.getElementById('inp-year').value);
+                const semester = m <= 6 ? 1 : 2;
+                const semesterMonths = semester === 1 ? [1,2,3,4,5,6] : [7,8,9,10,11,12];
+                state.entries.forEach(e => {
+                    const [mes, year] = e.mes.split(' ');
+                    const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                    if (parseInt(year) === y && semesterMonths.includes(monthIdx)) {
+                        COLS.forEach(c => kTotals[c] += e.totales[c]);
+                        kTotals.prima += e.totales.prima;
+                    }
+                });
+                indicatorText = `S${semester} ${y}`;
+            } else if (period === 'year') {
+                const y = parseInt(document.getElementById('inp-year').value);
+                state.entries.forEach(e => {
+                    const [mes, year] = e.mes.split(' ');
+                    if (parseInt(year) === y) {
+                        COLS.forEach(c => kTotals[c] += e.totales[c]);
+                        kTotals.prima += e.totales.prima;
+                    }
+                });
+                indicatorText = `Año ${y}`;
             } else {
+                // all
                 state.entries.forEach(e => {
                     COLS.forEach(c => kTotals[c] += e.totales[c]);
                     kTotals.prima += e.totales.prima;
                 });
+            }
+
+            // Mostrar indicador solo si hay período específico
+            if (period !== 'all') {
+                indicator.textContent = indicatorText;
+                indicator.style.display = 'inline-block';
+            } else {
+                indicator.style.display = 'none';
             }
 
             destroyChart('kpiEfe');
@@ -1192,12 +1282,62 @@
         }
 
         window.renderCharts = function () {
-            const mes = document.getElementById('chart-mes-sel').value;
-            const entries = state.entries.filter(e => !mes || e.mes === mes).sort((a, b) => {
+            const period = document.getElementById('chart-period-sel').value;
+            let entries = [];
+
+            // Find the latest month in the data
+            let latestDate = null;
+            state.entries.forEach(e => {
+                const [mes, year] = e.mes.split(' ');
+                const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                if (!latestDate || entryDate > latestDate) {
+                    latestDate = entryDate;
+                }
+            });
+
+            if (!latestDate) {
+                entries = state.entries;
+            } else {
+                if (period === '12m' || period === '1y') {
+                    // Últimos 12 meses desde la última fecha disponible
+                    const last12Months = new Date(latestDate.getFullYear(), latestDate.getMonth() - 11, 1);
+                    entries = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate >= last12Months;
+                    });
+                } else if (period === '3m') {
+                    // Últimos 3 meses desde la última fecha disponible
+                    const last3Months = new Date(latestDate.getFullYear(), latestDate.getMonth() - 2, 1);
+                    entries = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate >= last3Months;
+                    });
+                } else if (period === '6m') {
+                    // Últimos 6 meses desde la última fecha disponible
+                    const last6Months = new Date(latestDate.getFullYear(), latestDate.getMonth() - 5, 1);
+                    entries = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate >= last6Months;
+                    });
+                } else {
+                    // Todos los meses
+                    entries = state.entries;
+                }
+            }
+
+            entries.sort((a, b) => {
                 const ma = MONTHS_ES.indexOf(a.mes.split(' ')[0]), mb = MONTHS_ES.indexOf(b.mes.split(' ')[0]);
                 const ya = parseInt(a.mes.split(' ')[1]), yb = parseInt(b.mes.split(' ')[1]);
                 return ya - yb || ma - mb || a.semana - b.semana;
             });
+
             const labels = entries.map(e => `S${e.semana} ${e.mes.split(' ')[0].substring(0, 3)}`);
 
             destroyChart('lineV');
