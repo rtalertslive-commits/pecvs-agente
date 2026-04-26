@@ -756,9 +756,10 @@
                     <label style="font-size:11px; color:var(--slate); font-weight:700;">MI NOMBRE COMPLETO</label>
                     <input type="text" id="inp-myname" placeholder="Ej. Franco Jr">
                 </div>
-                <div>
-                    <label style="font-size:11px; color:var(--slate); font-weight:700;">CÓDIGO DE EQUIPO (COACH)</label>
-                    <input type="text" id="inp-teamcode" placeholder="Ej. TEAM-AVILA-2024">
+                <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
+                    <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI CLAVE DE AGENTE</label>
+                    <span id="disp-mycode" style="font-size:22px; font-weight:800; color:var(--gold); letter-spacing:6px;">—</span>
+                    <p style="font-size:10px; color:var(--slate); margin:4px 0 0;">Asignada por el director. Contáctalo si hay algún error.</p>
                 </div>
                 <button class="btn btn-green" onclick="saveConfig()">Guardar Perfil</button>
                 <button class="btn btn-sm"
@@ -776,6 +777,52 @@
                 style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
             <button class="btn btn-sm" style="margin-top:15px; width:100%;"
                 onclick="document.getElementById('history-modal').classList.remove('open')">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- REGISTER OVERLAY -->
+    <div id="register-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#1e293b,#0f172a); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+        <div class="login-card" style="max-width:420px;">
+            <div style="font-size:40px; margin-bottom:16px;">📝</div>
+            <h2 style="color:var(--gold); font-family:'Playfair Display',serif; margin-bottom:8px;">Solicitar Acceso</h2>
+            <p style="color:var(--slate); font-size:13px; margin-bottom:24px;">Tu cuenta de Google no está registrada. Ingresa tus datos para solicitar acceso al sistema.</p>
+            <div style="text-align:left; display:flex; flex-direction:column; gap:14px; margin-bottom:20px;">
+                <div>
+                    <label style="font-size:11px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">TU NOMBRE COMPLETO</label>
+                    <input type="text" id="reg-name" placeholder="Ej. Juan Pérez García" style="width:100%;">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">TU CLAVE DE AGENTE (4 dígitos)</label>
+                    <input type="text" id="reg-code" placeholder="Ej. 1234" maxlength="4" inputmode="numeric" style="width:100%; letter-spacing:6px; font-size:18px; font-weight:700; text-align:center;">
+                </div>
+            </div>
+            <div style="background:rgba(212,175,55,0.1); border:1px solid rgba(212,175,55,0.3); border-radius:8px; padding:12px; font-size:12px; color:var(--gold-l); margin-bottom:20px; text-align:left; line-height:1.6;">
+                <i class="fa fa-circle-info"></i> Tu solicitud será revisada por el director, quien te asignará tu rol y equipo.
+            </div>
+            <button id="reg-submit-btn" onclick="submitRegistration()" style="width:100%; padding:13px; border-radius:10px; background:var(--green); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;">
+                <i class="fa fa-paper-plane"></i> Enviar Solicitud de Acceso
+            </button>
+            <button onclick="auth.signOut().then(()=>location.reload())" style="width:100%; margin-top:10px; padding:10px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+        </div>
+    </div>
+
+    <!-- PENDING OVERLAY -->
+    <div id="pending-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#1e293b,#0f172a); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+        <div class="login-card" style="max-width:400px;">
+            <div style="font-size:50px; margin-bottom:16px;">⏳</div>
+            <h2 style="color:var(--orange); font-family:'Playfair Display',serif; margin-bottom:8px;">Solicitud Pendiente</h2>
+            <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu solicitud de acceso está pendiente de aprobación por el director. Por favor intenta más tarde.</p>
+            <button onclick="auth.signOut().then(()=>location.reload())" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+        </div>
+    </div>
+
+    <!-- REVOKED OVERLAY -->
+    <div id="revoked-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#1e293b,#0f172a); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+        <div class="login-card" style="max-width:400px;">
+            <div style="font-size:50px; margin-bottom:16px;">🚫</div>
+            <h2 style="color:var(--red); font-family:'Playfair Display',serif; margin-bottom:8px;">Acceso Revocado</h2>
+            <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu acceso al sistema ha sido revocado. Contacta al director si crees que es un error.</p>
+            <button onclick="auth.signOut().then(()=>location.reload())" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div>
 
@@ -818,14 +865,69 @@
         onAuthStateChanged(auth, async (u) => {
             if (u) {
                 user = u;
-                document.getElementById('login-overlay').classList.add('hidden');
-                await loadFromCloud();
-                init();
+                const status = await checkUserStatus();
+                if (status === 'active') {
+                    document.getElementById('login-overlay').classList.add('hidden');
+                    await loadFromCloud();
+                    init();
+                } else if (status === 'inactive') {
+                    document.getElementById('login-overlay').classList.add('hidden');
+                    document.getElementById('revoked-overlay').style.display = 'flex';
+                } else if (status === 'pending') {
+                    document.getElementById('login-overlay').classList.add('hidden');
+                    document.getElementById('pending-overlay').style.display = 'flex';
+                } else {
+                    // New user — show registration form
+                    document.getElementById('login-overlay').classList.add('hidden');
+                    document.getElementById('register-overlay').style.display = 'flex';
+                    if (u.displayName) document.getElementById('reg-name').value = u.displayName;
+                }
             } else {
                 user = null;
                 document.getElementById('login-overlay').classList.remove('hidden');
+                ['register-overlay', 'pending-overlay', 'revoked-overlay'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
             }
         });
+
+        async function checkUserStatus() {
+            if (!user) return 'unknown';
+            const docSnap = await getDoc(doc(db, "users", user.email));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.status === 'inactive') return 'inactive';
+                return 'active'; // active or legacy (no status field)
+            }
+            const pendingSnap = await getDoc(doc(db, "pending_users", user.email));
+            if (pendingSnap.exists()) return 'pending';
+            return 'new';
+        }
+
+        window.submitRegistration = async function () {
+            const name = document.getElementById('reg-name').value.trim();
+            const code = document.getElementById('reg-code').value.trim();
+            if (!name) { alert('Por favor ingresa tu nombre completo.'); return; }
+            if (!/^\d{4}$/.test(code)) { alert('La clave de agente debe ser exactamente 4 dígitos numéricos.'); return; }
+            const btn = document.getElementById('reg-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+            try {
+                await setDoc(doc(db, "pending_users", user.email), {
+                    name,
+                    email: user.email,
+                    companyCode: code,
+                    timestamp: new Date().toISOString()
+                });
+                document.getElementById('register-overlay').style.display = 'none';
+                document.getElementById('pending-overlay').style.display = 'flex';
+            } catch (err) {
+                alert('Error al enviar solicitud: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = 'Enviar Solicitud de Acceso';
+            }
+        };
 
         window.logout = function () {
             if (confirm("¿Cerrar sesión?")) {
@@ -939,13 +1041,13 @@
 
         window.openConfig = function () {
             document.getElementById('inp-myname').value = state.agentName;
-            document.getElementById('inp-teamcode').value = state.teamCode || '';
+            const codeEl = document.getElementById('disp-mycode');
+            if (codeEl) codeEl.textContent = state.companyCode || state.teamCode || '—';
             document.getElementById('config-modal').classList.add('open');
         }
 
         window.saveConfig = function () {
             state.agentName = document.getElementById('inp-myname').value.trim();
-            state.teamCode = document.getElementById('inp-teamcode').value.trim().toUpperCase();
             saveState();
             refreshUI();
             document.getElementById('config-modal').classList.remove('open');
