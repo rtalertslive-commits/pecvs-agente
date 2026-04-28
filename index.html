@@ -526,9 +526,9 @@
                         style="font-size:10px; color:var(--slate);">v1.3.0</small></h1>
                 <p id="agent-display">Agente: —</p>
                 <div id="karma-badge">
-                    <span class="star">⭐</span>
+                    <span class="star">🌮</span>
                     <span class="karma-num" id="karma-value">0</span>
-                    <span class="karma-lbl">karma</span>
+                    <span class="karma-lbl">tacos</span>
                 </div>
             </div>
             <div class="header-right">
@@ -818,7 +818,7 @@
         <!-- ═══════════════════ TAB: TIENDA ═══════════════════ -->
         <div id="tab-tienda" class="tab-panel">
             <div class="card" style="margin-bottom:16px;">
-                <p class="card-title"><i class="fa fa-store"></i> Tienda — Canjea tu Karma</p>
+                <p class="card-title"><i class="fa fa-store"></i> Tienda — Canjea tus Tacos</p>
                 <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Selecciona un item y solicita el canje. El director lo aprobará.</p>
                 <div id="tienda-items" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
                     <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
@@ -917,12 +917,12 @@
     <div id="karma-celebration">
         <div id="karma-particles"></div>
         <div style="text-align:center;position:relative;z-index:2;padding:30px 20px;max-width:360px;">
-            <div style="font-size:70px;animation:karmaBounce 0.7s ease-in-out infinite;display:inline-block;margin-bottom:8px;">⭐</div>
+            <div style="font-size:70px;animation:karmaBounce 0.7s ease-in-out infinite;display:inline-block;margin-bottom:8px;">🌮</div>
             <div style="font-family:'Playfair Display',serif;color:var(--gold);font-size:34px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">¡Felicidades!</div>
             <div style="color:rgba(255,255,255,0.7);font-size:15px;margin-bottom:12px;">Esta semana ganaste</div>
             <div id="celebrate-earned" style="font-size:80px;font-weight:900;color:var(--gold);animation:karmaGlow 1.5s ease-in-out infinite;line-height:1;">+0</div>
-            <div style="color:var(--gold-l);font-size:16px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;">Karma Points</div>
-            <div id="celebrate-total" style="color:var(--slate);font-size:13px;margin-bottom:28px;">Saldo total: 0 karma</div>
+            <div style="color:var(--gold-l);font-size:16px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;">Tacos 🌮</div>
+            <div id="celebrate-total" style="color:var(--slate);font-size:13px;margin-bottom:28px;">Saldo total: 0 tacos</div>
             <button onclick="dismissKarmaCelebration()" style="padding:14px 48px;background:linear-gradient(135deg,var(--gold),#f0c040);color:#000;border:none;border-radius:30px;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 20px rgba(212,175,55,0.4);">¡GENIAL! 🎉</button>
         </div>
     </div>
@@ -1334,7 +1334,7 @@
         function createCoinParticles() {
             const c = document.getElementById('karma-particles');
             c.innerHTML = '';
-            const emojis = ['⭐','🌟','✨','💫','🪙'];
+            const emojis = ['🌮','🌯','🥑','🌶️','✨'];
             for (let i = 0; i < 22; i++) {
                 const el = document.createElement('div');
                 el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
@@ -1348,7 +1348,7 @@
 
         window.showKarmaCelebration = function (earned) {
             document.getElementById('celebrate-earned').textContent = '+' + earned.toLocaleString();
-            document.getElementById('celebrate-total').textContent = 'Saldo total: ' + (state.karma || 0).toLocaleString() + ' karma';
+            document.getElementById('celebrate-total').textContent = 'Saldo total: ' + (state.karma || 0).toLocaleString() + ' tacos 🌮';
             document.getElementById('karma-celebration').classList.add('show');
             createCoinParticles();
             playCashSound();
@@ -1470,10 +1470,10 @@
                         <div style="font-size:36px;text-align:center;">${item.emoji||'🎁'}</div>
                         <div style="font-weight:700;font-size:14px;text-align:center;">${item.nombre}</div>
                         <div style="font-size:12px;color:var(--slate);text-align:center;">${item.descripcion||''}</div>
-                        <div style="text-align:center;font-weight:800;color:var(--gold);">⭐ ${item.costo} karma</div>
+                        <div style="text-align:center;font-weight:800;color:var(--gold);">🌮 ${item.costo} tacos</div>
                         ${item.stock >= 0 ? `<div style="text-align:center;font-size:11px;color:var(--slate);">Stock: ${item.stock}</div>` : ''}
                         <button class="btn btn-sm ${puedo&&!sinStock?'btn-green':''}" ${(!puedo||sinStock)?'disabled':''} onclick="solicitarCanje('${item.id}','${item.nombre}',${item.costo},'${item.emoji||'🎁'}','agentCatalog')" style="${sinStock?'opacity:0.4':''}">
-                            ${sinStock ? 'Sin stock' : !puedo ? 'Karma insuficiente' : '🛒 Solicitar canje'}
+                            ${sinStock ? 'Sin stock' : !puedo ? 'Tacos insuficientes' : '🛒 Solicitar canje'}
                         </button>
                     </div>`;
                 }).join('');
@@ -1493,7 +1493,7 @@
                     return `<div style="padding:10px 14px;background:var(--panel);border-radius:8px;border-left:3px solid ${color};display:flex;justify-content:space-between;align-items:center;gap:8px;">
                         <div>
                             <div style="font-weight:600;font-size:13px;">${r.emoji||'🎁'} ${r.itemNombre}</div>
-                            <div style="font-size:11px;color:var(--slate);">⭐ ${r.costo} karma &nbsp;·&nbsp; ${new Date(r.fechaSolicitud).toLocaleDateString('es-MX')}</div>
+                            <div style="font-size:11px;color:var(--slate);">🌮 ${r.costo} tacos &nbsp;·&nbsp; ${new Date(r.fechaSolicitud).toLocaleDateString('es-MX')}</div>
                         </div>
                         <span style="color:${color};font-size:11px;font-weight:700;white-space:nowrap;">${label}</span>
                     </div>`;
@@ -1502,8 +1502,8 @@
         }
 
         window.solicitarCanje = async function(itemId, itemNombre, costo, emoji, catalogDoc) {
-            if ((state.karma || 0) < costo) { alert('Karma insuficiente.'); return; }
-            if (!confirm(`¿Solicitar canje de "${itemNombre}" por ⭐ ${costo} karma? El karma se descontará si el director aprueba.`)) return;
+            if ((state.karma || 0) < costo) { alert('Tacos insuficientes.'); return; }
+            if (!confirm(`¿Solicitar canje de "${itemNombre}" por 🌮 ${costo} tacos? Los tacos se descontarán si el director aprueba.`)) return;
             try {
                 await addDoc(collection(db, 'redemptionRequests'), {
                     emailSolicitante: user.email,
