@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -340,6 +340,69 @@
             margin-bottom: 15px;
         }
 
+        /* KARMA CELEBRATION */
+        @keyframes coinFall {
+            0%   { transform: translateY(-80px) rotate(0deg) scale(1); opacity: 1; }
+            80%  { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg) scale(0.5); opacity: 0; }
+        }
+        @keyframes karmaBounce {
+            0%,100% { transform: scale(1) rotate(-6deg); }
+            50%      { transform: scale(1.3) rotate(6deg); }
+        }
+        @keyframes karmaGlow {
+            0%,100% { text-shadow: 0 0 20px rgba(212,175,55,0.6); }
+            50%      { text-shadow: 0 0 50px rgba(212,175,55,1), 0 0 80px rgba(255,215,0,0.6); }
+        }
+        @keyframes karmaPulse {
+            0%,100% { box-shadow: 0 0 8px rgba(212,175,55,0.3); }
+            50%      { box-shadow: 0 0 20px rgba(212,175,55,0.8), 0 0 40px rgba(212,175,55,0.3); }
+        }
+        #karma-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.06));
+            border: 1.5px solid rgba(212,175,55,0.5);
+            border-radius: 24px;
+            padding: 5px 16px 5px 10px;
+            margin-top: 6px;
+            cursor: default;
+            animation: karmaPulse 3s ease-in-out infinite;
+        }
+        #karma-badge .star { font-size: 20px; }
+        #karma-badge .karma-num {
+            color: var(--gold);
+            font-weight: 800;
+            font-size: 22px;
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+        #karma-badge .karma-lbl {
+            color: var(--slate);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        #karma-celebration {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(0,0,0,0.88);
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        #karma-celebration.show { display: flex; }
+        #karma-particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -462,6 +525,11 @@
                 <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
                         style="font-size:10px; color:var(--slate);">v1.3.0</small></h1>
                 <p id="agent-display">Agente: —</p>
+                <div id="karma-badge">
+                    <span class="star">⭐</span>
+                    <span class="karma-num" id="karma-value">0</span>
+                    <span class="karma-lbl">karma</span>
+                </div>
             </div>
             <div class="header-right">
                 <button class="btn btn-sm" onclick="openConfig()"><i class="fa fa-user-gear"></i>Mi Perfil</button>
@@ -481,6 +549,7 @@
                 Tendencias</button>
             <button class="tab-btn" onclick="switchTab('conceptos',this)"><i class="fa fa-lightbulb"></i>
                 Conceptos</button>
+            <button class="tab-btn" onclick="switchTab('tienda',this);initAgenteTienda()"><i class="fa fa-store"></i> Tienda</button>
         </div>
 
         <!-- TAB: BITACORA -->
@@ -745,7 +814,25 @@
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- ═══════════════════ TAB: TIENDA ═══════════════════ -->
+        <div id="tab-tienda" class="tab-panel">
+            <div class="card" style="margin-bottom:16px;">
+                <p class="card-title"><i class="fa fa-store"></i> Tienda — Canjea tu Karma</p>
+                <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Selecciona un item y solicita el canje. El director lo aprobará.</p>
+                <div id="tienda-items" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+                    <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
+                </div>
+            </div>
+            <div class="card">
+                <p class="card-title"><i class="fa fa-clock-rotate-left"></i> Mis Solicitudes</p>
+                <div id="tienda-mis-solicitudes" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;">
+                    <div class="empty-state"><i class="fa fa-inbox"></i> Sin solicitudes aún.</div>
+                </div>
+            </div>
+        </div><!-- /tab-tienda -->
+
+    </div><!-- /app -->
 
     <!-- CONFIG MODAL -->
     <div class="modal-overlay" id="config-modal">
@@ -824,6 +911,20 @@
             <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu acceso al sistema ha sido revocado. Contacta al director si crees que es un error.</p>
             <button onclick="auth.signOut().then(()=>location.reload())" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
+    </div><!-- /revoked-overlay -->
+
+    <!-- KARMA CELEBRATION MODAL -->
+    <div id="karma-celebration">
+        <div id="karma-particles"></div>
+        <div style="text-align:center;position:relative;z-index:2;padding:30px 20px;max-width:360px;">
+            <div style="font-size:70px;animation:karmaBounce 0.7s ease-in-out infinite;display:inline-block;margin-bottom:8px;">⭐</div>
+            <div style="font-family:'Playfair Display',serif;color:var(--gold);font-size:34px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">¡Felicidades!</div>
+            <div style="color:rgba(255,255,255,0.7);font-size:15px;margin-bottom:12px;">Esta semana ganaste</div>
+            <div id="celebrate-earned" style="font-size:80px;font-weight:900;color:var(--gold);animation:karmaGlow 1.5s ease-in-out infinite;line-height:1;">+0</div>
+            <div style="color:var(--gold-l);font-size:16px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;">Karma Points</div>
+            <div id="celebrate-total" style="color:var(--slate);font-size:13px;margin-bottom:28px;">Saldo total: 0 karma</div>
+            <button onclick="dismissKarmaCelebration()" style="padding:14px 48px;background:linear-gradient(135deg,var(--gold),#f0c040);color:#000;border:none;border-radius:30px;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 20px rgba(212,175,55,0.4);">¡GENIAL! 🎉</button>
+        </div>
     </div>
 
     <script type="module">
@@ -840,7 +941,7 @@
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Initialize
         const app = initializeApp(firebaseConfig);
@@ -853,9 +954,11 @@
         const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         const CHART_COLORS = { P: '#3b82f6', E: '#06b6d4', C: '#a855f7', V: '#10b981', S: '#f59e0b' };
 
-        let state = { agentName: '', teamCode: '', entries: [] };
+        let state = { agentName: '', teamCode: '', entries: [], karma: 0, karmaLog: [], karmaLastNotified: 0 };
         let currentWeeks = [];
         let user = null;
+        let serverNow = null;
+        let pointsConfig = { agentDailyPoints: 10 };
 
         // --- AUTH LOGIC ---
         document.getElementById('login-btn').addEventListener('click', () => {
@@ -943,6 +1046,9 @@
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 state = docSnap.data();
+                state.karma = state.karma || 0;
+                state.karmaLog = state.karmaLog || [];
+                state.karmaLastNotified = state.karmaLastNotified || 0;
                 console.log("Cloud data loaded");
             }
         }
@@ -991,15 +1097,27 @@
             autoLoadBitacora();
         }
 
-        window.init = function () {
+        window.init = async function () {
             // Priority: if Cloud data didn't have a name/teamCode, check DISPLAY NAME from Google as fallback
             if (!state.agentName && user && user.displayName) {
                 state.agentName = user.displayName;
                 saveState(); // Persist Google name to cloud immediately
             }
 
-            loadLastWeekWithData();
+            serverNow = await getServerTime();
+            await loadPointsConfig();
+            lockToCurrentWeek();
+            updateWeekTable();
             refreshUI();
+
+            // Otorgar karma por días pasados no procesados (app estaba cerrada)
+            await awardKarmaForPastDays();
+
+            // Check for uncelebrated karma (earned since last app open)
+            const uncelebrated = (state.karma || 0) - (state.karmaLastNotified || 0);
+            if (uncelebrated > 0) {
+                setTimeout(() => showKarmaCelebration(uncelebrated), 800);
+            }
 
             // ONLY show config if BOTH critical fields are still missing after Cloud + Google fallback
             if (!state.agentName || !state.teamCode) {
@@ -1022,12 +1140,375 @@
             }
         }
 
+        // ─── VISIBILITY (app minimizada / regresa al foco) ────────────────────────────
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState !== 'visible') return;
+            if (!user) return;
+
+            // Refrescar hora del servidor (puede haber cambiado de semana mientras estaba minimizada)
+            const prevNow = serverNow ? new Date(serverNow) : null;
+            serverNow = await getServerTime();
+
+            // Detectar cambio de semana y/o de día
+            const weekChanged = prevNow && getISOWeek(serverNow) !== getISOWeek(prevNow);
+            const dayChanged  = prevNow && serverNow.toDateString() !== prevNow.toDateString();
+
+            if (weekChanged) {
+                // Nueva semana: otorgar karma de días pasados, re-bloquear UI
+                await awardKarmaForPastDays();
+                lockToCurrentWeek();
+                updateWeekTable();
+            } else if (dayChanged) {
+                // Mismo semana, día distinto: otorgar karma de ayer y actualizar ventana editable
+                await awardKarmaForPastDays();
+                disableFutureDays();
+            } else {
+                // Mismo día: solo refrescar qué días son editables
+                disableFutureDays();
+            }
+
+            // Recargar karma desde Firestore (otro dispositivo pudo haber guardado puntos)
+            const docSnap = await getDoc(doc(db, 'users', user.email));
+            if (docSnap.exists()) {
+                const fresh = docSnap.data();
+                state.karma = fresh.karma || 0;
+                state.karmaLog = fresh.karmaLog || [];
+                state.karmaLastNotified = fresh.karmaLastNotified || 0;
+                updateKarmaDisplay();
+            }
+
+            // Mostrar celebración si hay karma nuevo sin notificar
+            const uncelebrated = (state.karma || 0) - (state.karmaLastNotified || 0);
+            if (uncelebrated > 0) {
+                setTimeout(() => showKarmaCelebration(uncelebrated), 400);
+            }
+        });
+
+        // Helper: número de semana ISO (Mon=start) para detectar cambio de semana
+        function getISOWeek(date) {
+            const d = new Date(date);
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+            const week1 = new Date(d.getFullYear(), 0, 4);
+            return `${d.getFullYear()}-W${Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7) + 1}`;
+        }
+
+        // ─── SERVER TIME ──────────────────────────────────────────────────────────────
+        async function getServerTime() {
+            try {
+                const r = await fetch('https://timeapi.io/api/time/current/zone?timeZone=America/Monterrey',
+                    { signal: AbortSignal.timeout(3000) });
+                const d = await r.json();
+                return new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.seconds);
+            } catch {}
+            try {
+                const r = await fetch('https://worldtimeapi.org/api/timezone/America/Monterrey',
+                    { signal: AbortSignal.timeout(3000) });
+                const { datetime } = await r.json();
+                return new Date(datetime);
+            } catch {}
+            console.warn('⚠️ No se pudo verificar hora del servidor, usando reloj local');
+            return new Date();
+        }
+
+        async function loadPointsConfig() {
+            try {
+                const snap = await getDoc(doc(db, 'config', 'pointsConfig'));
+                if (snap.exists()) pointsConfig = { ...pointsConfig, ...snap.data() };
+            } catch (e) { console.warn('No se pudo cargar pointsConfig', e); }
+        }
+
+        // ─── WEEK LOCK (solo semana actual) ───────────────────────────────────────────
+        function lockToCurrentWeek() {
+            if (!serverNow) return;
+            const today = new Date(serverNow.getFullYear(), serverNow.getMonth(), serverNow.getDate());
+            const dayOfWeek = (today.getDay() + 6) % 7; // 0=Mon...6=Sun
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - dayOfWeek);
+
+            const wkYear = monday.getFullYear();
+            const wkMonth = monday.getMonth() + 1;
+
+            const monthSel = document.getElementById('sel-month');
+            const yearInp = document.getElementById('inp-year');
+            const semanaSel = document.getElementById('sel-semana');
+
+            monthSel.value = wkMonth;
+            monthSel.disabled = true;
+            yearInp.value = wkYear;
+            yearInp.disabled = true;
+
+            currentWeeks = getMonthCalendar(wkYear, wkMonth);
+
+            const mondayDate = monday.getDate();
+            let weekIdx = currentWeeks.findIndex(w => w[0] && w[0].date === mondayDate);
+            if (weekIdx < 0) weekIdx = currentWeeks.findIndex(w => w.some(d => d.date === mondayDate));
+            if (weekIdx < 0) weekIdx = 0;
+
+            const w = currentWeeks[weekIdx];
+            const first = w[0], last = w[w.length - 1];
+            semanaSel.innerHTML = `<option value="${weekIdx + 1}">Sem ${weekIdx + 1} &mdash; ${first.dayName.slice(0, 3)} ${first.date} al ${last.dayName.slice(0, 3)} ${last.date}</option>`;
+            semanaSel.value = weekIdx + 1;
+            semanaSel.disabled = true;
+
+            const wkInfo = document.getElementById('week-info');
+            if (wkInfo) {
+                const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+                const MONTHS_ESP = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+                const todayName = dayNames[serverNow.getDay()];
+                const todayStr = `${todayName} ${serverNow.getDate()} de ${MONTHS_ESP[serverNow.getMonth()]} ${serverNow.getFullYear()}`;
+                wkInfo.innerHTML = `📅 Semana actual &nbsp;|&nbsp; Hoy: <strong style="color:var(--gold)">${todayStr}</strong>`;
+            }
+        }
+
+        function disableFutureDays() {
+            if (!serverNow) return;
+            const month = parseInt(document.getElementById('sel-month').value);
+            const year = parseInt(document.getElementById('inp-year').value);
+            const semIdx = parseInt(document.getElementById('sel-semana').value) - 1;
+            const weekDays = currentWeeks[semIdx] || [];
+            const today = new Date(serverNow.getFullYear(), serverNow.getMonth(), serverNow.getDate());
+            const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+
+            weekDays.forEach(({ dayName, date }) => {
+                const dayDate = new Date(year, month - 1, date);
+                // Solo hoy y ayer son editables; futuro y anteayer+ están bloqueados
+                const locked = dayDate > today || dayDate < yesterday;
+                const row = document.querySelector(`tr[data-day="${dayName}"]`);
+                if (!row) return;
+                const inputs = row.querySelectorAll('input');
+                inputs.forEach(inp => {
+                    inp.disabled = locked;
+                    inp.style.opacity = locked ? '0.25' : '';
+                    inp.style.cursor = locked ? 'not-allowed' : '';
+                });
+                row.style.opacity = locked ? '0.4' : '';
+            });
+        }
+
+        // ─── KARMA ────────────────────────────────────────────────────────────────────
+        function updateKarmaDisplay() {
+            const el = document.getElementById('karma-value');
+            if (el) el.textContent = (state.karma || 0).toLocaleString();
+        }
+
+        function playCashSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                // Coin dings ascending
+                [0, 0.10, 0.20, 0.32, 0.45].forEach((t, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(1000 + i * 120, ctx.currentTime + t);
+                    osc.frequency.exponentialRampToValueAtTime(600 + i * 60, ctx.currentTime + t + 0.13);
+                    gain.gain.setValueAtTime(0.28, ctx.currentTime + t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.2);
+                    osc.start(ctx.currentTime + t); osc.stop(ctx.currentTime + t + 0.2);
+                });
+                // Final ka-ching
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2); gain2.connect(ctx.destination);
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(1760, ctx.currentTime + 0.62);
+                osc2.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.95);
+                gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.62);
+                gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.0);
+                osc2.start(ctx.currentTime + 0.62); osc2.stop(ctx.currentTime + 1.0);
+            } catch (e) {}
+        }
+
+        function createCoinParticles() {
+            const c = document.getElementById('karma-particles');
+            c.innerHTML = '';
+            const emojis = ['⭐','🌟','✨','💫','🪙'];
+            for (let i = 0; i < 22; i++) {
+                const el = document.createElement('div');
+                el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                const size = 18 + Math.random() * 22;
+                const duration = 1.4 + Math.random() * 1.8;
+                const delay = Math.random() * 0.8;
+                el.style.cssText = `position:fixed;left:${Math.random()*100}vw;top:-60px;font-size:${size}px;animation:coinFall ${duration}s ${delay}s forwards;pointer-events:none;z-index:3;`;
+                c.appendChild(el);
+            }
+        }
+
+        window.showKarmaCelebration = function (earned) {
+            document.getElementById('celebrate-earned').textContent = '+' + earned.toLocaleString();
+            document.getElementById('celebrate-total').textContent = 'Saldo total: ' + (state.karma || 0).toLocaleString() + ' karma';
+            document.getElementById('karma-celebration').classList.add('show');
+            createCoinParticles();
+            playCashSound();
+        };
+
+        window.dismissKarmaCelebration = function () {
+            document.getElementById('karma-celebration').classList.remove('show');
+            state.karmaLastNotified = state.karma || 0;
+            syncToCloud();
+        };
+
+        async function awardKarma() {
+            if (!serverNow) return;
+            const m = parseInt(document.getElementById('sel-month').value);
+            const y = parseInt(document.getElementById('inp-year').value);
+            const mes = MONTHS_ES[m - 1] + ' ' + y;
+            const semana = document.getElementById('sel-semana').value;
+            const entry = state.entries.find(e => e.mes === mes && e.semana == semana);
+            if (!entry) return;
+
+            const semIdx = parseInt(semana) - 1;
+            const weekDays = currentWeeks[semIdx] || [];
+            const today = new Date(serverNow.getFullYear(), serverNow.getMonth(), serverNow.getDate());
+            const pts = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+
+            if (!state.karma) state.karma = 0;
+            if (!state.karmaLog) state.karmaLog = [];
+
+            let changed = false;
+            entry.dias.forEach(d => {
+                const dayInfo = weekDays.find(w => w.dayName === d.dia);
+                if (!dayInfo) return;
+                const dayDate = new Date(y, m - 1, dayInfo.date);
+                if (dayDate >= today) return; // hoy o futuro: karma se otorga al día siguiente
+                const dateKey = `${y}-${String(m).padStart(2, '0')}-${String(dayInfo.date).padStart(2, '0')}`;
+                if (state.karmaLog.some(k => k.date === dateKey)) return;
+                const hasData = (d.P + d.E + d.C + d.V + d.S) > 0 || parseFloat(d.prima) > 0;
+                if (!hasData) return;
+                state.karma += pts;
+                state.karmaLog.push({ date: dateKey, points: pts });
+                changed = true;
+            });
+
+            if (changed) {
+                await syncToCloud();
+                updateKarmaDisplay();
+            }
+        }
+
+        // Otorga karma por TODOS los días pasados (estrictamente antes de hoy) que aún no tienen karma.
+        // Se llama al abrir la app y cuando se detecta cambio de día o de semana.
+        async function awardKarmaForPastDays() {
+            if (!serverNow) return;
+            const today = new Date(serverNow.getFullYear(), serverNow.getMonth(), serverNow.getDate());
+            const pts   = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+
+            if (!state.karma)    state.karma    = 0;
+            if (!state.karmaLog) state.karmaLog = [];
+
+            let changed = false;
+
+            for (const entry of state.entries) {
+                const parts = entry.mes ? entry.mes.split(' ') : [];
+                if (parts.length < 2) continue;
+                const y = parseInt(parts[1]);
+                const m = MONTHS_ES.indexOf(parts[0]) + 1;
+                if (m === 0 || isNaN(y)) continue;
+
+                const weekCalendar = getMonthCalendar(y, m);
+                const weekIdx      = parseInt(entry.semana) - 1;
+                const weekDays     = weekCalendar[weekIdx] || [];
+
+                (entry.dias || []).forEach(d => {
+                    const dayInfo = weekDays.find(w => w.dayName === d.dia);
+                    if (!dayInfo) return;
+                    const dateKey = `${y}-${String(m).padStart(2,'0')}-${String(dayInfo.date).padStart(2,'0')}`;
+                    const dayDate = new Date(y, m - 1, dayInfo.date);
+                    if (dayDate >= today) return; // hoy o futuro: aún no
+                    if (state.karmaLog.some(k => k.date === dateKey)) return; // ya contabilizado
+                    const hasData = (d.P + d.E + d.C + d.V + d.S) > 0 || parseFloat(d.prima) > 0;
+                    if (!hasData) return;
+                    state.karma += pts;
+                    state.karmaLog.push({ date: dateKey, points: pts });
+                    changed = true;
+                });
+            }
+
+            if (changed) {
+                await syncToCloud();
+                updateKarmaDisplay();
+                console.log(`🏆 Karma días pasados otorgado → total: ${state.karma}`);
+            }
+        }
+
         window.saveState = function () {
             syncToCloud();
         }
 
+        // ─── TIENDA ───────────────────────────────────────────────────────────────────
+        window.initAgenteTienda = async function() {
+            await renderTiendaItems();
+            await renderMisSolicitudes();
+        };
+
+        async function renderTiendaItems() {
+            const container = document.getElementById('tienda-items');
+            if (!container) return;
+            try {
+                const snap = await getDoc(doc(db, 'store', 'agentCatalog'));
+                const items = snap.exists() ? (snap.data().items || []).filter(i => i.activo) : [];
+                if (!items.length) { container.innerHTML = '<div class="empty-state"><i class="fa fa-box-open"></i> Sin items disponibles por ahora.</div>'; return; }
+                container.innerHTML = items.map(item => {
+                    const puedo = (state.karma || 0) >= item.costo;
+                    const sinStock = item.stock === 0;
+                    return `<div style="background:var(--panel2);border-radius:12px;padding:16px;border:1px solid rgba(212,175,55,0.15);display:flex;flex-direction:column;gap:8px;">
+                        <div style="font-size:36px;text-align:center;">${item.emoji||'🎁'}</div>
+                        <div style="font-weight:700;font-size:14px;text-align:center;">${item.nombre}</div>
+                        <div style="font-size:12px;color:var(--slate);text-align:center;">${item.descripcion||''}</div>
+                        <div style="text-align:center;font-weight:800;color:var(--gold);">⭐ ${item.costo} karma</div>
+                        ${item.stock >= 0 ? `<div style="text-align:center;font-size:11px;color:var(--slate);">Stock: ${item.stock}</div>` : ''}
+                        <button class="btn btn-sm ${puedo&&!sinStock?'btn-green':''}" ${(!puedo||sinStock)?'disabled':''} onclick="solicitarCanje('${item.id}','${item.nombre}',${item.costo},'${item.emoji||'🎁'}','agentCatalog')" style="${sinStock?'opacity:0.4':''}">
+                            ${sinStock ? 'Sin stock' : !puedo ? 'Karma insuficiente' : '🛒 Solicitar canje'}
+                        </button>
+                    </div>`;
+                }).join('');
+            } catch(e) { container.innerHTML = '<div class="empty-state">Error cargando tienda.</div>'; }
+        }
+
+        async function renderMisSolicitudes() {
+            const container = document.getElementById('tienda-mis-solicitudes');
+            if (!container || !user) return;
+            try {
+                const q = query(collection(db, 'redemptionRequests'), where('emailSolicitante', '==', user.email));
+                const snap = await getDocs(q);
+                const reqs = snap.docs.map(d => d.data()).sort((a,b) => (b.fechaSolicitud||'').localeCompare(a.fechaSolicitud||''));
+                container.innerHTML = reqs.length ? reqs.map(r => {
+                    const color = r.status==='approved'?'var(--green)':r.status==='rejected'?'var(--red)':'var(--orange)';
+                    const label = r.status==='approved'?'✓ Aprobado':r.status==='rejected'?'✗ Rechazado':'⏳ Pendiente';
+                    return `<div style="padding:10px 14px;background:var(--panel);border-radius:8px;border-left:3px solid ${color};display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                        <div>
+                            <div style="font-weight:600;font-size:13px;">${r.emoji||'🎁'} ${r.itemNombre}</div>
+                            <div style="font-size:11px;color:var(--slate);">⭐ ${r.costo} karma &nbsp;·&nbsp; ${new Date(r.fechaSolicitud).toLocaleDateString('es-MX')}</div>
+                        </div>
+                        <span style="color:${color};font-size:11px;font-weight:700;white-space:nowrap;">${label}</span>
+                    </div>`;
+                }).join('') : '<div class="empty-state"><i class="fa fa-inbox"></i> Sin solicitudes aún.</div>';
+            } catch(e) {}
+        }
+
+        window.solicitarCanje = async function(itemId, itemNombre, costo, emoji, catalogDoc) {
+            if ((state.karma || 0) < costo) { alert('Karma insuficiente.'); return; }
+            if (!confirm(`¿Solicitar canje de "${itemNombre}" por ⭐ ${costo} karma? El karma se descontará si el director aprueba.`)) return;
+            try {
+                await addDoc(collection(db, 'redemptionRequests'), {
+                    emailSolicitante: user.email,
+                    nombreSolicitante: state.agentName || user.displayName || user.email,
+                    rol: 'agente',
+                    coachTeamCode: state.teamCode || '',
+                    itemId, itemNombre, costo, emoji, catalogDoc,
+                    status: 'pending',
+                    fechaSolicitud: new Date().toISOString()
+                });
+                alert(`✅ Solicitud enviada. El director la revisará pronto.`);
+                await renderMisSolicitudes();
+                await renderTiendaItems();
+            } catch(e) { alert('Error: ' + e.message); }
+        };
+
         window.refreshUI = function () {
             document.getElementById('agent-display').textContent = 'Agente: ' + (state.agentName || '—');
+            updateKarmaDisplay();
         }
 
         window.switchTab = function (name, btn) {
@@ -1037,6 +1518,7 @@
             btn.classList.add('active');
             if (name === 'kpis') renderKPIs();
             if (name === 'charts') renderCharts();
+            if (name === 'tienda') window.initAgenteTienda();
         }
 
         window.openConfig = function () {
@@ -1109,6 +1591,7 @@
                     <td id="funnel-${dayName}" style="font-size:16px;text-align:center;">—</td>
                 </tr>`).join('');
             autoLoadBitacora();
+            disableFutureDays();
         }
 
         window.updateTotals = function (autoSave = true) {
@@ -1178,6 +1661,7 @@
                 const msg = document.getElementById('save-msg');
                 msg.style.display = 'inline-flex'; setTimeout(() => msg.style.display = 'none', 2000);
             }
+            awardKarma();
         }
 
         window.autoLoadBitacora = function () {
