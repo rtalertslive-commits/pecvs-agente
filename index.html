@@ -1121,7 +1121,10 @@
             disableFutureDays();
 
             // Check for uncelebrated karma (earned since last app open)
-            const uncelebrated = (state.karma || 0) - (state.karmaLastNotified || 0);
+            // Comparamos karma TOTAL GANADO (suma de karmaLog) vs karmaLastNotified,
+            // no el balance actual (que puede bajar al gastar en la tienda)
+            const totalEarned = (state.karmaLog || []).reduce((sum, k) => sum + (k.points || 0), 0);
+            const uncelebrated = totalEarned - (state.karmaLastNotified || 0);
             if (uncelebrated > 0) {
                 setTimeout(() => showKarmaCelebration(uncelebrated), 800);
             }
@@ -1185,7 +1188,9 @@
             }
 
             // Mostrar celebración si hay karma nuevo sin notificar
-            const uncelebrated = (state.karma || 0) - (state.karmaLastNotified || 0);
+            // Usamos total ganado (no el balance, que puede bajar al gastar en tienda)
+            const totalEarned = (state.karmaLog || []).reduce((sum, k) => sum + (k.points || 0), 0);
+            const uncelebrated = totalEarned - (state.karmaLastNotified || 0);
             if (uncelebrated > 0) {
                 setTimeout(() => showKarmaCelebration(uncelebrated), 400);
             }
@@ -1351,7 +1356,9 @@
 
         window.dismissKarmaCelebration = function () {
             document.getElementById('karma-celebration').classList.remove('show');
-            state.karmaLastNotified = state.karma || 0;
+            // Marcar como notificado el TOTAL ganado (no el balance actual)
+            const totalEarned = (state.karmaLog || []).reduce((sum, k) => sum + (k.points || 0), 0);
+            state.karmaLastNotified = totalEarned;
             syncToCloud();
         };
 
