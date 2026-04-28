@@ -1262,18 +1262,17 @@
         }
 
         function disableFutureDays() {
-            if (!serverNow) return;
+            const now = serverNow || new Date(); // fallback al reloj local si aún no llegó servidor
             const month = parseInt(document.getElementById('sel-month').value);
             const year = parseInt(document.getElementById('inp-year').value);
             const semIdx = parseInt(document.getElementById('sel-semana').value) - 1;
             const weekDays = currentWeeks[semIdx] || [];
-            const today = new Date(serverNow.getFullYear(), serverNow.getMonth(), serverNow.getDate());
-            const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
             weekDays.forEach(({ dayName, date }) => {
                 const dayDate = new Date(year, month - 1, date);
-                // Solo hoy y ayer son editables; futuro y anteayer+ están bloqueados
-                const locked = dayDate > today || dayDate < yesterday;
+                // Solo el día de hoy es editable; el resto (pasados y futuros) están bloqueados
+                const locked = dayDate.getTime() !== today.getTime();
                 const row = document.querySelector(`tr[data-day="${dayName}"]`);
                 if (!row) return;
                 const inputs = row.querySelectorAll('input');
@@ -1633,6 +1632,11 @@
         }
 
         window.saveCurrentWeek = function (silent = false) {
+            // Si el agente no tiene nombre configurado, usar displayName de Google o email como fallback
+            if (!state.agentName && user) {
+                state.agentName = user.displayName || user.email || '';
+                if (state.agentName) syncToCloud();
+            }
             if (!state.agentName) return;
             const m = parseInt(document.getElementById('sel-month').value);
             const y = parseInt(document.getElementById('inp-year').value);
