@@ -1000,8 +1000,42 @@
             const docSnap = await getDoc(doc(db, "users", user.email));
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (data.status === 'inactive') return 'inactive';
+                if (data.status === 'inactive') {
+                    // Si está inactivo como agente PERO es coach activo, reactivar
+                    // (un coach también puede usar la app del agente para llenar bitácora)
+                    const coachSnap = await getDoc(doc(db, "coaches", user.email));
+                    if (coachSnap.exists() && coachSnap.data().status !== 'inactive') {
+                        const c = coachSnap.data();
+                        await setDoc(doc(db, "users", user.email), {
+                            status: 'active',
+                            type: 'agent',
+                            agentName: data.agentName || c.coachName || user.displayName || '',
+                            teamCode: c.teamCode || c.companyCode || data.teamCode || '',
+                            companyCode: data.companyCode || c.companyCode || '',
+                            autoActivatedFromCoach: true,
+                            autoActivatedAt: new Date().toISOString()
+                        }, { merge: true });
+                        return 'active';
+                    }
+                    return 'inactive';
+                }
                 return 'active'; // active or legacy (no status field)
+            }
+            // No existe como agente: si es coach activo, crearle el doc de agente
+            const coachSnap = await getDoc(doc(db, "coaches", user.email));
+            if (coachSnap.exists() && coachSnap.data().status !== 'inactive') {
+                const c = coachSnap.data();
+                await setDoc(doc(db, "users", user.email), {
+                    agentName: c.coachName || user.displayName || '',
+                    email: user.email,
+                    companyCode: c.companyCode || '',
+                    teamCode: c.teamCode || c.companyCode || '',
+                    status: 'active',
+                    type: 'agent',
+                    autoCreatedFromCoach: true,
+                    autoCreatedAt: new Date().toISOString()
+                }, { merge: true });
+                return 'active';
             }
             const pendingSnap = await getDoc(doc(db, "pending_users", user.email));
             if (pendingSnap.exists()) return 'pending';
