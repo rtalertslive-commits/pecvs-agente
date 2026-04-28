@@ -1046,9 +1046,13 @@
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 state = docSnap.data();
-                state.karma = state.karma || 0;
-                state.karmaLog = state.karmaLog || [];
-                state.karmaLastNotified = state.karmaLastNotified || 0;
+                // Defensivo: garantizar que TODOS los campos críticos existen como tipo correcto
+                if (!Array.isArray(state.entries))   state.entries = [];
+                if (!Array.isArray(state.karmaLog))  state.karmaLog = [];
+                if (typeof state.karma !== 'number') state.karma = 0;
+                if (typeof state.karmaLastNotified !== 'number') state.karmaLastNotified = 0;
+                if (typeof state.agentName !== 'string') state.agentName = '';
+                if (typeof state.teamCode !== 'string') state.teamCode = '';
                 console.log("Cloud data loaded");
             }
         }
@@ -1111,7 +1115,10 @@
             refreshUI();
 
             // Otorgar karma por días pasados no procesados (app estaba cerrada)
-            await awardKarmaForPastDays();
+            try { await awardKarmaForPastDays(); } catch(e) { console.error('awardKarmaForPastDays failed:', e); }
+
+            // Re-aplicar el bloqueo por si algo lo perdió (defensivo)
+            disableFutureDays();
 
             // Check for uncelebrated karma (earned since last app open)
             const uncelebrated = (state.karma || 0) - (state.karmaLastNotified || 0);
@@ -1395,6 +1402,7 @@
 
             if (!state.karma)    state.karma    = 0;
             if (!state.karmaLog) state.karmaLog = [];
+            if (!Array.isArray(state.entries)) state.entries = [];
 
             let changed = false;
 
@@ -1638,6 +1646,8 @@
                 if (state.agentName) syncToCloud();
             }
             if (!state.agentName) return;
+            // Defensivo: garantizar que state.entries sea un array
+            if (!Array.isArray(state.entries)) state.entries = [];
             const m = parseInt(document.getElementById('sel-month').value);
             const y = parseInt(document.getElementById('inp-year').value);
             const mes = MONTHS_ES[m - 1] + ' ' + y;
@@ -1669,6 +1679,8 @@
         }
 
         window.autoLoadBitacora = function () {
+            // Defensivo: garantizar que state.entries sea un array
+            if (!Array.isArray(state.entries)) state.entries = [];
             const m = parseInt(document.getElementById('sel-month').value);
             const y = parseInt(document.getElementById('inp-year').value);
             const mes = MONTHS_ES[m - 1] + ' ' + y;
