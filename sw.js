@@ -1,5 +1,13 @@
-const CACHE_NAME = 'pecvs-agent-v1.1.2';
-const assets = ['./', './index.html'];
+const CACHE_NAME = 'pecvs-agent-mainnet-v1.6.7';
+const assets = [
+    './',
+    './index.html',
+    './manifest.json',
+    './icon-192.png',
+    './icon-512.png',
+    './apple-touch-icon.png',
+    './favicon-32.png'
+];
 
 self.addEventListener('install', e => {
     self.skipWaiting();

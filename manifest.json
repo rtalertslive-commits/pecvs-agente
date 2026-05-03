@@ -1,14 +1,20 @@
 {
-    "name": "PECVS$ Agente",
-    "short_name": "PECVS$",
-    "description": "Bitácora Estratégica PECVS$",
+    "name": "Actividad — Registro Profesional",
+    "short_name": "Actividad",
+    "description": "Bitácora profesional del agente — embudo PECVS$ y reporte diario",
     "start_url": "./index.html",
     "display": "standalone",
-    "background_color": "#0f172a",
+    "background_color": "#020617",
     "theme_color": "#d4af37",
     "icons": [
         {
-            "src": "https://cdn-icons-png.flaticon.com/512/2666/2666065.png",
+            "src": "icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"

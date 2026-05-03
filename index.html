@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PECVS$ Agente — Registro Individual</title>
+    <title>Actividad — Registro Profesional</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
@@ -17,8 +17,9 @@
     <meta name="theme-color" content="#d4af37">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="PECVS$ Agente">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2666/2666065.png">
+    <meta name="apple-mobile-web-app-title" content="Actividad">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <style>
         :root {
             --bg: #020617;
@@ -84,14 +85,67 @@
             }
         }
 
-        .header-left h1 {
+        /* BRAND: monograma dorado + wordmark "Actividad" */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .brand-mono {
+            width: 48px;
+            height: 48px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, var(--gold-l) 0%, var(--gold) 50%, #a08015 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-family: 'Playfair Display', serif;
+            font-weight: 900;
             font-size: 26px;
+            color: var(--bg);
+            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .header-left h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 19px;
             margin: 0;
-            background: linear-gradient(90deg, var(--white), var(--gold));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--white);
+            letter-spacing: -0.3px;
+            line-height: 1.1;
+            background: none;
+            -webkit-text-fill-color: var(--white);
+        }
+        .brand-sub {
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 3px;
+            font-weight: 600;
+            color: var(--slate);
+        }
+        .brand-sub .ver {
+            color: var(--slate);
+            margin-left: 6px;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        /* Pulse dorado tipo "shimmer" — para REGISTRO PROFESIONAL */
+        @keyframes brandSubPulse {
+            0%, 100% {
+                color: var(--gold);
+                text-shadow: 0 0 0 transparent;
+            }
+            50% {
+                color: var(--gold-l);
+                text-shadow: 0 0 10px rgba(212, 175, 55, 0.7), 0 0 20px rgba(212, 175, 55, 0.35);
+            }
+        }
+        .pulse-text {
+            animation: brandSubPulse 3s ease-in-out infinite;
+            color: var(--gold);
         }
 
         .header-left p {
@@ -121,21 +175,30 @@
             font-weight: 600;
             cursor: pointer;
             transition: .25s;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .btn:hover {
-            background: var(--gold);
-            color: var(--bg);
+        /* Hover SOLO en dispositivos con cursor real (mouse/trackpad).
+           Sin esto, el touch en mobile dispara :hover y se queda "pegado". */
+        @media (hover: hover) and (pointer: fine) {
+            .btn:hover {
+                background: var(--gold);
+                color: var(--bg);
+            }
+            .btn-green:hover {
+                background: var(--green);
+                color: #fff;
+            }
+        }
+
+        /* Feedback breve al tap en mobile (active dura solo mientras el dedo pisa) */
+        .btn:active {
+            transform: scale(0.97);
         }
 
         .btn-green {
             border-color: var(--green);
             color: var(--green);
-        }
-
-        .btn-green:hover {
-            background: var(--green);
-            color: #fff;
         }
 
         .btn-sm {
@@ -182,6 +245,54 @@
             animation: fadeIn .3s ease;
         }
 
+        /* ═══ BOTTOM NAV (mobile only, estilo iOS/Android) ═══ */
+        .bottom-nav { display: none; }
+
+        @media (max-width: 767px) {
+            .tab-nav { display: none; }
+            body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+            .bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(2, 6, 23, 0.92);
+                border-top: 1px solid var(--border);
+                padding: 8px 4px calc(10px + env(safe-area-inset-bottom, 0px));
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                z-index: 100;
+            }
+        }
+
+        .bottom-nav .bn-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--slate);
+            cursor: pointer;
+            text-align: center;
+            padding: 6px 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .bottom-nav .bn-btn i {
+            font-size: 19px;
+            line-height: 1;
+            transition: transform 0.15s ease;
+        }
+        .bottom-nav .bn-btn span {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+        .bottom-nav .bn-btn.active { color: var(--gold); }
+        .bottom-nav .bn-btn.active i { transform: scale(1.12); }
+
         /* CARDS */
         .card {
             background: var(--panel);
@@ -220,23 +331,10 @@
         }
 
         /* BITACORA TABLE */
-        .bitacora-header {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        @media (min-width: 768px) {
-            .bitacora-header {
-                flex-direction: row;
-                align-items: flex-end;
-            }
-
-            .bitacora-header>div {
-                flex: 1;
-            }
-        }
+        /* Selectores ocultos: la app calcula sola la semana actual via lockToCurrentWeek
+           y los bloquea (disabled). Los inputs siguen en DOM porque updateTotals,
+           saveCurrentWeek, autoLoadBitacora, awardKarma leen sus .value. */
+        .bitacora-header { display: none; }
 
         .table-scroll {
             overflow-x: auto;
@@ -274,6 +372,188 @@
             text-align: right;
         }
 
+        /* ═══ MOBILE BITACORA (asymmetric: today big, others compact) ═══ */
+        .mobile-bitacora { display: none; }
+        @media (max-width: 767px) {
+            .table-scroll { display: none; }
+            .mobile-bitacora { display: block; }
+        }
+
+        .m-section-divider {
+            text-align: center;
+            font-size: 10px;
+            color: var(--slate);
+            margin: 14px 0 6px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.6;
+        }
+
+        /* Día compacto (read-only, pasado o futuro) */
+        .m-day-compact {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            opacity: 0.45;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 12px;
+        }
+        .m-day-compact .m-day-label {
+            font-weight: 700;
+            color: var(--slate);
+            min-width: 88px;
+        }
+        .m-day-compact .m-day-label small {
+            display: block;
+            font-weight: 400;
+            font-size: 10px;
+            color: var(--slate);
+            opacity: 0.7;
+        }
+        .m-day-compact .m-day-summary {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            color: var(--slate);
+            font-variant-numeric: tabular-nums;
+            font-size: 11px;
+        }
+        .m-day-compact .m-day-summary span { white-space: nowrap; }
+        .m-day-compact .m-day-summary .m-prima { color: var(--gold); font-weight: 600; }
+        .m-day-compact .m-day-status { font-size: 14px; }
+        /* Inputs en filas compactas: ocultos visualmente pero presentes en DOM para save/load */
+        .m-day-compact input { display: none; }
+
+        /* HOY: card grande, prominente */
+        .m-day-today {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(212, 175, 55, 0.04));
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 10px 0;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);
+        }
+        .m-today-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .m-today-day {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gold-l);
+        }
+        .m-today-day small {
+            display: block;
+            font-family: 'Inter', sans-serif;
+            font-size: 11px;
+            color: var(--slate);
+            font-weight: 400;
+        }
+        .m-today-badge {
+            background: var(--gold);
+            color: var(--bg);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        .m-today-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .m-field { display: flex; flex-direction: column; }
+        .m-field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 4px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        .m-field label small {
+            font-weight: 400;
+            color: var(--slate);
+            font-size: 9px;
+            display: block;
+            margin-top: 1px;
+        }
+        .m-field input {
+            width: 100%;
+            padding: 14px 8px;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--white);
+            font-variant-numeric: tabular-nums;
+        }
+        .m-field input.m-prima-input {
+            text-align: right;
+            color: var(--gold-l);
+            padding-right: 12px;
+        }
+        .m-field input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+        }
+        .m-today-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(212, 175, 55, 0.15);
+            font-size: 12px;
+        }
+        .m-funnel { font-weight: 700; }
+
+        /* Totales mobile (solo prima) */
+        .m-totals {
+            display: none;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        @media (max-width: 767px) {
+            .m-totals { display: grid; }
+        }
+        .m-total-card {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 10px 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .m-total-card .m-total-label {
+            font-size: 9px;
+            color: var(--slate);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .m-total-card .m-total-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gold);
+            font-variant-numeric: tabular-nums;
+        }
+        .m-total-card.m-total-month .m-total-value { color: var(--gold-l); }
+
         /* CHARTS GRID */
         .charts-grid {
             display: grid;
@@ -301,6 +581,22 @@
         .chart-wrap {
             height: 250px;
             position: relative;
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .chart-wrap canvas {
+            max-width: 100% !important;
+            max-height: 100% !important;
+        }
+
+        .chart-card {
+            min-width: 0;  /* permite que chart-card encoja en grid/flex */
+        }
+
+        .charts-grid {
+            min-width: 0;
         }
 
         /* MODALS */
@@ -459,9 +755,11 @@
         }
 
         .login-card h2 {
-            color: var(--gold);
+            color: var(--white);
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
             font-size: 28px;
-            margin-bottom: 10px;
+            margin: 0;
             letter-spacing: -0.5px;
         }
 
@@ -470,6 +768,29 @@
             font-size: 14px;
             margin-bottom: 30px;
             line-height: 1.5;
+        }
+
+        /* Brand block del login: monograma grande + wordmark + subtitle pulsante */
+        .login-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+        .login-brand .brand-mono {
+            width: 76px;
+            height: 76px;
+            border-radius: 18px;
+            font-size: 42px;
+            box-shadow: 0 8px 28px rgba(212, 175, 55, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+        }
+        .login-brand .login-sub {
+            font-size: 10px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--gold);
         }
 
         .btn-google {
@@ -498,6 +819,110 @@
         .btn-google img {
             width: 20px;
         }
+
+        /* ═══ BOTÓN INSTALAR APP (PWA) ═══ */
+        .btn-install {
+            display: none; /* oculto hasta que se detecta installability */
+            width: 100%;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1.5px solid var(--gold);
+            background: rgba(212, 175, 55, 0.08);
+            color: var(--gold-l);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-install:hover {
+            background: var(--gold);
+            color: var(--bg);
+        }
+        .btn-install.show { display: inline-flex; }
+        .btn-install .ic { font-size: 16px; }
+
+        /* Modal de instrucciones iOS */
+        #ios-install-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 99998;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #ios-install-modal.show { display: flex; }
+        #ios-install-modal .ios-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 22px;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+        }
+        #ios-install-modal h3 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+            color: var(--white);
+            margin: 0 0 14px;
+        }
+        #ios-install-modal ol {
+            text-align: left;
+            color: var(--slate);
+            font-size: 13px;
+            line-height: 1.7;
+            padding-left: 22px;
+            margin: 12px 0 18px;
+        }
+        #ios-install-modal ol strong { color: var(--gold-l); }
+        #ios-install-modal .close-btn {
+            background: var(--gold);
+            color: var(--bg);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        #ios-install-modal .share-icon {
+            display: inline-block;
+            width: 20px;
+            height: 26px;
+            border: 2px solid var(--gold);
+            border-radius: 4px;
+            position: relative;
+            vertical-align: middle;
+            margin: 0 3px;
+        }
+        #ios-install-modal .share-icon::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            width: 2px;
+            height: 12px;
+            background: var(--gold);
+            transform: translateX(-50%);
+        }
+        #ios-install-modal .share-icon::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            border-top: 2px solid var(--gold);
+            border-left: 2px solid var(--gold);
+            transform: translateX(-50%) rotate(45deg);
+        }
     </style>
 </head>
 
@@ -505,16 +930,39 @@
     <!-- LOGIN OVERLAY -->
     <div id="login-overlay">
         <div class="login-card">
-            <div style="font-size: 50px; margin-bottom: 20px;">💼</div>
-            <h2>PECVS$ Express</h2>
+            <div class="login-brand">
+                <div class="brand-mono">A</div>
+                <div>
+                    <h2>Actividad</h2>
+                    <div class="login-sub"><span class="pulse-text">REGISTRO PROFESIONAL</span></div>
+                </div>
+            </div>
             <p>Tu bitácora estratégica, ahora segura en la nube. Sincroniza tus cierres y prospectos en tiempo real.</p>
             <button class="btn-google" id="login-btn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
                 Entrar con Google
             </button>
+            <button class="btn-install" id="install-btn" onclick="installApp()">
+                <span class="ic">📲</span>
+                <span>Instalar App en este dispositivo</span>
+            </button>
             <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.8;">
-                v1.3.0 — Sincronización mediante Google Firebase
+                <span data-app-version>—</span> · Sincronización mediante Google Firebase
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de instrucciones iOS (Safari no soporta beforeinstallprompt) -->
+    <div id="ios-install-modal" onclick="if(event.target===this)closeIosInstall()">
+        <div class="ios-card">
+            <div style="font-size:42px;margin-bottom:6px;">📲</div>
+            <h3>Instalar Actividad en tu iPhone</h3>
+            <ol>
+                <li>Pulsá el botón <strong>Compartir</strong> <span class="share-icon"></span> en la barra de Safari (abajo).</li>
+                <li>Deslizá hacia abajo y elegí <strong>"Agregar a pantalla de inicio"</strong>.</li>
+                <li>Confirmá tocando <strong>"Agregar"</strong> arriba a la derecha.</li>
+            </ol>
+            <button class="close-btn" onclick="closeIosInstall()">Entendido</button>
         </div>
     </div>
 
@@ -522,8 +970,13 @@
         <!-- HEADER -->
         <div class="header">
             <div class="header-left">
-                <h1><i class="fa-solid fa-user-tie" style="font-size:22px;margin-right:10px;"></i>PECVS$ Agente <small
-                        style="font-size:10px; color:var(--slate);">v1.3.0</small></h1>
+                <div class="brand">
+                    <div class="brand-mono">A</div>
+                    <div>
+                        <h1>Actividad</h1>
+                        <div class="brand-sub"><span class="pulse-text">REGISTRO PROFESIONAL</span> <span class="ver" data-app-version>—</span></div>
+                    </div>
+                </div>
                 <p id="agent-display">Agente: —</p>
                 <div id="karma-badge">
                     <span class="star">🌮</span>
@@ -539,17 +992,17 @@
             </div>
         </div>
 
-        <!-- TAB NAV -->
+        <!-- TAB NAV (desktop only) -->
         <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('bitacora',this)"><i class="fa fa-book-open"></i>
+            <button class="tab-btn active" data-tab="bitacora" onclick="switchTab('bitacora',this)"><i class="fa fa-book-open"></i>
                 Bitácora</button>
-            <button class="tab-btn" onclick="switchTab('kpis',this)"><i class="fa fa-chart-column"></i> Mis
-                KPIs</button>
-            <button class="tab-btn" onclick="switchTab('charts',this)"><i class="fa fa-chart-area"></i>
-                Tendencias</button>
-            <button class="tab-btn" onclick="switchTab('conceptos',this)"><i class="fa fa-lightbulb"></i>
+            <button class="tab-btn" data-tab="conceptos" onclick="switchTab('conceptos',this)"><i class="fa fa-lightbulb"></i>
                 Conceptos</button>
-            <button class="tab-btn" onclick="switchTab('tienda',this);initAgenteTienda()"><i class="fa fa-store"></i> Tienda</button>
+            <button class="tab-btn" data-tab="kpis" onclick="switchTab('kpis',this)"><i class="fa fa-chart-column"></i> Mis
+                KPIs</button>
+            <button class="tab-btn" data-tab="charts" onclick="switchTab('charts',this)"><i class="fa fa-chart-area"></i>
+                Tendencias</button>
+            <button class="tab-btn" data-tab="tienda" onclick="switchTab('tienda',this)"><i class="fa fa-store"></i> Tienda</button>
         </div>
 
         <!-- TAB: BITACORA -->
@@ -581,6 +1034,10 @@
                         <label style="font-size:10px; color:var(--slate);">SEMANA</label>
                         <select id="sel-semana" onchange="updateWeekTable()"></select>
                     </div>
+                </div>
+
+                <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.25); border-radius:8px; padding:10px 14px; margin:14px 0; font-size:12px; color:var(--slate); line-height:1.5;">
+                    ⏱️ <strong>Día en curso:</strong> edítalo libremente durante el día — agrega, cambia o corrige tus P-E-C-V-S-$ las veces que quieras (se guarda automáticamente). A las <strong>12:00 AM</strong> se hace el corte automático y se te dan los tacos 🌮
                 </div>
 
                 <div class="table-scroll">
@@ -621,6 +1078,21 @@
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+
+                <!-- MOBILE BITACORA: layout asimétrico (hoy grande, otros compactos) -->
+                <div class="mobile-bitacora" id="mobile-week"></div>
+
+                <!-- MOBILE TOTALS: solo prima semana + prima mes -->
+                <div class="m-totals">
+                    <div class="m-total-card">
+                        <div class="m-total-label">Prima Semana</div>
+                        <div class="m-total-value" id="m-tt-$">0.00</div>
+                    </div>
+                    <div class="m-total-card m-total-month">
+                        <div class="m-total-label">Prima Mes</div>
+                        <div class="m-total-value" id="m-mt-$">0.00</div>
+                    </div>
                 </div>
 
                 <div style="margin-top:20px; display:flex; justify-content: flex-end; align-items:center;">
@@ -675,10 +1147,10 @@
                 <div class="charts-controls" style="margin-bottom:15px;">
                     <label style="font-size:10px; color:var(--slate); display:block; margin-bottom:6px;">PERÍODO</label>
                     <select id="chart-period-sel" onchange="renderCharts()" style="width:100%; max-width:300px;">
-                        <option value="12m">Últimos 12 meses (por defecto)</option>
+                        <option value="1m" selected>Mensual (mes actual)</option>
                         <option value="3m">Últimos 3 meses</option>
                         <option value="6m">Últimos 6 meses</option>
-                        <option value="1y">1 año</option>
+                        <option value="12m">Últimos 12 meses</option>
                         <option value="all">Todos los meses</option>
                     </select>
                 </div>
@@ -834,21 +1306,87 @@
 
     </div><!-- /app -->
 
+    <!-- BOTTOM NAV (mobile only, estilo iOS/Android) -->
+    <nav class="bottom-nav">
+        <button class="bn-btn active" data-tab="bitacora" onclick="switchTab('bitacora',this)">
+            <i class="fa fa-book-open"></i>
+            <span>Bitácora</span>
+        </button>
+        <button class="bn-btn" data-tab="conceptos" onclick="switchTab('conceptos',this)">
+            <i class="fa fa-lightbulb"></i>
+            <span>Concep.</span>
+        </button>
+        <button class="bn-btn" data-tab="kpis" onclick="switchTab('kpis',this)">
+            <i class="fa fa-chart-column"></i>
+            <span>KPIs</span>
+        </button>
+        <button class="bn-btn" data-tab="charts" onclick="switchTab('charts',this)">
+            <i class="fa fa-chart-area"></i>
+            <span>Tend.</span>
+        </button>
+        <button class="bn-btn" data-tab="tienda" onclick="switchTab('tienda',this)">
+            <i class="fa fa-store"></i>
+            <span>Tienda</span>
+        </button>
+    </nav>
+
+    <!-- UPDATE AVAILABLE MODAL -->
+    <div class="modal-overlay" id="update-available-modal">
+        <div class="modal-box" style="max-width:340px;text-align:center;">
+            <div style="font-size:48px;margin-bottom:8px;">🚀</div>
+            <h2 style="font-family:'Inter',sans-serif;font-weight:800;color:var(--white);margin:0 0 8px;font-size:18px;">Nueva versión disponible</h2>
+            <p style="color:var(--slate);font-size:13px;margin:0 0 20px;line-height:1.5;">Recargá la app para obtener las últimas mejoras y arreglos.</p>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-sm" style="flex:1;" onclick="dismissUpdate()">Después</button>
+                <button class="btn btn-sm" style="flex:1;border-color:var(--green) !important;color:var(--green) !important;" onclick="applyUpdate()">Recargar ahora</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGOUT CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="logout-confirm-modal" onclick="if(event.target===this)cancelLogout()">
+        <div class="modal-box" style="max-width:340px;text-align:center;">
+            <div style="font-size:42px;margin-bottom:8px;">👋</div>
+            <h2 style="font-family:'Inter',sans-serif;font-weight:800;color:var(--white);margin:0 0 8px;font-size:18px;">¿Cerrar sesión?</h2>
+            <p style="color:var(--slate);font-size:13px;margin:0 0 20px;">Tendrás que volver a entrar con Google la próxima vez.</p>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-sm" style="flex:1;" onclick="cancelLogout()">Cancelar</button>
+                <button class="btn btn-sm" style="flex:1;border-color:var(--red) !important;color:var(--red) !important;" onclick="confirmLogout()">Cerrar sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CANJE CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="canje-confirm-modal" onclick="if(event.target===this)cancelCanje()">
+        <div class="modal-box" style="max-width:380px;text-align:center;">
+            <div style="font-size:42px;margin-bottom:8px;">🛒</div>
+            <h2 style="font-family:'Inter',sans-serif;font-weight:800;color:var(--white);margin:0 0 12px;font-size:18px;">Confirmar canje</h2>
+            <p id="canje-confirm-text" style="color:var(--slate);font-size:13px;margin:0 0 20px;line-height:1.5;"></p>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-sm" style="flex:1;" onclick="cancelCanje()">Cancelar</button>
+                <button class="btn btn-sm" style="flex:1;border-color:var(--green) !important;color:var(--green) !important;" onclick="confirmCanje()">Solicitar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CONFIG MODAL -->
     <div class="modal-overlay" id="config-modal">
         <div class="modal-box">
             <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin-top:0;">Mi Perfil</h2>
-            <div style="display:flex; flex-direction:column; gap:15px;">
-                <div>
-                    <label style="font-size:11px; color:var(--slate); font-weight:700;">MI NOMBRE COMPLETO</label>
-                    <input type="text" id="inp-myname" placeholder="Ej. Franco Jr">
+            <p style="font-size:11px; color:var(--slate); margin:0 0 15px;">Si algún dato está incorrecto, contacta al director para que lo corrija.</p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
+                    <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI NOMBRE COMPLETO</label>
+                    <span id="disp-myname" style="font-size:16px; font-weight:700; color:#fff;">—</span>
                 </div>
                 <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI CLAVE DE AGENTE</label>
                     <span id="disp-mycode" style="font-size:22px; font-weight:800; color:var(--gold); letter-spacing:6px;">—</span>
-                    <p style="font-size:10px; color:var(--slate); margin:4px 0 0;">Asignada por el director. Contáctalo si hay algún error.</p>
                 </div>
-                <button class="btn btn-green" onclick="saveConfig()">Guardar Perfil</button>
+                <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
+                    <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI REGIÓN</label>
+                    <span id="disp-myregion" style="font-size:16px; font-weight:700; color:#fff;">—</span>
+                </div>
                 <button class="btn btn-sm"
                     onclick="document.getElementById('config-modal').classList.remove('open')">Cerrar</button>
             </div>
@@ -881,6 +1419,12 @@
                 <div>
                     <label style="font-size:11px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">TU CLAVE DE AGENTE (4 dígitos)</label>
                     <input type="text" id="reg-code" placeholder="Ej. 1234" maxlength="4" inputmode="numeric" style="width:100%; letter-spacing:6px; font-size:18px; font-weight:700; text-align:center;">
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">TU REGIÓN</label>
+                    <select id="reg-region" style="width:100%; padding:10px; background:var(--panel); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-size:14px;">
+                        <option value="">Cargando regiones...</option>
+                    </select>
                 </div>
             </div>
             <div style="background:rgba(212,175,55,0.1); border:1px solid rgba(212,175,55,0.3); border-radius:8px; padding:12px; font-size:12px; color:var(--gold-l); margin-bottom:20px; text-align:left; line-height:1.6;">
@@ -927,6 +1471,25 @@
         </div>
     </div>
 
+    <script>
+        // Sync versión de la app desde sw.js (single source of truth).
+        // Lee CACHE_NAME del service worker y la muestra en title + login footer + header.
+        // Así no tenemos que mantener la versión hardcoded en 3 lugares — basta bumpear sw.js.
+        (async () => {
+            try {
+                const r = await fetch('./sw.js', { cache: 'no-cache' });
+                const text = await r.text();
+                const match = text.match(/CACHE_NAME\s*=\s*['"`][^'"`]*?v(\d+\.\d+\.\d+)['"`]/);
+                if (!match) return;
+                const v = 'v' + match[1];
+                document.title = 'Actividad — ' + v;
+                document.querySelectorAll('[data-app-version]').forEach(el => {
+                    el.textContent = v;
+                });
+            } catch (e) { /* ignore — el placeholder "—" queda visible */ }
+        })();
+    </script>
+
     <script type="module">
         // --- FIREBASE CONFIG ---
         const firebaseConfig = {
@@ -941,7 +1504,7 @@
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Initialize
         const app = initializeApp(firebaseConfig);
@@ -954,11 +1517,75 @@
         const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         const CHART_COLORS = { P: '#3b82f6', E: '#06b6d4', C: '#a855f7', V: '#10b981', S: '#f59e0b' };
 
-        let state = { agentName: '', teamCode: '', entries: [], karma: 0, karmaLog: [], karmaLastNotified: 0 };
+        let state = { agentName: '', teamCode: '', directorCode: '', regionName: '', companyCode: '', entries: [], karma: 0, karmaLog: [], karmaLastNotified: 0 };
         let currentWeeks = [];
         let user = null;
         let serverNow = null;
         let pointsConfig = { agentDailyPoints: 10 };
+
+        // Escapa HTML/atributos. Usado para datos que vienen de Firestore
+        // (catálogo de tienda controlado por director, solicitudes, etc.) antes de
+        // interpolar en innerHTML / atributos onclick. Evita XSS y rotura por
+        // apóstrofes en nombres de items (ej: "O'Reilly").
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ─── PWA INSTALL ───────────────────────────────────────────────────────────
+        // Captura el evento beforeinstallprompt (Chrome/Edge en Android y desktop) y
+        // muestra un boton custom. iOS Safari NO dispara este evento — para iOS
+        // detectamos el dispositivo y mostramos un modal con instrucciones manuales.
+        let _deferredInstallPrompt = null;
+        const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
+        const _isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+
+        if (!_isStandalone) {
+            // Chrome/Edge/Android — escuchar el evento installable
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                _deferredInstallPrompt = e;
+                document.getElementById('install-btn').classList.add('show');
+            });
+            // Cuando el usuario instala correctamente
+            window.addEventListener('appinstalled', () => {
+                _deferredInstallPrompt = null;
+                document.getElementById('install-btn').classList.remove('show');
+                console.log('✅ App instalada');
+            });
+            // iOS no dispara beforeinstallprompt — mostramos el boton igual y abrimos modal
+            if (_isIOS) {
+                document.getElementById('install-btn').classList.add('show');
+            }
+        }
+
+        window.installApp = async function () {
+            if (_isIOS && !_deferredInstallPrompt) {
+                document.getElementById('ios-install-modal').classList.add('show');
+                return;
+            }
+            if (!_deferredInstallPrompt) {
+                alert('La instalación no está disponible en este navegador. Probá con Chrome o Edge.');
+                return;
+            }
+            _deferredInstallPrompt.prompt();
+            const { outcome } = await _deferredInstallPrompt.userChoice;
+            if (outcome === 'accepted') {
+                console.log('✅ Usuario aceptó la instalación');
+            }
+            _deferredInstallPrompt = null;
+            document.getElementById('install-btn').classList.remove('show');
+        };
+
+        window.closeIosInstall = function () {
+            document.getElementById('ios-install-modal').classList.remove('show');
+        };
 
         // --- AUTH LOGIC ---
         document.getElementById('login-btn').addEventListener('click', () => {
@@ -967,11 +1594,20 @@
 
         onAuthStateChanged(auth, async (u) => {
             if (u) {
+                // Detectar cambio de usuario y forzar recarga (evita data leak en memoria)
+                const lastEmail = sessionStorage.getItem('lastAgentEmail');
+                if (lastEmail && lastEmail !== u.email) {
+                    sessionStorage.setItem('lastAgentEmail', u.email);
+                    location.reload();
+                    return;
+                }
+                sessionStorage.setItem('lastAgentEmail', u.email);
                 user = u;
                 const status = await checkUserStatus();
                 if (status === 'active') {
                     document.getElementById('login-overlay').classList.add('hidden');
                     await loadFromCloud();
+                    startUserDocListener(); // real-time updates desde Firestore
                     init();
                 } else if (status === 'inactive') {
                     document.getElementById('login-overlay').classList.add('hidden');
@@ -984,6 +1620,7 @@
                     document.getElementById('login-overlay').classList.add('hidden');
                     document.getElementById('register-overlay').style.display = 'flex';
                     if (u.displayName) document.getElementById('reg-name').value = u.displayName;
+                    loadRegionsDropdown();
                 }
             } else {
                 user = null;
@@ -1042,11 +1679,34 @@
             return 'new';
         }
 
+        async function loadRegionsDropdown() {
+            const sel = document.getElementById('reg-region');
+            if (!sel) return;
+            try {
+                const snap = await getDocs(collection(db, 'directors'));
+                const regions = [];
+                snap.forEach(d => {
+                    const data = d.data();
+                    if (data.status !== 'inactive' && data.regionName) {
+                        regions.push(data.regionName);
+                    }
+                });
+                const unique = [...new Set(regions)].sort();
+                sel.innerHTML = '<option value="">-- Selecciona tu región --</option>' +
+                    unique.map(r => `<option value="${r}">${r}</option>`).join('');
+            } catch(e) {
+                sel.innerHTML = '<option value="">(Error cargando regiones)</option>';
+                console.error('Error loading regions:', e);
+            }
+        }
+
         window.submitRegistration = async function () {
             const name = document.getElementById('reg-name').value.trim();
             const code = document.getElementById('reg-code').value.trim();
+            const region = document.getElementById('reg-region').value;
             if (!name) { alert('Por favor ingresa tu nombre completo.'); return; }
             if (!/^\d{4}$/.test(code)) { alert('La clave de agente debe ser exactamente 4 dígitos numéricos.'); return; }
+            if (!region) { alert('Por favor selecciona tu región.'); return; }
             const btn = document.getElementById('reg-submit-btn');
             btn.disabled = true;
             btn.textContent = 'Enviando...';
@@ -1055,6 +1715,7 @@
                     name,
                     email: user.email,
                     companyCode: code,
+                    region: region,
                     timestamp: new Date().toISOString()
                 });
                 document.getElementById('register-overlay').style.display = 'none';
@@ -1067,12 +1728,34 @@
         };
 
         window.logout = function () {
-            if (confirm("¿Cerrar sesión?")) {
-                auth.signOut().then(() => {
-                    location.reload();
-                });
-            }
-        }
+            // Reemplaza confirm() nativo por modal custom: confirm() puede comportarse
+            // raro dentro de PWAs standalone en iOS y deja el boton en estado :hover sticky.
+            document.getElementById('logout-confirm-modal').classList.add('open');
+        };
+        window.confirmLogout = function () {
+            document.getElementById('logout-confirm-modal').classList.remove('open');
+            auth.signOut().then(() => location.reload());
+        };
+        window.cancelLogout = function () {
+            document.getElementById('logout-confirm-modal').classList.remove('open');
+        };
+
+        // Modal de "nueva versión disponible". Reemplaza el confirm() nativo que
+        // no se mostraba dentro de PWA standalone en iOS.
+        let _updateModalShown = false;
+        window.showUpdateModal = function () {
+            if (_updateModalShown) return; // evitar mostrar 2 veces si statechange dispara doble
+            _updateModalShown = true;
+            document.getElementById('update-available-modal').classList.add('open');
+        };
+        window.applyUpdate = function () {
+            location.reload();
+        };
+        window.dismissUpdate = function () {
+            document.getElementById('update-available-modal').classList.remove('open');
+            // No reseteamos _updateModalShown — si dismiss, no mostrar otra vez en
+            // esta sesión (evita acoso). Lo verá la próxima vez que abra la app.
+        };
 
         async function loadFromCloud() {
             if (!user) return;
@@ -1087,14 +1770,88 @@
                 if (typeof state.karmaLastNotified !== 'number') state.karmaLastNotified = 0;
                 if (typeof state.agentName !== 'string') state.agentName = '';
                 if (typeof state.teamCode !== 'string') state.teamCode = '';
+                if (typeof state.directorCode !== 'string') state.directorCode = '';
+                if (typeof state.regionName !== 'string') state.regionName = '';
+                if (typeof state.companyCode !== 'string') state.companyCode = '';
                 console.log("Cloud data loaded");
             }
+        }
+
+        // ─── REAL-TIME LISTENER del doc del agente ─────────────────────────────
+        // Escucha cambios en users/{email} y actualiza state automáticamente.
+        // Disparadores externos:
+        //  - Director aprueba canje (decrementa karma + agrega karmaLog 'redemption')
+        //  - Director hace mint/burn manual desde Tesorería (karma + karmaLog)
+        //  - Director cambia status a 'inactive' / 'revoked'
+        //  - Director reasigna coach/promotor / corrige nombre/región/etc.
+        //  - Otro dispositivo del mismo agente edita y sincroniza
+        let _userDocUnsubscribe = null;
+        function startUserDocListener() {
+            if (!user) return;
+            if (_userDocUnsubscribe) { _userDocUnsubscribe(); _userDocUnsubscribe = null; }
+
+            _userDocUnsubscribe = onSnapshot(doc(db, "users", user.email), (snap) => {
+                if (!snap.exists()) return;
+                const fresh = snap.data();
+                let karmaChanged = false;
+                let statusChanged = false;
+
+                // Karma + log: si cambió desde Firestore (director, otro device),
+                // actualizar state local antes del próximo syncToCloud para evitar pisado.
+                if (typeof fresh.karma === 'number' && fresh.karma !== state.karma) {
+                    state.karma = fresh.karma;
+                    karmaChanged = true;
+                }
+                if (Array.isArray(fresh.karmaLog) && fresh.karmaLog.length !== (state.karmaLog || []).length) {
+                    state.karmaLog = fresh.karmaLog;
+                    karmaChanged = true;
+                }
+                if (typeof fresh.karmaLastNotified === 'number') state.karmaLastNotified = fresh.karmaLastNotified;
+
+                // Campos admin (controlados por director). NO los escribimos en
+                // syncToCloud (whitelist) pero sí los reflejamos local para mostrar
+                // datos correctos y para que solicitarCanje use teamCode/directorCode al día.
+                ['agentName','teamCode','directorCode','regionName','companyCode','status','type'].forEach(k => {
+                    if (fresh[k] !== undefined && fresh[k] !== state[k]) state[k] = fresh[k];
+                });
+
+                if (karmaChanged) updateKarmaDisplay();
+
+                // Si el director marcó al agente como inactive/revoked, mostrar overlay
+                // sin que tenga que cerrar y reabrir la app.
+                if (fresh.status === 'inactive' || fresh.status === 'revoked') {
+                    statusChanged = true;
+                    const overlay = document.getElementById('revoked-overlay');
+                    if (overlay) overlay.style.display = 'flex';
+                }
+
+                // Si está en la pestaña Tienda, refrescar Mis Solicitudes para
+                // que se vea el approve/reject en vivo.
+                const tiendaActive = document.getElementById('tab-tienda')?.classList.contains('active');
+                if (tiendaActive && !statusChanged) {
+                    try { renderMisSolicitudes(); } catch(e) {}
+                }
+            }, (err) => {
+                console.error('[userDocListener]', err);
+            });
         }
 
         async function syncToCloud() {
             if (!user || firebaseConfig.apiKey === "TU_API_KEY") return;
             try {
-                await setDoc(doc(db, "users", user.email), state);
+                // WHITELIST: solo escribir los campos que el agente posee.
+                // Los campos admin (agentName, teamCode, coachNum, promotorTeamCode,
+                // directorCode, regionName, companyCode, status, type, etc.) NUNCA se
+                // tocan desde la app del agente — el director los controla y deben
+                // sobrevivir reasignaciones / correcciones / cambios de estado.
+                // Con { merge: true } cualquier campo no listado queda intacto en Firestore.
+                const agentOwnedFields = {
+                    entries: state.entries,
+                    karma: state.karma,
+                    karmaLog: state.karmaLog,
+                    karmaLastNotified: state.karmaLastNotified
+                };
+                await setDoc(doc(db, "users", user.email), agentOwnedFields, { merge: true });
                 console.log("Synced to cloud");
             } catch (err) { console.error("Sync error:", err); }
         }
@@ -1170,65 +1927,130 @@
 
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').then(reg => {
-                    reg.onupdatefound = () => {
-                        const sw = reg.installing;
-                        sw.onstatechange = () => {
-                            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-                                if (confirm("¡Nueva versión disponible! ¿Actualizar ahora?")) {
-                                    location.reload();
-                                }
+                    // Detección de nueva versión: usamos addEventListener (más robusto
+                    // que asignación directa) + modal custom (confirm() nativo no se ve
+                    // dentro de PWA standalone en iOS).
+                    reg.addEventListener('updatefound', () => {
+                        const newSW = reg.installing;
+                        if (!newSW) return;
+                        newSW.addEventListener('statechange', () => {
+                            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                                showUpdateModal();
                             }
-                        };
-                    };
+                        });
+                    });
+                    // Forzar check de updates al volver el foco a la app y cada hora
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') {
+                            reg.update().catch(() => {});
+                        }
+                    });
+                    setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
                 }).catch(err => console.log("SW error:", err));
+            }
+
+            // Resize charts on viewport change (orientation, browser bar, resize)
+            // iOS dispara orientationchange ANTES de que el layout reflow termine,
+            // así que disparamos varios resize en cascada para garantizar que pegue
+            const resizeAllCharts = () => {
+                Object.values(charts).forEach(c => {
+                    if (c && typeof c.resize === 'function') {
+                        try { c.resize(); } catch(e) {}
+                    }
+                });
+            };
+            const onViewportChange = () => {
+                // Múltiples llamadas en cascada para sortear el delay de reflow en iOS
+                requestAnimationFrame(resizeAllCharts);
+                setTimeout(resizeAllCharts, 100);
+                setTimeout(resizeAllCharts, 300);
+                setTimeout(resizeAllCharts, 600);
+            };
+            window.addEventListener('resize', onViewportChange);
+            window.addEventListener('orientationchange', onViewportChange);
+        }
+
+        // ─── DETECCIÓN DE CAMBIO DE DÍA/SEMANA (centralizada) ─────────────────────────
+        // Se llama desde visibilitychange Y desde un setInterval (por si la tab está abierta 24/7)
+        let _checkDayChangeInProgress = false;
+        async function checkDayChange() {
+            if (!user) return;
+            if (_checkDayChangeInProgress) return; // evitar overlap
+            _checkDayChangeInProgress = true;
+            try {
+                const prevNow = serverNow ? new Date(serverNow) : null;
+                serverNow = await getServerTime();
+
+                const weekChanged = prevNow && getISOWeek(serverNow) !== getISOWeek(prevNow);
+                const dayChanged  = prevNow && serverNow.toDateString() !== prevNow.toDateString();
+
+                if (weekChanged || dayChanged) {
+                    // Cualquier cambio de día requiere re-lockear (puede haber cruzado mes)
+                    // y re-renderizar (en mobile el layout depende de cuál es el día de hoy:
+                    // la card grande "EDITABLE" tiene que mover de día).
+                    await awardKarmaForPastDays();
+                    lockToCurrentWeek();
+                    updateWeekTable();
+                } else {
+                    disableFutureDays();
+                }
+
+                // Recargar karma desde Firestore (otro dispositivo pudo haber guardado)
+                const docSnap = await getDoc(doc(db, 'users', user.email));
+                if (docSnap.exists()) {
+                    const fresh = docSnap.data();
+                    state.karma = fresh.karma || 0;
+                    state.karmaLog = fresh.karmaLog || [];
+                    state.karmaLastNotified = fresh.karmaLastNotified || 0;
+                    updateKarmaDisplay();
+                }
+
+                // Mostrar celebración si hay karma nuevo sin notificar
+                const totalEarned = (state.karmaLog || []).reduce((sum, k) => sum + (k.points || 0), 0);
+                const uncelebrated = totalEarned - (state.karmaLastNotified || 0);
+                if (uncelebrated > 0) {
+                    setTimeout(() => showKarmaCelebration(uncelebrated), 400);
+                }
+            } finally {
+                _checkDayChangeInProgress = false;
             }
         }
 
-        // ─── VISIBILITY (app minimizada / regresa al foco) ────────────────────────────
-        document.addEventListener('visibilitychange', async () => {
-            if (document.visibilityState !== 'visible') return;
-            if (!user) return;
-
-            // Refrescar hora del servidor (puede haber cambiado de semana mientras estaba minimizada)
-            const prevNow = serverNow ? new Date(serverNow) : null;
-            serverNow = await getServerTime();
-
-            // Detectar cambio de semana y/o de día
-            const weekChanged = prevNow && getISOWeek(serverNow) !== getISOWeek(prevNow);
-            const dayChanged  = prevNow && serverNow.toDateString() !== prevNow.toDateString();
-
-            if (weekChanged) {
-                // Nueva semana: otorgar karma de días pasados, re-bloquear UI
-                await awardKarmaForPastDays();
-                lockToCurrentWeek();
-                updateWeekTable();
-            } else if (dayChanged) {
-                // Mismo semana, día distinto: otorgar karma de ayer y actualizar ventana editable
-                await awardKarmaForPastDays();
-                disableFutureDays();
-            } else {
-                // Mismo día: solo refrescar qué días son editables
-                disableFutureDays();
-            }
-
-            // Recargar karma desde Firestore (otro dispositivo pudo haber guardado puntos)
-            const docSnap = await getDoc(doc(db, 'users', user.email));
-            if (docSnap.exists()) {
-                const fresh = docSnap.data();
-                state.karma = fresh.karma || 0;
-                state.karmaLog = fresh.karmaLog || [];
-                state.karmaLastNotified = fresh.karmaLastNotified || 0;
-                updateKarmaDisplay();
-            }
-
-            // Mostrar celebración si hay karma nuevo sin notificar
-            // Usamos total ganado (no el balance, que puede bajar al gastar en tienda)
-            const totalEarned = (state.karmaLog || []).reduce((sum, k) => sum + (k.points || 0), 0);
-            const uncelebrated = totalEarned - (state.karmaLastNotified || 0);
-            if (uncelebrated > 0) {
-                setTimeout(() => showKarmaCelebration(uncelebrated), 400);
-            }
+        // Cuando regresa el foco a la tab (móvil minimizado, cambio de pestaña)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') checkDayChange();
         });
+
+        // Para cuando la tab está abierta 24/7 (PC con Chrome siempre arriba)
+        // Chequeamos cada 5 min si cambió el día/semana (red de seguridad)
+        setInterval(() => {
+            if (document.visibilityState === 'visible') checkDayChange();
+        }, 5 * 60 * 1000);
+
+        // ─── MIDNIGHT SCHEDULER ──────────────────────────────────────────────────
+        // Disparo PRECISO a las 12:00:05 AM (5s de margen para que la API ya tenga
+        // la fecha nueva). Re-agenda solo para la siguiente medianoche. Si el
+        // navegador/tab se durmió, el setInterval(5min) y visibilitychange actuán
+        // como fallback. Si cerraron la app, awardKarmaForPastDays repesca todo
+        // al volver a abrir (init).
+        async function scheduleMidnightCheck() {
+            // Asegurar serverNow fresco antes de calcular el delta
+            if (!serverNow) {
+                try { serverNow = await getServerTime(); } catch (e) {}
+            }
+            const now = serverNow || new Date();
+            const next = new Date(now);
+            next.setDate(now.getDate() + 1);
+            next.setHours(0, 0, 5, 0); // 12:00:05 AM
+            const ms = next.getTime() - now.getTime();
+            console.log(`[midnight] próximo corte en ${(ms/60000).toFixed(1)} min`);
+            setTimeout(async () => {
+                if (user) await checkDayChange();
+                scheduleMidnightCheck(); // reagendar para la siguiente medianoche
+            }, ms);
+        }
+        // Arranca el scheduler una sola vez al cargar el módulo
+        scheduleMidnightCheck();
 
         // Helper: número de semana ISO (Mon=start) para detectar cambio de semana
         function getISOWeek(date) {
@@ -1268,12 +2090,14 @@
         function lockToCurrentWeek() {
             if (!serverNow) return;
             const today = new Date(serverNow.getFullYear(), serverNow.getMonth(), serverNow.getDate());
-            const dayOfWeek = (today.getDay() + 6) % 7; // 0=Mon...6=Sun
-            const monday = new Date(today);
-            monday.setDate(today.getDate() - dayOfWeek);
 
-            const wkYear = monday.getFullYear();
-            const wkMonth = monday.getMonth() + 1;
+            // FIX: usar el mes/año de HOY (no del lunes de la semana). Si la semana cruza meses
+            // (ej: vie 1 may con monday=27 abr), getMonthCalendar(abril) devuelve una semana parcial
+            // [lun27...jue30] que NO contiene HOY, dejando todos los días bloqueados. Usando el mes
+            // de hoy, getMonthCalendar(mayo) devuelve [vie1, sab2, dom3] — hoy SÍ está dentro y es
+            // editable. La parte de la semana que cae en abril queda en la semana 4 de abril.
+            const wkYear = today.getFullYear();
+            const wkMonth = today.getMonth() + 1;
 
             const monthSel = document.getElementById('sel-month');
             const yearInp = document.getElementById('inp-year');
@@ -1286,9 +2110,9 @@
 
             currentWeeks = getMonthCalendar(wkYear, wkMonth);
 
-            const mondayDate = monday.getDate();
-            let weekIdx = currentWeeks.findIndex(w => w[0] && w[0].date === mondayDate);
-            if (weekIdx < 0) weekIdx = currentWeeks.findIndex(w => w.some(d => d.date === mondayDate));
+            // Buscar la semana (parcial o completa) que contenga HOY
+            const todayDate = today.getDate();
+            let weekIdx = currentWeeks.findIndex(w => w.some(d => d.date === todayDate));
             if (weekIdx < 0) weekIdx = 0;
 
             const w = currentWeeks[weekIdx];
@@ -1319,7 +2143,10 @@
                 const dayDate = new Date(year, month - 1, date);
                 // Solo el día de hoy es editable; el resto (pasados y futuros) están bloqueados
                 const locked = dayDate.getTime() !== today.getTime();
-                const row = document.querySelector(`tr[data-day="${dayName}"]`);
+                // Match wrapper en cualquier layout: tr (desktop), .m-day-compact, .m-day-today (mobile)
+                const row = document.querySelector(
+                    `tr[data-day="${dayName}"], .m-day-compact[data-day="${dayName}"], .m-day-today[data-day="${dayName}"]`
+                );
                 if (!row) return;
                 const inputs = row.querySelectorAll('input');
                 inputs.forEach(inp => {
@@ -1327,7 +2154,10 @@
                     inp.style.opacity = locked ? '0.25' : '';
                     inp.style.cursor = locked ? 'not-allowed' : '';
                 });
-                row.style.opacity = locked ? '0.4' : '';
+                // Solo aplicar opacity al wrapper en desktop (tr); en mobile la opacidad la maneja el CSS
+                if (row.tagName === 'TR') {
+                    row.style.opacity = locked ? '0.4' : '';
+                }
             });
         }
 
@@ -1386,14 +2216,16 @@
             document.getElementById('karma-celebration').classList.add('show');
             createCoinParticles();
             playCashSound();
+            // Marcar como notificado AL MOSTRAR (no al dismiss). Si el usuario recarga
+            // la página sin cerrar el modal, no vuelve a salir la misma celebración.
+            const totalEarned = (state.karmaLog || []).reduce((sum, k) => sum + (k.points || 0), 0);
+            state.karmaLastNotified = totalEarned;
+            syncToCloud();
         };
 
         window.dismissKarmaCelebration = function () {
             document.getElementById('karma-celebration').classList.remove('show');
-            // Marcar como notificado el TOTAL ganado (no el balance actual)
-            const totalEarned = (state.karmaLog || []).reduce((sum, k) => sum + (k.points || 0), 0);
-            state.karmaLastNotified = totalEarned;
-            syncToCloud();
+            // (karmaLastNotified ya se actualizó al mostrar — aquí solo cerramos el modal)
         };
 
         async function awardKarma() {
@@ -1494,19 +2326,33 @@
             const container = document.getElementById('tienda-items');
             if (!container) return;
             try {
-                const snap = await getDoc(doc(db, 'store', 'agentCatalog'));
+                // Multi-tenant: cargar tienda específica del director del agente
+                // Si no hay directorCode, NO hacer fallback a tienda global (evita data leak)
+                const dc = state.directorCode || '';
+                if (!dc) { container.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Tu director aún no configura la tienda.</div>'; return; }
+                const catalogId = `${dc}_agentCatalog`;
+                const snap = await getDoc(doc(db, 'store', catalogId));
                 const items = snap.exists() ? (snap.data().items || []).filter(i => i.activo) : [];
                 if (!items.length) { container.innerHTML = '<div class="empty-state"><i class="fa fa-box-open"></i> Sin items disponibles por ahora.</div>'; return; }
                 container.innerHTML = items.map(item => {
                     const puedo = (state.karma || 0) >= item.costo;
                     const sinStock = item.stock === 0;
+                    // Escapar TODOS los strings que vengan del catálogo (controlado por
+                    // director) — si tiene apóstrofes rompe el onclick, si tiene HTML
+                    // se ejecuta en el navegador del agente (XSS).
+                    const eEmoji = escapeHtml(item.emoji || '🎁');
+                    const eNombre = escapeHtml(item.nombre || '');
+                    const eDesc = escapeHtml(item.descripcion || '');
+                    const eId = escapeHtml(item.id || '');
+                    const eCatalog = escapeHtml(catalogId);
+                    const costoNum = Number(item.costo) || 0;
                     return `<div style="background:var(--panel2);border-radius:12px;padding:16px;border:1px solid rgba(212,175,55,0.15);display:flex;flex-direction:column;gap:8px;">
-                        <div style="font-size:36px;text-align:center;">${item.emoji||'🎁'}</div>
-                        <div style="font-weight:700;font-size:14px;text-align:center;">${item.nombre}</div>
-                        <div style="font-size:12px;color:var(--slate);text-align:center;">${item.descripcion||''}</div>
-                        <div style="text-align:center;font-weight:800;color:var(--gold);">🌮 ${item.costo} tacos</div>
-                        ${item.stock >= 0 ? `<div style="text-align:center;font-size:11px;color:var(--slate);">Stock: ${item.stock}</div>` : ''}
-                        <button class="btn btn-sm ${puedo&&!sinStock?'btn-green':''}" ${(!puedo||sinStock)?'disabled':''} onclick="solicitarCanje('${item.id}','${item.nombre}',${item.costo},'${item.emoji||'🎁'}','agentCatalog')" style="${sinStock?'opacity:0.4':''}">
+                        <div style="font-size:36px;text-align:center;">${eEmoji}</div>
+                        <div style="font-weight:700;font-size:14px;text-align:center;">${eNombre}</div>
+                        <div style="font-size:12px;color:var(--slate);text-align:center;">${eDesc}</div>
+                        <div style="text-align:center;font-weight:800;color:var(--gold);">🌮 ${costoNum} tacos</div>
+                        ${item.stock >= 0 ? `<div style="text-align:center;font-size:11px;color:var(--slate);">Stock: ${Number(item.stock)||0}</div>` : ''}
+                        <button class="btn btn-sm ${puedo&&!sinStock?'btn-green':''}" ${(!puedo||sinStock)?'disabled':''} onclick="solicitarCanje('${eId}','${eNombre}',${costoNum},'${eEmoji}','${eCatalog}')" style="${sinStock?'opacity:0.4':''}">
                             ${sinStock ? 'Sin stock' : !puedo ? 'Tacos insuficientes' : '🛒 Solicitar canje'}
                         </button>
                     </div>`;
@@ -1524,10 +2370,14 @@
                 container.innerHTML = reqs.length ? reqs.map(r => {
                     const color = r.status==='approved'?'var(--green)':r.status==='rejected'?'var(--red)':'var(--orange)';
                     const label = r.status==='approved'?'✓ Aprobado':r.status==='rejected'?'✗ Rechazado':'⏳ Pendiente';
+                    // Escapar strings de Firestore antes de inyectar en innerHTML
+                    const eEmoji = escapeHtml(r.emoji || '🎁');
+                    const eName = escapeHtml(r.itemNombre || '');
+                    const costoNum = Number(r.costo) || 0;
                     return `<div style="padding:10px 14px;background:var(--panel);border-radius:8px;border-left:3px solid ${color};display:flex;justify-content:space-between;align-items:center;gap:8px;">
                         <div>
-                            <div style="font-weight:600;font-size:13px;">${r.emoji||'🎁'} ${r.itemNombre}</div>
-                            <div style="font-size:11px;color:var(--slate);">🌮 ${r.costo} tacos &nbsp;·&nbsp; ${new Date(r.fechaSolicitud).toLocaleDateString('es-MX')}</div>
+                            <div style="font-weight:600;font-size:13px;">${eEmoji} ${eName}</div>
+                            <div style="font-size:11px;color:var(--slate);">🌮 ${costoNum} tacos &nbsp;·&nbsp; ${new Date(r.fechaSolicitud).toLocaleDateString('es-MX')}</div>
                         </div>
                         <span style="color:${color};font-size:11px;font-weight:700;white-space:nowrap;">${label}</span>
                     </div>`;
@@ -1535,23 +2385,81 @@
             } catch(e) {}
         }
 
-        window.solicitarCanje = async function(itemId, itemNombre, costo, emoji, catalogDoc) {
+        // Entry point del botón de canje. Reemplaza confirm() nativo por modal custom
+        // (confirm() no se ve dentro de PWA standalone iOS).
+        window.solicitarCanje = function(itemId, itemNombre, costo, emoji, catalogDoc) {
             if ((state.karma || 0) < costo) { alert('Tacos insuficientes.'); return; }
-            if (!confirm(`¿Solicitar canje de "${itemNombre}" por 🌮 ${costo} tacos? Los tacos se descontarán si el director aprueba.`)) return;
+            openCanjeConfirm(itemId, itemNombre, costo, emoji, catalogDoc);
+        };
+
+        // Estado del modal de confirmación de canje
+        let _pendingCanje = null;
+        window.openCanjeConfirm = function (itemId, itemNombre, costo, emoji, catalogDoc) {
+            _pendingCanje = { itemId, itemNombre, costo, emoji, catalogDoc };
+            document.getElementById('canje-confirm-text').textContent =
+                `¿Solicitar canje de "${itemNombre}" por 🌮 ${costo} tacos? El item te queda reservado hasta que el director apruebe.`;
+            document.getElementById('canje-confirm-modal').classList.add('open');
+        };
+        window.confirmCanje = async function () {
+            const c = _pendingCanje;
+            document.getElementById('canje-confirm-modal').classList.remove('open');
+            _pendingCanje = null;
+            if (!c) return;
+            await window._doSolicitarCanje(c.itemId, c.itemNombre, c.costo, c.emoji, c.catalogDoc);
+        };
+        window.cancelCanje = function () {
+            document.getElementById('canje-confirm-modal').classList.remove('open');
+            _pendingCanje = null;
+        };
+
+        // Lógica real (llamada desde confirmCanje del modal)
+        window._doSolicitarCanje = async function(itemId, itemNombre, costo, emoji, catalogDoc) {
             try {
-                await addDoc(collection(db, 'redemptionRequests'), {
-                    emailSolicitante: user.email,
-                    nombreSolicitante: state.agentName || user.displayName || user.email,
-                    rol: 'agente',
-                    coachTeamCode: state.teamCode || '',
-                    itemId, itemNombre, costo, emoji, catalogDoc,
-                    status: 'pending',
-                    fechaSolicitud: new Date().toISOString()
+                // Transacción atómica: validar stock + decrementar + crear solicitud en un solo paso.
+                // Si dos agentes solicitan el último item al mismo tiempo, solo uno gana —
+                // el otro recibe error "ya alguien lo compró" y NO se crea solicitud.
+                const catRef = doc(db, 'store', catalogDoc);
+                const newReqRef = doc(collection(db, 'redemptionRequests')); // ID generado para set en tx
+
+                await runTransaction(db, async (tx) => {
+                    // ── READS ──
+                    const catSnap = await tx.get(catRef);
+                    if (!catSnap.exists()) throw new Error('El catálogo de la tienda no existe.');
+                    const items = (catSnap.data().items || []).slice();
+                    const idx = items.findIndex(i => i.id === itemId);
+                    if (idx < 0) throw new Error(`El item "${itemNombre}" ya no está en el catálogo.`);
+                    const item = items[idx];
+                    if (item.activo === false) throw new Error(`El item "${itemNombre}" fue desactivado.`);
+                    const stock = Number(item.stock);
+                    if (stock === 0) throw new Error(`Ya alguien compró el último "${itemNombre}". Sin stock disponible.`);
+                    // stock < 0 = infinito, stock > 0 = decrementable
+
+                    // ── WRITES ──
+                    if (stock > 0) {
+                        items[idx] = { ...item, stock: stock - 1 };
+                        tx.update(catRef, { items });
+                    }
+                    tx.set(newReqRef, {
+                        emailSolicitante: user.email,
+                        nombreSolicitante: state.agentName || user.displayName || user.email,
+                        rol: 'agente',
+                        coachTeamCode: state.teamCode || '',
+                        directorCode: state.directorCode || '',
+                        regionName: state.regionName || '',
+                        itemId, itemNombre, costo, emoji, catalogDoc,
+                        status: 'pending',
+                        stockReservado: stock > 0,   // marca si hubo decremento (para reincrementar al rechazar)
+                        fechaSolicitud: new Date().toISOString()
+                    });
                 });
-                alert(`✅ Solicitud enviada. El director la revisará pronto.`);
+                alert(`✅ Solicitud enviada. El item te queda reservado hasta que el director apruebe o rechace.`);
                 await renderMisSolicitudes();
                 await renderTiendaItems();
-            } catch(e) { alert('Error: ' + e.message); }
+            } catch(e) {
+                alert('No se pudo solicitar el canje:\n' + e.message);
+                // Refrescar la tienda para mostrar el stock actualizado
+                try { await renderTiendaItems(); } catch {}
+            }
         };
 
         window.refreshUI = function () {
@@ -1561,26 +2469,24 @@
 
         window.switchTab = function (name, btn) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            // Limpiar active en AMBOS navs (top tabs desktop + bottom nav mobile)
+            document.querySelectorAll('.tab-btn, .bn-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
-            btn.classList.add('active');
+            // Activar el botón correspondiente en ambos navs (matched por data-tab)
+            document.querySelectorAll(`[data-tab="${name}"]`).forEach(b => b.classList.add('active'));
             if (name === 'kpis') renderKPIs();
             if (name === 'charts') renderCharts();
             if (name === 'tienda') window.initAgenteTienda();
         }
 
         window.openConfig = function () {
-            document.getElementById('inp-myname').value = state.agentName;
+            const nameEl = document.getElementById('disp-myname');
             const codeEl = document.getElementById('disp-mycode');
-            if (codeEl) codeEl.textContent = state.companyCode || state.teamCode || '—';
+            const regionEl = document.getElementById('disp-myregion');
+            if (nameEl)   nameEl.textContent   = state.agentName || '—';
+            if (codeEl)   codeEl.textContent   = state.companyCode || state.teamCode || '—';
+            if (regionEl) regionEl.textContent = state.regionName || '—';
             document.getElementById('config-modal').classList.add('open');
-        }
-
-        window.saveConfig = function () {
-            state.agentName = document.getElementById('inp-myname').value.trim();
-            saveState();
-            refreshUI();
-            document.getElementById('config-modal').classList.remove('open');
         }
 
         // CALENDAR
@@ -1612,8 +2518,15 @@
         }
 
         window.validateDay = function (d) {
-            if (d.P === 0 && d.E === 0 && d.C === 0 && d.V === 0 && d.S === 0 && d.prima === 0) return { ok: true, errors: [] };
+            // Defensa: cualquier valor NaN o negativo se considera inválido
             const errors = [];
+            for (const k of ['P','E','C','V','S','prima']) {
+                if (typeof d[k] !== 'number' || isNaN(d[k]) || d[k] < 0) {
+                    errors.push(`Valor inválido en ${k}`);
+                }
+            }
+            if (errors.length) return { ok: false, errors };
+            if (d.P === 0 && d.E === 0 && d.C === 0 && d.V === 0 && d.S === 0 && d.prima === 0) return { ok: true, errors: [] };
             if (d.P < d.E) errors.push("Contactos (P) < Entrevistas (E)");
             if (d.E < d.C) errors.push("Entrevistas (E) < Cotizaciones (C)");
             if (d.C < d.V) errors.push("Cotizaciones (C) < Cierres (V)");
@@ -1627,30 +2540,136 @@
             return { ok: errors.length === 0, errors };
         }
 
+        // ─── MOBILE BITACORA RENDER ─────────────────────────────────────────────
+        function isMobileViewport() {
+            return window.matchMedia('(max-width: 767px)').matches;
+        }
+
+        const M_COL_LABELS = { P: 'Prospec.', E: 'Entrev.', C: 'Cotiz.', V: 'Cierres', S: 'Solicit.' };
+        const M_MONTHS_SHORT = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+        function renderMobileCompactDay(dayName, date, monthShort, statusIcon) {
+            return `
+                <div class="m-day-compact" data-day="${dayName}">
+                    <div class="m-day-label">${dayName}<small>${date}/${monthShort}</small></div>
+                    <div class="m-day-summary" id="m-summary-${dayName}"><span>—</span></div>
+                    <div class="m-day-status" id="funnel-${dayName}">${statusIcon}</div>
+                    ${COLS.map(c => `<input type="number" min="0" data-day="${dayName}" data-col="${c}" value="0" oninput="updateTotals()">`).join('')}
+                    <input type="number" min="0" data-day="${dayName}" data-col="prima" value="0" step="0.01" oninput="updateTotals()">
+                </div>`;
+        }
+
+        function renderMobileTodayCard(dayName, date, monthShort) {
+            return `
+                <div class="m-day-today" data-day="${dayName}">
+                    <div class="m-today-header">
+                        <div class="m-today-day">${dayName}<small>${date} de ${monthShort} · HOY</small></div>
+                        <div class="m-today-badge">EDITABLE</div>
+                    </div>
+                    <div class="m-today-grid">
+                        ${COLS.map(c => `
+                            <div class="m-field">
+                                <label>${c} <small>${M_COL_LABELS[c]}</small></label>
+                                <input type="number" inputmode="numeric" min="0" data-day="${dayName}" data-col="${c}" value="0" oninput="updateTotals()">
+                            </div>`).join('')}
+                        <div class="m-field">
+                            <label>$ <small>Prima</small></label>
+                            <input type="number" inputmode="decimal" min="0" class="m-prima-input" data-day="${dayName}" data-col="prima" value="0" step="0.01" oninput="updateTotals()">
+                        </div>
+                    </div>
+                    <div class="m-today-status">
+                        <div class="m-funnel" id="funnel-${dayName}">—</div>
+                        <div style="color:var(--green);font-size:11px;"><i class="fa fa-check"></i> Auto-guardado</div>
+                    </div>
+                </div>`;
+        }
+
+        function renderMobileWeek(weekDays) {
+            const now = serverNow || new Date();
+            const month = parseInt(document.getElementById('sel-month').value);
+            const year = parseInt(document.getElementById('inp-year').value);
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const monthShort = M_MONTHS_SHORT[month - 1];
+
+            const todayIdx = weekDays.findIndex(({ date }) => {
+                const dd = new Date(year, month - 1, date);
+                return dd.getTime() === today.getTime();
+            });
+
+            const html = [];
+            if (todayIdx > 0) {
+                html.push('<div class="m-section-divider">— Días anteriores (cerrados) —</div>');
+                for (let i = 0; i < todayIdx; i++) {
+                    html.push(renderMobileCompactDay(weekDays[i].dayName, weekDays[i].date, monthShort, '—'));
+                }
+            } else if (todayIdx === -1) {
+                // Today not in this week — render all as compact, no section dividers
+                for (const { dayName, date } of weekDays) {
+                    html.push(renderMobileCompactDay(dayName, date, monthShort, '—'));
+                }
+            }
+            if (todayIdx >= 0) {
+                html.push(renderMobileTodayCard(weekDays[todayIdx].dayName, weekDays[todayIdx].date, monthShort));
+            }
+            if (todayIdx >= 0 && todayIdx < weekDays.length - 1) {
+                html.push('<div class="m-section-divider">— Días por venir —</div>');
+                for (let i = todayIdx + 1; i < weekDays.length; i++) {
+                    html.push(renderMobileCompactDay(weekDays[i].dayName, weekDays[i].date, monthShort, '🔒'));
+                }
+            }
+            document.getElementById('mobile-week').innerHTML = html.join('');
+        }
+
         window.updateWeekTable = function () {
             const semIdx = parseInt(document.getElementById('sel-semana').value) - 1;
             const weekDays = currentWeeks[semIdx] || [];
-            const tbody = document.getElementById('week-body');
-            tbody.innerHTML = weekDays.map(({ dayName, date }) => `
-                <tr data-day="${dayName}">
-                    <td style="font-weight:700; font-size:12px;">${dayName} <br><small style="color:var(--slate)">${date}</small></td>
-                    ${COLS.map(c => `<td><input type="number" inputmode="numeric" class="num-input" data-day="${dayName}" data-col="${c}" value="0" oninput="updateTotals()"></td>`).join('')}
-                    <td><input type="number" inputmode="decimal" class="num-input prima-input" data-day="${dayName}" data-col="prima" value="0" step="0.01" oninput="updateTotals()"></td>
-                    <td id="funnel-${dayName}" style="font-size:16px;text-align:center;">—</td>
-                </tr>`).join('');
+
+            if (isMobileViewport()) {
+                // Mobile: render cards, clear desktop table to evitar IDs duplicados
+                document.getElementById('week-body').innerHTML = '';
+                renderMobileWeek(weekDays);
+            } else {
+                // Desktop: render table, clear mobile cards
+                document.getElementById('mobile-week').innerHTML = '';
+                const tbody = document.getElementById('week-body');
+                tbody.innerHTML = weekDays.map(({ dayName, date }) => `
+                    <tr data-day="${dayName}">
+                        <td style="font-weight:700; font-size:12px;">${dayName} <br><small style="color:var(--slate)">${date}</small></td>
+                        ${COLS.map(c => `<td><input type="number" inputmode="numeric" min="0" class="num-input" data-day="${dayName}" data-col="${c}" value="0" oninput="updateTotals()"></td>`).join('')}
+                        <td><input type="number" inputmode="decimal" min="0" class="num-input prima-input" data-day="${dayName}" data-col="prima" value="0" step="0.01" oninput="updateTotals()"></td>
+                        <td id="funnel-${dayName}" style="font-size:16px;text-align:center;">—</td>
+                    </tr>`).join('');
+            }
             autoLoadBitacora();
             disableFutureDays();
         }
 
+        // Re-renderizar al cruzar el breakpoint mobile/desktop (rotación, resize)
+        let _wasMobileViewport = isMobileViewport();
+        window.addEventListener('resize', () => {
+            const nowMobile = isMobileViewport();
+            if (nowMobile !== _wasMobileViewport) {
+                _wasMobileViewport = nowMobile;
+                if (typeof window.updateWeekTable === 'function' && currentWeeks.length) {
+                    window.updateWeekTable();
+                }
+            }
+        });
+
         window.updateTotals = function (autoSave = true) {
             const totals = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
-            document.querySelectorAll('#week-body tr').forEach(row => {
-                const day = row.dataset.day;
+            // Iterar por currentWeeks en lugar de DOM, así funciona en mobile (cards) o desktop (tabla)
+            const semIdx = parseInt(document.getElementById('sel-semana').value) - 1;
+            const weekDays = currentWeeks[semIdx] || [];
+            weekDays.forEach(({ dayName: day }) => {
                 const dvals = {};
+                // Clamp a [0, ∞): Math.max(0, ...) bloquea negativos; `|| 0` bloquea NaN/empty
                 COLS.forEach(c => {
-                    dvals[c] = parseFloat(document.querySelector(`input[data-day="${day}"][data-col="${c}"]`).value) || 0;
+                    const inp = document.querySelector(`input[data-day="${day}"][data-col="${c}"]`);
+                    dvals[c] = inp ? Math.max(0, parseFloat(inp.value) || 0) : 0;
                 });
-                dvals.prima = parseFloat(document.querySelector(`input[data-day="${day}"][data-col="prima"]`).value) || 0;
+                const primaInp = document.querySelector(`input[data-day="${day}"][data-col="prima"]`);
+                dvals.prima = primaInp ? Math.max(0, parseFloat(primaInp.value) || 0) : 0;
                 const { ok, errors } = validateDay(dvals);
                 if (ok) { COLS.forEach(c => totals[c] += dvals[c]); totals.prima += dvals.prima; }
                 const any = Object.values(dvals).some(v => v > 0) || dvals.prima > 0;
@@ -1659,9 +2678,29 @@
                     cell.textContent = !any ? '—' : (ok ? '🟢' : '🔴');
                     cell.title = ok ? 'Todo correcto' : '⚠️ ERRORES:\n• ' + errors.join('\n• ');
                 }
+                // Mobile: actualizar el resumen inline de los días compactos
+                const summaryEl = document.getElementById('m-summary-' + day);
+                if (summaryEl) {
+                    if (any) {
+                        const primaFmt = '$' + dvals.prima.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                        summaryEl.innerHTML =
+                            `<span>P${dvals.P}</span><span>E${dvals.E}</span><span>C${dvals.C}</span>` +
+                            `<span>V${dvals.V}</span><span>S${dvals.S}</span><span class="m-prima">${primaFmt}</span>`;
+                    } else {
+                        summaryEl.innerHTML = '<span>—</span>';
+                    }
+                }
             });
-            COLS.forEach(c => document.getElementById('tt-' + c).textContent = totals[c]);
-            document.getElementById('tt-$').textContent = totals.prima.toFixed(2);
+            // Totales semanales: desktop tfoot (puede no existir en mobile)
+            COLS.forEach(c => {
+                const td = document.getElementById('tt-' + c);
+                if (td) td.textContent = totals[c];
+            });
+            const ttPrima = document.getElementById('tt-$');
+            if (ttPrima) ttPrima.textContent = totals.prima.toFixed(2);
+            // Totales semanales: mobile (solo prima)
+            const mTtPrima = document.getElementById('m-tt-$');
+            if (mTtPrima) mTtPrima.textContent = '$' + totals.prima.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
             // TOTAL MENSUAL
             const m = parseInt(document.getElementById('sel-month').value);
@@ -1674,10 +2713,22 @@
                     mTotals.prima += e.totales.prima;
                 }
             });
-            COLS.forEach(c => document.getElementById('mt-' + c).textContent = mTotals[c]);
-            document.getElementById('mt-$').textContent = mTotals.prima.toFixed(2);
+            COLS.forEach(c => {
+                const td = document.getElementById('mt-' + c);
+                if (td) td.textContent = mTotals[c];
+            });
+            const mtPrima = document.getElementById('mt-$');
+            if (mtPrima) mtPrima.textContent = mTotals.prima.toFixed(2);
+            const mMtPrima = document.getElementById('m-mt-$');
+            if (mMtPrima) mMtPrima.textContent = '$' + mTotals.prima.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            if (autoSave) saveCurrentWeek(true);
+            if (autoSave) {
+                saveCurrentWeek(true);
+                // Marcar inputs como "saved" para evitar el prompt "Reload site? Changes you made may not be saved"
+                document.querySelectorAll('input[data-day][data-col]').forEach(inp => {
+                    inp.defaultValue = inp.value;
+                });
+            }
         }
 
         window.saveCurrentWeek = function (silent = false) {
@@ -1694,16 +2745,29 @@
             const mes = MONTHS_ES[m - 1] + ' ' + y;
             const semana = document.getElementById('sel-semana').value;
             const dias = [];
-            document.querySelectorAll('#week-body tr').forEach(row => {
-                const day = row.dataset.day;
+            // Iterar por currentWeeks (no DOM) para que funcione en mobile o desktop
+            const _semIdx = parseInt(semana) - 1;
+            const _weekDays = currentWeeks[_semIdx] || [];
+            // GUARD: si currentWeeks aún no se hidrata (carrera en init o sel-semana inválido),
+            // NO escribir nada. Sin este guard, dias=[] sobreescribe la entry existente con datos vacíos.
+            if (!_weekDays.length) {
+                console.warn('[saveCurrentWeek] currentWeeks vacío para semana', semana, '— skip para no borrar datos previos.');
+                return;
+            }
+            _weekDays.forEach(({ dayName: day }) => {
+                const getVal = col => {
+                    const inp = document.querySelector(`input[data-day="${day}"][data-col="${col}"]`);
+                    // Clamp a [0, ∞): bloquea negativos, NaN y strings inválidos
+                    return inp ? Math.max(0, parseFloat(inp.value) || 0) : 0;
+                };
                 dias.push({
                     dia: day,
-                    P: parseFloat(document.querySelector(`input[data-day="${day}"][data-col="P"]`).value) || 0,
-                    E: parseFloat(document.querySelector(`input[data-day="${day}"][data-col="E"]`).value) || 0,
-                    C: parseFloat(document.querySelector(`input[data-day="${day}"][data-col="C"]`).value) || 0,
-                    V: parseFloat(document.querySelector(`input[data-day="${day}"][data-col="V"]`).value) || 0,
-                    S: parseFloat(document.querySelector(`input[data-day="${day}"][data-col="S"]`).value) || 0,
-                    prima: parseFloat(document.querySelector(`input[data-day="${day}"][data-col="prima"]`).value) || 0
+                    P: getVal('P'),
+                    E: getVal('E'),
+                    C: getVal('C'),
+                    V: getVal('V'),
+                    S: getVal('S'),
+                    prima: getVal('prima')
                 });
             });
             const totales = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
@@ -1728,11 +2792,16 @@
             const semana = document.getElementById('sel-semana').value;
             const entry = state.entries.find(e => e.mes === mes && e.semana == semana);
             if (!entry) {
-                document.querySelectorAll('#week-body input').forEach(i => i.value = 0);
+                // Limpiar inputs en cualquier layout (mobile o desktop)
+                document.querySelectorAll('input[data-day][data-col]').forEach(i => i.value = 0);
             } else {
                 entry.dias.forEach(d => {
-                    COLS.forEach(c => { document.querySelector(`input[data-day="${d.dia}"][data-col="${c}"]`).value = d[c]; });
-                    document.querySelector(`input[data-day="${d.dia}"][data-col="prima"]`).value = d.prima;
+                    COLS.forEach(c => {
+                        const inp = document.querySelector(`input[data-day="${d.dia}"][data-col="${c}"]`);
+                        if (inp) inp.value = d[c];
+                    });
+                    const primaInp = document.querySelector(`input[data-day="${d.dia}"][data-col="prima"]`);
+                    if (primaInp) primaInp.value = d.prima;
                 });
             }
             updateTotals(false);
@@ -1863,6 +2932,7 @@
                 type: 'doughnut',
                 data: { labels: ['Cierres (V)', 'Contactos (P)'], datasets: [{ data: [kTotals.V, Math.max(0, kTotals.P - kTotals.V)], backgroundColor: [CHART_COLORS.V, CHART_COLORS.P], borderWidth: 0 }] },
                 options: {
+                    responsive: true, maintainAspectRatio: false,
                     plugins: {
                         title: { display: true, text: `Efectividad: ${kTotals.P > 0 ? (kTotals.V / kTotals.P * 100).toFixed(1) : 0}%`, color: '#fff' },
                         legend: { position: 'top', align: 'center', labels: { boxWidth: 12, padding: 15, color: '#fff', font: { weight: 'bold' } } }
@@ -1874,7 +2944,7 @@
             charts['kpiVol'] = new Chart(document.getElementById('kpiVolumeFull'), {
                 type: 'bar',
                 data: { labels: ['P', 'E', 'C', 'V', 'S'], datasets: [{ label: 'Volumen', data: [kTotals.P, kTotals.E, kTotals.C, kTotals.V, kTotals.S], backgroundColor: [CHART_COLORS.P, CHART_COLORS.E, CHART_COLORS.C, CHART_COLORS.V, CHART_COLORS.S] }] },
-                options: { plugins: { legend: { display: false } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
             destroyChart('kpiRat');
             charts['kpiRat'] = new Chart(document.getElementById('kpiRatios'), {
@@ -1896,6 +2966,7 @@
                     }]
                 },
                 options: {
+                    responsive: true, maintainAspectRatio: false,
                     scales: {
                         r: {
                             grid: { color: 'rgba(255,255,255,0.1)' },
@@ -1920,7 +2991,7 @@
             charts['kpiPri'] = new Chart(document.getElementById('kpiPrimaAvg'), {
                 type: 'bar',
                 data: { labels: ['$/V', '$/S'], datasets: [{ data: [kTotals.V > 0 ? kTotals.prima / kTotals.V : 0, kTotals.S > 0 ? kTotals.prima / kTotals.S : 0], backgroundColor: [CHART_COLORS.V, CHART_COLORS.S] }] },
-                options: { plugins: { legend: { display: false } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
 
@@ -1942,7 +3013,15 @@
             if (!latestDate) {
                 entries = state.entries;
             } else {
-                if (period === '12m' || period === '1y') {
+                if (period === '1m') {
+                    // Solo el mes más reciente con datos
+                    entries = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate.getTime() === latestDate.getTime();
+                    });
+                } else if (period === '12m') {
                     // Últimos 12 meses desde la última fecha disponible
                     const last12Months = new Date(latestDate.getFullYear(), latestDate.getMonth() - 11, 1);
                     entries = state.entries.filter(e => {
@@ -1987,14 +3066,14 @@
             charts['lineV'] = new Chart(document.getElementById('chartVolume'), {
                 type: 'line',
                 data: { labels, datasets: COLS.map(c => ({ label: c, data: entries.map(e => e.totales[c]), borderColor: CHART_COLORS[c], tension: 0.3, pointRadius: 4 })) },
-                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
             });
 
             destroyChart('lineP');
             charts['lineP'] = new Chart(document.getElementById('chartPrima'), {
                 type: 'line',
                 data: { labels, datasets: [{ label: 'Prima Bruta', data: entries.map(e => e.totales.prima), borderColor: 'rgba(212,175,55,.8)', backgroundColor: 'rgba(212,175,55,.2)', fill: true, tension: 0.3 }] },
-                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
             });
 
             // TENDENCIA EFICIENCIA
@@ -2009,7 +3088,7 @@
                         { label: 'C ➔ V', data: entries.map(e => e.totales.C > 0 ? (e.totales.V / e.totales.C * 100).toFixed(1) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }
                     ]
                 },
-                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8', callback: v => v + '%' } }, x: { ticks: { color: '#94a3b8' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8', callback: v => v + '%' } }, x: { ticks: { color: '#94a3b8' } } } }
             });
 
             // TENDENCIA PRIMA PROMEDIO
@@ -2023,7 +3102,7 @@
                         { label: '$/Sol', data: entries.map(e => e.totales.S > 0 ? (e.totales.prima / e.totales.S).toFixed(0) : 0), borderColor: CHART_COLORS.S, tension: 0.3 }
                     ]
                 },
-                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
             });
 
             // TENDENCIA EFICIENCIA TOTAL
@@ -2037,7 +3116,7 @@
                         { label: '% P ➔ S (Solicitud)', data: entries.map(e => e.totales.P > 0 ? (e.totales.S / e.totales.P * 100).toFixed(1) : 0), borderColor: CHART_COLORS.S, tension: 0.3 }
                     ]
                 },
-                options: { plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8', callback: v => v + '%' } }, x: { ticks: { color: '#94a3b8' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8', callback: v => v + '%' } }, x: { ticks: { color: '#94a3b8' } } } }
             });
         }
 
