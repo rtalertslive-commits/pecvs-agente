@@ -1873,7 +1873,9 @@
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 state = docSnap.data();
-                // Defensivo: garantizar que TODOS los campos críticos existen como tipo correcto
+                // Defensivo: garantizar que TODOS los campos críticos existen como tipo correcto.
+                // Si el doc viene del director (sin entries/karma/skipWeekends), los inicializamos
+                // acá para que el próximo syncToCloud no envíe undefined (Firestore lo rechaza).
                 if (!Array.isArray(state.entries))   state.entries = [];
                 if (!Array.isArray(state.karmaLog))  state.karmaLog = [];
                 if (typeof state.karma !== 'number') state.karma = 0;
@@ -1883,6 +1885,8 @@
                 if (typeof state.directorCode !== 'string') state.directorCode = '';
                 if (typeof state.regionName !== 'string') state.regionName = '';
                 if (typeof state.companyCode !== 'string') state.companyCode = '';
+                if (typeof state.skipWeekends !== 'boolean') state.skipWeekends = false;
+                if (state.skipWeekendsActivatedAt === undefined) state.skipWeekendsActivatedAt = null;
                 console.log("Cloud data loaded");
             }
         }
@@ -1955,13 +1959,15 @@
                 // tocan desde la app del agente — el director los controla y deben
                 // sobrevivir reasignaciones / correcciones / cambios de estado.
                 // Con { merge: true } cualquier campo no listado queda intacto en Firestore.
+                // Defensivo: forzar tipos correctos para que Firestore no rechace por undefined.
+                // Esto duplica la defensa de loadFromCloud por si algún flujo deja undefined.
                 const agentOwnedFields = {
-                    entries: state.entries,
-                    karma: state.karma,
-                    karmaLog: state.karmaLog,
-                    karmaLastNotified: state.karmaLastNotified,
-                    skipWeekends: state.skipWeekends,
-                    skipWeekendsActivatedAt: state.skipWeekendsActivatedAt
+                    entries: Array.isArray(state.entries) ? state.entries : [],
+                    karma: typeof state.karma === 'number' ? state.karma : 0,
+                    karmaLog: Array.isArray(state.karmaLog) ? state.karmaLog : [],
+                    karmaLastNotified: typeof state.karmaLastNotified === 'number' ? state.karmaLastNotified : 0,
+                    skipWeekends: state.skipWeekends === true,                                   // booleano estricto
+                    skipWeekendsActivatedAt: state.skipWeekendsActivatedAt || null               // null si undefined/falsy
                 };
                 await setDoc(doc(db, "users", user.email), agentOwnedFields, { merge: true });
                 console.log("Synced to cloud");
