@@ -1773,42 +1773,17 @@
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 if (data.status === 'inactive') {
-                    // Si está inactivo como agente PERO es coach activo, reactivar
-                    // (un coach también puede usar la app del agente para llenar bitácora)
-                    const coachSnap = await getDoc(doc(db, "coaches", user.email));
-                    if (coachSnap.exists() && coachSnap.data().status !== 'inactive') {
-                        const c = coachSnap.data();
-                        await setDoc(doc(db, "users", user.email), {
-                            status: 'active',
-                            type: 'agent',
-                            agentName: data.agentName || c.coachName || user.displayName || '',
-                            teamCode: c.teamCode || c.companyCode || data.teamCode || '',
-                            companyCode: data.companyCode || c.companyCode || '',
-                            autoActivatedFromCoach: true,
-                            autoActivatedAt: new Date().toISOString()
-                        }, { merge: true });
-                        return 'active';
-                    }
+                    // El director lo expulsó. Respetar la decisión — NO auto-reactivar
+                    // aunque la persona también sea coach activo. Si quiere reactivarlo
+                    // como agente, el director usa el botón Reactivar en Inactivos.
+                    // (Camino A: cuentas duales requieren expulsiones independientes.)
                     return 'inactive';
                 }
                 return 'active'; // active or legacy (no status field)
             }
-            // No existe como agente: si es coach activo, crearle el doc de agente
-            const coachSnap = await getDoc(doc(db, "coaches", user.email));
-            if (coachSnap.exists() && coachSnap.data().status !== 'inactive') {
-                const c = coachSnap.data();
-                await setDoc(doc(db, "users", user.email), {
-                    agentName: c.coachName || user.displayName || '',
-                    email: user.email,
-                    companyCode: c.companyCode || '',
-                    teamCode: c.teamCode || c.companyCode || '',
-                    status: 'active',
-                    type: 'agent',
-                    autoCreatedFromCoach: true,
-                    autoCreatedAt: new Date().toISOString()
-                }, { merge: true });
-                return 'active';
-            }
+            // Sin doc en users/: pasar por el flujo de registro normal, aunque la persona
+            // sea coach/promotor/director activo. El director controla quién es agente —
+            // cuentas duales requieren registro y aprobación explícitos (Camino A puro).
             const pendingSnap = await getDoc(doc(db, "pending_users", user.email));
             if (pendingSnap.exists()) return 'pending';
             return 'new';
