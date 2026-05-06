@@ -1495,6 +1495,10 @@
                     <span id="disp-myname" style="font-size:16px; font-weight:700; color:#fff;">—</span>
                 </div>
                 <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
+                    <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI CORREO</label>
+                    <span id="disp-myemail" style="font-size:13px; font-weight:600; color:#fff; word-break:break-all;">—</span>
+                </div>
+                <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI CLAVE DE AGENTE</label>
                     <span id="disp-mycode" style="font-size:22px; font-weight:800; color:var(--gold); letter-spacing:6px;">—</span>
                 </div>
@@ -2613,9 +2617,12 @@
 
         window.openConfig = function () {
             const nameEl = document.getElementById('disp-myname');
+            const emailEl = document.getElementById('disp-myemail');
             const codeEl = document.getElementById('disp-mycode');
             const regionEl = document.getElementById('disp-myregion');
             if (nameEl)   nameEl.textContent   = state.agentName || '—';
+            // Email: el de la sesión de Google (no el del state, porque puede ser distinto si hay desincronización)
+            if (emailEl)  emailEl.textContent  = (user && user.email) || state.email || '—';
             if (codeEl)   codeEl.textContent   = state.companyCode || state.teamCode || '—';
             if (regionEl) regionEl.textContent = state.regionName || '—';
             // Reflejar estado actual del toggle "no trabajo fines de semana"
