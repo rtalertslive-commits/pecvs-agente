@@ -1737,13 +1737,43 @@
             (window.navigator.standalone === true ||
              window.matchMedia('(display-mode: standalone)').matches);
 
+        // ─── DIAGNÓSTICO TEMPORAL iOS PWA ──────────────────────────────────────────
+        // Panel visible solo en iOS PWA standalone para entender por qué el segundo
+        // login (post-logout) falla en algunos dispositivos. Cuando esté resuelto,
+        // remover este bloque entero.
+        function _iosDiag(msg) {
+            if (!_isIosPwaStandalone) return;
+            let panel = document.getElementById('ios-diag-panel');
+            if (!panel) {
+                panel = document.createElement('div');
+                panel.id = 'ios-diag-panel';
+                panel.style.cssText = 'position:fixed;top:env(safe-area-inset-top,10px);left:8px;right:8px;background:rgba(0,0,0,0.92);color:#0f0;font:11px/1.3 -apple-system,monospace;padding:8px 28px 8px 8px;z-index:99999;max-height:50vh;overflow:auto;border:1px solid #0f0;border-radius:6px;';
+                const close = document.createElement('button');
+                close.textContent = '×';
+                close.style.cssText = 'position:absolute;top:2px;right:6px;background:transparent;color:#0f0;border:0;font-size:18px;cursor:pointer;';
+                close.onclick = () => panel.remove();
+                panel.appendChild(close);
+                document.body.appendChild(panel);
+            }
+            const line = document.createElement('div');
+            line.textContent = new Date().toISOString().substr(11, 8) + ' ' + msg;
+            panel.appendChild(line);
+            panel.scrollTop = panel.scrollHeight;
+        }
+        _iosDiag('Script loaded. UA standalone=' + window.navigator.standalone);
+
         // Procesa resultado del redirect al volver de Google (iOS PWA).
         // En el resto de plataformas no hace nada (devuelve null).
-        getRedirectResult(auth).catch(err => {
-            if (err && err.code && err.code !== 'auth/no-auth-event') {
-                alert("Error login (redirect): " + err.message);
-            }
-        });
+        getRedirectResult(auth)
+            .then(result => {
+                _iosDiag('getRedirectResult: ' + (result ? 'user=' + result.user.email : 'null (no pending)'));
+            })
+            .catch(err => {
+                _iosDiag('getRedirectResult ERROR: ' + (err.code || '?') + ' - ' + (err.message || ''));
+                if (err && err.code && err.code !== 'auth/no-auth-event') {
+                    alert("Error login (redirect): " + err.message);
+                }
+            });
 
         let _loginInProgress = false;
         document.getElementById('login-btn').addEventListener('click', () => {
@@ -1753,11 +1783,13 @@
             btn.disabled = true;
 
             if (_isIosPwaStandalone) {
+                _iosDiag('Click login → signInWithRedirect');
                 // Redirect: NO usar await — debe ejecutarse síncronamente para preservar
                 // la cadena de user-gesture. La página se va a Google y vuelve recargada.
                 signInWithRedirect(auth, provider).catch(err => {
                     _loginInProgress = false;
                     btn.disabled = false;
+                    _iosDiag('signInWithRedirect ERROR: ' + (err.code || '?'));
                     alert("Error login: " + err.message);
                 });
                 return;
@@ -1778,42 +1810,50 @@
         });
 
         onAuthStateChanged(auth, async (u) => {
-            if (u) {
-                // Detectar cambio de usuario y forzar recarga (evita data leak en memoria)
-                const lastEmail = sessionStorage.getItem('lastAgentEmail');
-                if (lastEmail && lastEmail !== u.email) {
+            _iosDiag('onAuthStateChanged: ' + (u ? u.email : 'null'));
+            try {
+                if (u) {
+                    // Detectar cambio de usuario y forzar recarga (evita data leak en memoria)
+                    const lastEmail = sessionStorage.getItem('lastAgentEmail');
+                    if (lastEmail && lastEmail !== u.email) {
+                        sessionStorage.setItem('lastAgentEmail', u.email);
+                        location.reload();
+                        return;
+                    }
                     sessionStorage.setItem('lastAgentEmail', u.email);
-                    location.reload();
-                    return;
-                }
-                sessionStorage.setItem('lastAgentEmail', u.email);
-                user = u;
-                const status = await checkUserStatus();
-                if (status === 'active') {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    await loadFromCloud();
-                    startUserDocListener(); // real-time updates desde Firestore
-                    init();
-                } else if (status === 'inactive') {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    document.getElementById('revoked-overlay').style.display = 'flex';
-                } else if (status === 'pending') {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    document.getElementById('pending-overlay').style.display = 'flex';
+                    user = u;
+                    _iosDiag('checkUserStatus...');
+                    const status = await checkUserStatus();
+                    _iosDiag('status=' + status);
+                    if (status === 'active') {
+                        document.getElementById('login-overlay').classList.add('hidden');
+                        await loadFromCloud();
+                        startUserDocListener(); // real-time updates desde Firestore
+                        init();
+                    } else if (status === 'inactive') {
+                        document.getElementById('login-overlay').classList.add('hidden');
+                        document.getElementById('revoked-overlay').style.display = 'flex';
+                    } else if (status === 'pending') {
+                        document.getElementById('login-overlay').classList.add('hidden');
+                        document.getElementById('pending-overlay').style.display = 'flex';
+                    } else {
+                        // New user — show registration form
+                        document.getElementById('login-overlay').classList.add('hidden');
+                        document.getElementById('register-overlay').style.display = 'flex';
+                        if (u.displayName) document.getElementById('reg-name').value = u.displayName;
+                        loadRegionsDropdown();
+                    }
                 } else {
-                    // New user — show registration form
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    document.getElementById('register-overlay').style.display = 'flex';
-                    if (u.displayName) document.getElementById('reg-name').value = u.displayName;
-                    loadRegionsDropdown();
+                    user = null;
+                    document.getElementById('login-overlay').classList.remove('hidden');
+                    ['register-overlay', 'pending-overlay', 'revoked-overlay'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.style.display = 'none';
+                    });
                 }
-            } else {
-                user = null;
-                document.getElementById('login-overlay').classList.remove('hidden');
-                ['register-overlay', 'pending-overlay', 'revoked-overlay'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.style.display = 'none';
-                });
+            } catch (err) {
+                _iosDiag('onAuthStateChanged ERROR: ' + (err.code || '?') + ' - ' + (err.message || ''));
+                alert('Error procesando login: ' + (err.message || err));
             }
         });
 
