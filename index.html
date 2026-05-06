@@ -1568,7 +1568,7 @@
             <button id="reg-submit-btn" onclick="submitRegistration()" style="width:100%; padding:13px; border-radius:10px; background:var(--green); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;">
                 <i class="fa fa-paper-plane"></i> Enviar Solicitud de Acceso
             </button>
-            <button onclick="auth.signOut().then(()=>location.reload())" style="width:100%; margin-top:10px; padding:10px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+            <button onclick="doSignOut()" style="width:100%; margin-top:10px; padding:10px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div>
 
@@ -1578,7 +1578,7 @@
             <div style="font-size:50px; margin-bottom:16px;">⏳</div>
             <h2 style="color:var(--orange); font-family:'Playfair Display',serif; margin-bottom:8px;">Solicitud Pendiente</h2>
             <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu solicitud de acceso está pendiente de aprobación por el director. Por favor intenta más tarde.</p>
-            <button onclick="auth.signOut().then(()=>location.reload())" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+            <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div>
 
@@ -1588,7 +1588,7 @@
             <div style="font-size:50px; margin-bottom:16px;">🚫</div>
             <h2 style="color:var(--red); font-family:'Playfair Display',serif; margin-bottom:8px;">Acceso Revocado</h2>
             <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu acceso al sistema ha sido revocado. Contacta al director si crees que es un error.</p>
-            <button onclick="auth.signOut().then(()=>location.reload())" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+            <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div><!-- /revoked-overlay -->
 
@@ -1848,6 +1848,13 @@
         };
         window.cancelLogout = function () {
             document.getElementById('logout-confirm-modal').classList.remove('open');
+        };
+        // Función directa de salir (sin modal de confirmación) — usada por los botones
+        // "Salir" en register-overlay, pending-overlay y revoked-overlay.
+        // ANTES los onclicks usaban inline `auth.signOut()...` pero `auth` no está expuesto
+        // a window (vive dentro del scope del module), así que el botón fallaba en silencio.
+        window.doSignOut = function () {
+            auth.signOut().then(() => location.reload());
         };
 
         // Modal de "nueva versión disponible". Reemplaza el confirm() nativo que
