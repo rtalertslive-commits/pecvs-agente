@@ -1642,7 +1642,7 @@
 
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Initialize
@@ -1727,27 +1727,54 @@
         };
 
         // --- AUTH LOGIC ---
-        // Login robusto: previene doble-click + ignora errores benignos.
-        // Bug detectado en Android (iOS perdona pero Android lanza auth/cancelled-popup-request
-        // cuando el usuario tap dos veces y el segundo popup mata al primero).
+        // Login con dos flujos según plataforma:
+        //  - iOS PWA standalone: signInWithRedirect (popups bloqueados por reglas de
+        //    user-gesture en standalone — Firebase recomienda redirect explícitamente).
+        //  - Resto (Chrome/Android/Safari browser/iOS browser): signInWithPopup con
+        //    protección contra doble-click + silenciar errores benignos.
+        const _isIosPwaStandalone =
+            /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+            (window.navigator.standalone === true ||
+             window.matchMedia('(display-mode: standalone)').matches);
+
+        // Procesa resultado del redirect al volver de Google (iOS PWA).
+        // En el resto de plataformas no hace nada (devuelve null).
+        getRedirectResult(auth).catch(err => {
+            if (err && err.code && err.code !== 'auth/no-auth-event') {
+                alert("Error login (redirect): " + err.message);
+            }
+        });
+
         let _loginInProgress = false;
-        document.getElementById('login-btn').addEventListener('click', async () => {
+        document.getElementById('login-btn').addEventListener('click', () => {
             if (_loginInProgress) return;
             _loginInProgress = true;
             const btn = document.getElementById('login-btn');
             btn.disabled = true;
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (err) {
-                // Errores benignos que NO requieren alert al usuario (intentará de nuevo)
-                const benign = ['auth/cancelled-popup-request', 'auth/popup-closed-by-user'];
-                if (!benign.includes(err.code)) {
+
+            if (_isIosPwaStandalone) {
+                // Redirect: NO usar await — debe ejecutarse síncronamente para preservar
+                // la cadena de user-gesture. La página se va a Google y vuelve recargada.
+                signInWithRedirect(auth, provider).catch(err => {
+                    _loginInProgress = false;
+                    btn.disabled = false;
                     alert("Error login: " + err.message);
-                }
-            } finally {
-                _loginInProgress = false;
-                btn.disabled = false;
+                });
+                return;
             }
+
+            // Popup (resto de plataformas)
+            signInWithPopup(auth, provider)
+                .catch(err => {
+                    const benign = ['auth/cancelled-popup-request', 'auth/popup-closed-by-user'];
+                    if (!benign.includes(err.code)) {
+                        alert("Error login: " + err.message);
+                    }
+                })
+                .finally(() => {
+                    _loginInProgress = false;
+                    btn.disabled = false;
+                });
         });
 
         onAuthStateChanged(auth, async (u) => {
