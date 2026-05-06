@@ -1642,7 +1642,7 @@
 
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Initialize
@@ -1727,11 +1727,17 @@
         };
 
         // --- AUTH LOGIC ---
-        // Login con dos flujos según plataforma:
-        //  - iOS PWA standalone: signInWithRedirect (popups bloqueados por reglas de
-        //    user-gesture en standalone — Firebase recomienda redirect explícitamente).
+        // Login con dos branches según plataforma:
+        //  - iOS PWA standalone: handler MINIMAL síncrono (estilo v1.8.0 que sí
+        //    funcionaba). signInWithPopup en iOS PWA abre el popup vía Safari como
+        //    intermediario; cualquier async/disabled antes del popup rompe la
+        //    cadena de user-gesture. v1.8.1 agregó async wrapper → se rompió.
+        //    v1.8.2 cambió a signInWithRedirect → primer login OK, segundo perdía
+        //    state (iOS PWA no preserva pendingRedirect entre reloads, confirmado
+        //    con diagnóstico). Volvemos a popup simple.
         //  - Resto (Chrome/Android/Safari browser/iOS browser): signInWithPopup con
-        //    protección contra doble-click + silenciar errores benignos.
+        //    protección contra doble-click (bug Android: auth/cancelled-popup-request)
+        //    + silenciar errores benignos.
         const _isIosPwaStandalone =
             /iPad|iPhone|iPod/.test(navigator.userAgent) &&
             (window.navigator.standalone === true ||
@@ -1797,40 +1803,25 @@
         } catch(e) { _iosDiag('storage scan err: ' + e.message); }
         _iosDiag('auth.currentUser: ' + (auth.currentUser ? auth.currentUser.email : 'null'));
 
-        // Procesa resultado del redirect al volver de Google (iOS PWA).
-        // En el resto de plataformas no hace nada (devuelve null).
-        getRedirectResult(auth)
-            .then(result => {
-                _iosDiag('getRedirectResult: ' + (result ? 'user=' + result.user.email : 'null (no pending)'));
-            })
-            .catch(err => {
-                _iosDiag('getRedirectResult ERROR: ' + (err.code || '?') + ' - ' + (err.message || ''));
-                if (err && err.code && err.code !== 'auth/no-auth-event') {
-                    alert("Error login (redirect): " + err.message);
-                }
-            });
-
         let _loginInProgress = false;
         document.getElementById('login-btn').addEventListener('click', () => {
-            if (_loginInProgress) return;
-            _loginInProgress = true;
-            const btn = document.getElementById('login-btn');
-            btn.disabled = true;
-
             if (_isIosPwaStandalone) {
-                _iosDiag('Click login → signInWithRedirect');
-                // Redirect: NO usar await — debe ejecutarse síncronamente para preservar
-                // la cadena de user-gesture. La página se va a Google y vuelve recargada.
-                signInWithRedirect(auth, provider).catch(err => {
-                    _loginInProgress = false;
-                    btn.disabled = false;
-                    _iosDiag('signInWithRedirect ERROR: ' + (err.code || '?'));
+                // ESTILO v1.8.0 — minimal síncrono, sin async, sin btn.disabled
+                // antes del popup. Cualquier mutación DOM o async wrapping ROMPE
+                // user-gesture en iOS PWA standalone.
+                _iosDiag('Click login (iOS popup minimal)');
+                signInWithPopup(auth, provider).catch(err => {
+                    _iosDiag('Popup ERROR: ' + (err.code || '?') + ' - ' + (err.message || ''));
                     alert("Error login: " + err.message);
                 });
                 return;
             }
 
-            // Popup (resto de plataformas)
+            // Resto: protección anti-doble-click (bug Android v1.8.1)
+            if (_loginInProgress) return;
+            _loginInProgress = true;
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true;
             signInWithPopup(auth, provider)
                 .catch(err => {
                     const benign = ['auth/cancelled-popup-request', 'auth/popup-closed-by-user'];
@@ -2201,6 +2192,24 @@
                     });
                     setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
                 }).catch(err => console.log("SW error:", err));
+
+                // Auto-reload cuando el SW activa nueva versión (refuerzo del modal,
+                // crítico en iOS PWA donde el modal puede no mostrarse o el usuario
+                // dismissa). Solo recarga si NO estamos en proceso de auth (evita
+                // perder el popup en medio del login).
+                let _swReloadDone = false;
+                navigator.serviceWorker.addEventListener('message', (e) => {
+                    if (!e.data || e.data.type !== 'sw-activated') return;
+                    if (_swReloadDone) return;
+                    _swReloadDone = true;
+                    // Si hay overlay de login visible, recargamos (es seguro).
+                    // Si la app ya está cargada con usuario autenticado, dejamos
+                    // el modal de versión nueva manejarlo (usuario decide cuándo).
+                    const loginVisible = !document.getElementById('login-overlay').classList.contains('hidden');
+                    if (loginVisible) {
+                        location.reload();
+                    }
+                });
             }
 
             // Resize charts on viewport change (orientation, browser bar, resize)

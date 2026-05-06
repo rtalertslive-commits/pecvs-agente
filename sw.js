@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pecvs-agent-mainnet-v1.8.4';
+const CACHE_NAME = 'pecvs-agent-mainnet-v1.8.5';
 const assets = [
     './',
     './index.html',
@@ -15,12 +15,17 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-    e.waitUntil(
-        caches.keys().then(keys => Promise.all(
-            keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-        ))
-    );
-    self.clients.claim();
+    e.waitUntil((async () => {
+        // Borra TODOS los caches viejos
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
+        await self.clients.claim();
+        // Avisa a todas las pestañas/PWAs que hay nueva versión activa
+        // para que recarguen el HTML (necesario en iOS PWA donde el HTML
+        // queda cacheado en memoria del proceso aun con network-first).
+        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        clients.forEach(c => c.postMessage({ type: 'sw-activated', version: CACHE_NAME }));
+    })());
 });
 
 self.addEventListener('fetch', e => {
