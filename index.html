@@ -1879,6 +1879,14 @@
                 }
             } catch (err) {
                 _iosDiag('onAuthStateChanged ERROR: ' + (err.code || '?') + ' - ' + (err.message || ''));
+                // Silenciar errores benignos por signOut interrumpiendo ops Firestore:
+                // si auth.currentUser ya es null, el error vino de operaciones que
+                // estaban en vuelo (loadFromCloud, startUserDocListener) cuando el
+                // usuario hizo logout. No es un error real del login.
+                if (!auth.currentUser) {
+                    _iosDiag('  (silenciado: signOut interrumpio operacion en vuelo)');
+                    return;
+                }
                 alert('Error procesando login: ' + (err.message || err));
             }
         });
