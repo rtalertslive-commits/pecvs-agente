@@ -1738,29 +1738,64 @@
              window.matchMedia('(display-mode: standalone)').matches);
 
         // ─── DIAGNÓSTICO TEMPORAL iOS PWA ──────────────────────────────────────────
-        // Panel visible solo en iOS PWA standalone para entender por qué el segundo
-        // login (post-logout) falla en algunos dispositivos. Cuando esté resuelto,
-        // remover este bloque entero.
-        function _iosDiag(msg) {
+        // Panel visible solo en iOS PWA standalone. Logs PERSISTENTES en localStorage
+        // para sobrevivir al reload de signInWithRedirect. Botón C = clear, × = cerrar.
+        function _iosDiagLoad() {
+            try { return JSON.parse(localStorage.getItem('_iosDiagLog') || '[]'); }
+            catch { return []; }
+        }
+        function _iosDiagSave(arr) {
+            try { localStorage.setItem('_iosDiagLog', JSON.stringify(arr.slice(-80))); }
+            catch {}
+        }
+        function _iosDiagRender() {
             if (!_isIosPwaStandalone) return;
             let panel = document.getElementById('ios-diag-panel');
             if (!panel) {
                 panel = document.createElement('div');
                 panel.id = 'ios-diag-panel';
-                panel.style.cssText = 'position:fixed;top:env(safe-area-inset-top,10px);left:8px;right:8px;background:rgba(0,0,0,0.92);color:#0f0;font:11px/1.3 -apple-system,monospace;padding:8px 28px 8px 8px;z-index:99999;max-height:50vh;overflow:auto;border:1px solid #0f0;border-radius:6px;';
+                panel.style.cssText = 'position:fixed;top:env(safe-area-inset-top,10px);left:8px;right:8px;background:rgba(0,0,0,0.92);color:#0f0;font:10px/1.3 ui-monospace,monospace;padding:8px 56px 8px 8px;z-index:99999;max-height:55vh;overflow:auto;border:1px solid #0f0;border-radius:6px;word-break:break-all;';
                 const close = document.createElement('button');
                 close.textContent = '×';
-                close.style.cssText = 'position:absolute;top:2px;right:6px;background:transparent;color:#0f0;border:0;font-size:18px;cursor:pointer;';
+                close.style.cssText = 'position:absolute;top:2px;right:6px;background:transparent;color:#0f0;border:1px solid #0f0;border-radius:4px;width:22px;height:22px;font-size:14px;cursor:pointer;padding:0;';
                 close.onclick = () => panel.remove();
                 panel.appendChild(close);
+                const clear = document.createElement('button');
+                clear.textContent = 'C';
+                clear.style.cssText = 'position:absolute;top:2px;right:32px;background:transparent;color:#0f0;border:1px solid #0f0;border-radius:4px;width:22px;height:22px;font-size:11px;cursor:pointer;padding:0;font-weight:bold;';
+                clear.onclick = () => { localStorage.removeItem('_iosDiagLog'); panel.querySelector('.diag-lines').innerHTML = ''; };
+                panel.appendChild(clear);
+                const lines = document.createElement('div');
+                lines.className = 'diag-lines';
+                panel.appendChild(lines);
                 document.body.appendChild(panel);
             }
-            const line = document.createElement('div');
-            line.textContent = new Date().toISOString().substr(11, 8) + ' ' + msg;
-            panel.appendChild(line);
+            const lines = panel.querySelector('.diag-lines');
+            const stored = _iosDiagLoad();
+            lines.innerHTML = stored.map(l => '<div>' + l.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>').join('');
             panel.scrollTop = panel.scrollHeight;
         }
-        _iosDiag('Script loaded. UA standalone=' + window.navigator.standalone);
+        function _iosDiag(msg) {
+            if (!_isIosPwaStandalone) return;
+            const stored = _iosDiagLoad();
+            stored.push(new Date().toISOString().substr(11, 8) + ' ' + msg);
+            _iosDiagSave(stored);
+            _iosDiagRender();
+        }
+        // Render logs persistidos del reload anterior (si los hay)
+        if (_isIosPwaStandalone && _iosDiagLoad().length) _iosDiagRender();
+
+        // Snapshot del estado al cargar
+        _iosDiag('--- LOAD ---');
+        _iosDiag('URL: ' + location.href.substr(0, 100));
+        _iosDiag('UA standalone=' + window.navigator.standalone);
+        try {
+            const fbKeys = []
+                .concat(Object.keys(localStorage).filter(k => k.toLowerCase().includes('firebase')))
+                .concat(Object.keys(sessionStorage).map(k => 'ss:' + k).filter(k => k.toLowerCase().includes('firebase')));
+            _iosDiag('FB storage keys: ' + (fbKeys.length ? fbKeys.join('|') : 'none'));
+        } catch(e) { _iosDiag('storage scan err: ' + e.message); }
+        _iosDiag('auth.currentUser: ' + (auth.currentUser ? auth.currentUser.email : 'null'));
 
         // Procesa resultado del redirect al volver de Google (iOS PWA).
         // En el resto de plataformas no hace nada (devuelve null).
