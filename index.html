@@ -2032,6 +2032,10 @@
             await loadPointsConfig();
             lockToCurrentWeek();
             updateWeekTable();
+            // Cargar valores reales del cloud en los inputs renderizados.
+            // Sin esta llamada, los inputs quedan con value=0 y prima semana se ve como $0
+            // aunque state.entries tenga datos (la prima mes sí los lee porque suma de state directo).
+            autoLoadBitacora();
             refreshUI();
 
             // Otorgar karma por días pasados no procesados (app estaba cerrada)
