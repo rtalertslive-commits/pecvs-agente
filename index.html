@@ -1727,8 +1727,27 @@
         };
 
         // --- AUTH LOGIC ---
-        document.getElementById('login-btn').addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch(err => alert("Error login: " + err.message));
+        // Login robusto: previene doble-click + ignora errores benignos.
+        // Bug detectado en Android (iOS perdona pero Android lanza auth/cancelled-popup-request
+        // cuando el usuario tap dos veces y el segundo popup mata al primero).
+        let _loginInProgress = false;
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            if (_loginInProgress) return;
+            _loginInProgress = true;
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true;
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (err) {
+                // Errores benignos que NO requieren alert al usuario (intentará de nuevo)
+                const benign = ['auth/cancelled-popup-request', 'auth/popup-closed-by-user'];
+                if (!benign.includes(err.code)) {
+                    alert("Error login: " + err.message);
+                }
+            } finally {
+                _loginInProgress = false;
+                btn.disabled = false;
+            }
         });
 
         onAuthStateChanged(auth, async (u) => {
