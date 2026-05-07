@@ -1543,25 +1543,6 @@
                     <span id="disp-myregion" style="font-size:16px; font-weight:700; color:#fff;">—</span>
                 </div>
 
-                <!-- Sección Configuración (toggle "no trabajo fines de semana") -->
-                <div style="margin-top:8px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
-                    <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:8px; letter-spacing:1px;">CONFIGURACIÓN</label>
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px;">
-                        <div style="flex:1; min-width:0;">
-                            <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:4px;">
-                                🌙 No trabajo fines de semana
-                            </div>
-                            <div id="weekend-toggle-desc" style="font-size:11px; color:var(--slate); line-height:1.45;">
-                                Si lo activas, sábados y domingos se marcarán automáticamente como "Sin intento de venta" para que ganes tus <svg class="totopo-icon"><use href="#totopo"/></svg>.
-                            </div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="toggle-skip-weekends" onchange="toggleSkipWeekends()">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-
                 <button class="btn btn-sm"
                     onclick="document.getElementById('config-modal').classList.remove('open')">Cerrar</button>
             </div>
@@ -2066,9 +2047,7 @@
                     entries: Array.isArray(state.entries) ? state.entries : [],
                     karma: typeof state.karma === 'number' ? state.karma : 0,
                     karmaLog: Array.isArray(state.karmaLog) ? state.karmaLog : [],
-                    karmaLastNotified: typeof state.karmaLastNotified === 'number' ? state.karmaLastNotified : 0,
-                    skipWeekends: state.skipWeekends === true,                                   // booleano estricto
-                    skipWeekendsActivatedAt: state.skipWeekendsActivatedAt || null               // null si undefined/falsy
+                    karmaLastNotified: typeof state.karmaLastNotified === 'number' ? state.karmaLastNotified : 0
                 };
                 await setDoc(doc(db, "users", user.email), agentOwnedFields, { merge: true });
                 console.log("Synced to cloud");
@@ -2512,11 +2491,6 @@
         // Se llama al abrir la app y cuando se detecta cambio de día o de semana.
         async function awardKarmaForPastDays() {
             if (!serverNow) return;
-            // Auto-marcar fines de semana primero (si toggle activo) — solo afecta días desde
-            // skipWeekendsActivatedAt en adelante. Después el loop de abajo otorga karma a esos días.
-            if (state.skipWeekends && typeof applyWeekendSkip === 'function') {
-                try { await applyWeekendSkip(); } catch (e) { console.error('applyWeekendSkip:', e); }
-            }
             const today = new Date(serverNow.getFullYear(), serverNow.getMonth(), serverNow.getDate());
             const pts   = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
 
@@ -2737,109 +2711,13 @@
             if (emailEl)  emailEl.textContent  = (user && user.email) || state.email || '—';
             if (codeEl)   codeEl.textContent   = state.companyCode || state.teamCode || '—';
             if (regionEl) regionEl.textContent = state.regionName || '—';
-            // Reflejar estado actual del toggle "no trabajo fines de semana"
-            const togSkip = document.getElementById('toggle-skip-weekends');
-            if (togSkip) togSkip.checked = state.skipWeekends === true;
-            updateWeekendToggleDescription();
             document.getElementById('config-modal').classList.add('open');
         }
 
-        // ─── TOGGLE "NO TRABAJO FINES DE SEMANA" ─────────────────────────────────────
-        // Se aplica SOLO desde la fecha de activación hacia adelante. Días pasados
-        // (incluso de la semana actual previos a la activación) quedan inmutables.
-        // Los días auto-marcados ganan los mismos totopos que un día con actividad real.
-
-        function updateWeekendToggleDescription() {
-            const desc = document.getElementById('weekend-toggle-desc');
-            if (!desc) return;
-            if (state.skipWeekends && state.skipWeekendsActivatedAt) {
-                const dt = new Date(state.skipWeekendsActivatedAt);
-                const fmt = dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
-                desc.innerHTML = `<span style="color:var(--green);">✓ Activo desde ${fmt}.</span> Sábados y domingos se auto-marcan a partir de esa fecha.`;
-            } else {
-                desc.innerHTML = `Si lo activas, sábados y domingos se marcarán automáticamente como "Sin intento de venta" para que ganes tus <svg class="totopo-icon"><use href="#totopo"/></svg>.`;
-                desc.style.color = '';
-            }
-        }
-
-        window.toggleSkipWeekends = async function () {
-            const checkbox = document.getElementById('toggle-skip-weekends');
-            if (!checkbox) return;
-            const enabling = checkbox.checked;
-
-            if (enabling) {
-                const todayFmt = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
-                if (!confirm(`¿Activar "no trabajo fines de semana"?\n\nA partir de HOY (${todayFmt}), los sábados y domingos se marcarán automáticamente como "Sin intento de venta" y ganarás los totopos del día.\n\nLos fines de semana anteriores quedan como están.`)) {
-                    checkbox.checked = false;
-                    return;
-                }
-                state.skipWeekends = true;
-                state.skipWeekendsActivatedAt = new Date().toISOString();
-                updateWeekendToggleDescription();
-                try { await syncToCloud(); } catch (e) { console.error('sync skipWeekends ON:', e); }
-                applyWeekendSkip();   // procesa fines de semana desde la fecha de activación
-            } else {
-                if (!confirm(`¿Desactivar "no trabajo fines de semana"?\n\nLos sábados y domingos ya marcados se mantienen.\n\nA partir de hoy ya no se auto-marcarán.`)) {
-                    checkbox.checked = true;
-                    return;
-                }
-                state.skipWeekends = false;
-                // skipWeekendsActivatedAt se mantiene como info histórica, pero no se usa más
-                updateWeekendToggleDescription();
-                try { await syncToCloud(); } catch (e) { console.error('sync skipWeekends OFF:', e); }
-            }
-        };
-
-        // Recorre state.entries y marca como sinActividad los sábados/domingos que cumplan:
-        //   1. fecha del día ≥ skipWeekendsActivatedAt
-        //   2. están vacíos (P=E=...=0, prima=0)
-        //   3. NO están marcados ya
-        // Días con datos reales (alguien trabajó un sábado puntual) NO se tocan.
-        async function applyWeekendSkip() {
-            if (!state.skipWeekends || !state.skipWeekendsActivatedAt) return;
-            if (!Array.isArray(state.entries)) return;
-
-            // Forzar que la entry de la semana actual exista (puede no haberse guardado aún)
-            try { saveCurrentWeek(true); } catch (e) { /* ok si falla, seguimos */ }
-
-            const activatedAt = new Date(state.skipWeekendsActivatedAt);
-            activatedAt.setHours(0, 0, 0, 0);
-
-            let changed = false;
-            for (const entry of state.entries) {
-                const parts = entry.mes ? entry.mes.split(' ') : [];
-                if (parts.length < 2) continue;
-                const y = parseInt(parts[1]);
-                const m = MONTHS_ES.indexOf(parts[0]) + 1;
-                if (m === 0 || isNaN(y)) continue;
-
-                const weekCalendar = getMonthCalendar(y, m);
-                const weekIdx = parseInt(entry.semana) - 1;
-                const weekDays = weekCalendar[weekIdx] || [];
-
-                for (const dia of (entry.dias || [])) {
-                    const dayInfo = weekDays.find(w => w.dayName === dia.dia);
-                    if (!dayInfo) continue;
-                    const dayDate = new Date(y, m - 1, dayInfo.date);
-                    const dow = dayDate.getDay(); // 0=domingo, 6=sábado
-                    if (dow !== 0 && dow !== 6) continue;
-                    if (dayDate < activatedAt) continue;          // antes de activar: no tocar
-                    if (dia.sinActividad === true) continue;      // ya marcado: skip
-                    const hasData = (dia.P + dia.E + dia.C + dia.V + dia.S) > 0 || parseFloat(dia.prima) > 0;
-                    if (hasData) continue;                        // tiene datos: respetar
-                    dia.sinActividad = true;
-                    changed = true;
-                }
-            }
-
-            if (changed) {
-                try { await syncToCloud(); } catch (e) { console.error('sync applyWeekendSkip:', e); }
-                if (typeof updateWeekTable === 'function') updateWeekTable();
-                // No llamamos awardKarma aquí — el caller (toggleSkipWeekends en activación,
-                // o awardKarmaForPastDays en init/cambio de día) ejecuta el flujo de karma.
-            }
-        }
-        window.applyWeekendSkip = applyWeekendSkip;
+        // (Toggle "No trabajo fines de semana" eliminado en v1.9.3 — los agentes
+        // marcan manualmente sabados/domingos con el boton "Sin intento de venta hoy"
+        // como cualquier otro dia. Fields legacy state.skipWeekends y
+        // skipWeekendsActivatedAt quedan en docs pero no se leen ni escriben.)
 
         // CALENDAR
         window.getMonthCalendar = function (year, month) {
