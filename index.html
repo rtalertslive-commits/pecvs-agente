@@ -1285,7 +1285,7 @@
                         <div class="chart-wrap"><canvas id="kpiRatios"></canvas></div>
                     </div>
                     <div class="chart-card">
-                        <h3><i class="fa fa-hand-holding-dollar"></i> Prima Promedio V y S</h3>
+                        <h3><i class="fa fa-hand-holding-dollar"></i> Prima Promedio: $/V y $/S</h3>
                         <div class="chart-wrap"><canvas id="kpiPrimaAvg"></canvas></div>
                     </div>
                 </div>
@@ -1344,8 +1344,9 @@
                         <div style="margin-bottom:24px;">
                             <strong style="color:var(--gold); font-size:1.2em;">P - Contactos del día</strong><br>
                             <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong>
-                                Personas buscadas activamente. En abordaje en frío, debes obtener nombre, teléfono, etc.
-                                No cuenta un simple saludo superficial.</p>
+                                Personas buscadas activamente. Empieza a contar desde que hay contacto. En venta en frío,
+                                no cuenta un simple saludo superficial. Trata de obtener datos clave, como nombre,
+                                teléfono, etc.</p>
                             <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Prospección y abordaje
                                 inicial.</em>
                         </div>
@@ -1385,10 +1386,14 @@
                         <div style="margin-bottom:24px;">
                             <strong style="color:var(--gold); font-size:1.2em;">S - Número de solicitudes</strong><br>
                             <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong>
-                                Suma de solicitudes vendidas. Aquí SÍ se cuentan todos los folios, ya sean nuevos
-                                negocios, incrementos o inclusiones, sin importar si son de la misma persona.</p>
-                            <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Productividad y venta
-                                cruzada.</em>
+                                Suma de solicitudes vendidas. Aquí SÍ se cuentan todas las solicitudes, sin importar si
+                                le vendiste a la misma persona varias solicitudes.</p>
+                            <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Productividad.</em>
+                            <p style="font-size:13px; margin:12px 0 0; color:var(--slate); line-height:1.55;"><strong style="color:var(--gold);">Nota:</strong>
+                                ¿Por qué hay dos conceptos similares? Cierres (V) y Solicitudes (S). Hay veces que a una
+                                misma persona se le vende 2 solicitudes, incremento e inclusión. Con el fin de que las
+                                solicitudes no rompan el embudo matemático que te permite medir tu eficiencia en cada
+                                etapa del proceso de la venta, se crearon esos dos conceptos.</p>
                         </div>
 
                         <div style="margin-bottom:24px;">
@@ -3469,8 +3474,7 @@
                 data: {
                     labels,
                     datasets: [
-                        { label: '$/Vta', data: entries.map(e => e.totales.V > 0 ? (e.totales.prima / e.totales.V).toFixed(0) : 0), borderColor: CHART_COLORS.V, tension: 0.3 },
-                        { label: '$/Sol', data: entries.map(e => e.totales.S > 0 ? (e.totales.prima / e.totales.S).toFixed(0) : 0), borderColor: CHART_COLORS.S, tension: 0.3 }
+                        { label: '$/Vta', data: entries.map(e => e.totales.V > 0 ? (e.totales.prima / e.totales.V).toFixed(0) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
@@ -3483,8 +3487,7 @@
                 data: {
                     labels,
                     datasets: [
-                        { label: '% P ➔ V (Cierre)', data: entries.map(e => e.totales.P > 0 ? (e.totales.V / e.totales.P * 100).toFixed(1) : 0), borderColor: CHART_COLORS.V, tension: 0.3 },
-                        { label: '% P ➔ S (Solicitud)', data: entries.map(e => e.totales.P > 0 ? (e.totales.S / e.totales.P * 100).toFixed(1) : 0), borderColor: CHART_COLORS.S, tension: 0.3 }
+                        { label: '% P ➔ V (Cierre)', data: entries.map(e => e.totales.P > 0 ? (e.totales.V / e.totales.P * 100).toFixed(1) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8', callback: v => v + '%' } }, x: { ticks: { color: '#94a3b8' } } } }
