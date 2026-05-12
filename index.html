@@ -3121,6 +3121,15 @@
             const mTtPrima = document.getElementById('m-tt-$');
             if (mTtPrima) mTtPrima.textContent = '$' + totals.prima.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+            // ─── FIX: guardar ANTES de calcular el TOTAL MENSUAL ─────────────
+            // Antes, mTotals leia state.entries ANTES del save, asi que mostraba
+            // el valor de la entry pre-keystroke. Con 1 dia tipeado caracter por
+            // caracter ("3" -> "34" -> "340"), Prima Mes mostraba el valor de
+            // ANTES del ultimo keystroke ($34 cuando Prima Semana ya era $340).
+            // Moviendo saveCurrentWeek aca, state.entries esta fresca cuando
+            // se calcula mTotals abajo.
+            if (autoSave) saveCurrentWeek(true);
+
             // TOTAL MENSUAL
             const m = parseInt(document.getElementById('sel-month').value);
             const y = parseInt(document.getElementById('inp-year').value);
@@ -3142,7 +3151,6 @@
             if (mMtPrima) mMtPrima.textContent = '$' + mTotals.prima.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
             if (autoSave) {
-                saveCurrentWeek(true);
                 // Marcar inputs como "saved" para evitar el prompt "Reload site? Changes you made may not be saved"
                 document.querySelectorAll('input[data-day][data-col]').forEach(inp => {
                     inp.defaultValue = inp.value;
