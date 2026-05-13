@@ -751,6 +751,103 @@
             display: flex;
         }
 
+        /* ═══ KPI INFO ICON + MODAL ═══ */
+        .kpi-info-btn {
+            background: rgba(212,175,55,0.10);
+            border: 1px solid rgba(212,175,55,0.25);
+            color: var(--gold);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s, border-color .15s, transform .1s;
+            padding: 0;
+            font-family: inherit;
+            vertical-align: middle;
+        }
+        .kpi-info-btn:hover {
+            background: rgba(212,175,55,0.22);
+            border-color: var(--gold);
+            transform: scale(1.1);
+        }
+        .kpi-info-btn i { line-height: 1; }
+        .kpi-info-box {
+            background: var(--panel);
+            border: 1.5px solid var(--gold);
+            border-radius: 14px;
+            padding: 22px;
+            width: 100%;
+            max-width: 460px;
+            max-height: 86vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .kpi-info-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(212,175,55,0.2);
+        }
+        .kpi-info-title {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 17px;
+            font-weight: 700;
+            flex: 1;
+            line-height: 1.25;
+        }
+        .kpi-info-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 26px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 4px;
+            flex-shrink: 0;
+        }
+        .kpi-info-body {
+            font-size: 13px;
+            color: var(--white);
+            line-height: 1.55;
+        }
+        .kpi-info-body p { margin: 0 0 12px; }
+        .kpi-info-body h4 {
+            color: var(--gold);
+            font-size: 13px;
+            font-weight: 700;
+            margin: 16px 0 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .kpi-info-body h4:first-child { margin-top: 0; }
+        .kpi-info-body ul { margin: 0 0 12px; padding-left: 18px; }
+        .kpi-info-body li { margin-bottom: 4px; }
+        .kpi-info-body code {
+            background: rgba(212,175,55,0.12);
+            color: var(--gold);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+        .kpi-info-body .kpi-tip {
+            background: rgba(16,185,129,0.08);
+            border-left: 3px solid var(--green, #10b981);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 12.5px;
+        }
+
         .modal-box {
             background: var(--panel);
             border: 1px solid var(--gold);
@@ -1293,19 +1390,19 @@
                 </div>
                 <div class="charts-grid">
                     <div class="chart-card">
-                        <h3><i class="fa fa-percentage"></i> Eficiencia: Conversión P ➔ V</h3>
+                        <h3><i class="fa fa-percentage"></i> Eficiencia: Conversión P ➔ V<button class="kpi-info-btn" onclick="openKpiInfo('efectividad')" title="Qué mide este KPI" aria-label="Información"><i class="fa fa-info"></i></button></h3>
                         <div class="chart-wrap"><canvas id="kpiEfectividad"></canvas></div>
                     </div>
                     <div class="chart-card">
-                        <h3><i class="fa fa-arrows-to-circle"></i> Volumen</h3>
+                        <h3><i class="fa fa-arrows-to-circle"></i> Volumen<button class="kpi-info-btn" onclick="openKpiInfo('volumen')" title="Qué mide este KPI" aria-label="Información"><i class="fa fa-info"></i></button></h3>
                         <div class="chart-wrap"><canvas id="kpiVolumeFull"></canvas></div>
                     </div>
                     <div class="chart-card">
-                        <h3><i class="fa fa-percentage"></i> Eficiencia: Mis Conversiones</h3>
+                        <h3><i class="fa fa-percentage"></i> Eficiencia: Mis Conversiones<button class="kpi-info-btn" onclick="openKpiInfo('ratios')" title="Qué mide este KPI" aria-label="Información"><i class="fa fa-info"></i></button></h3>
                         <div class="chart-wrap"><canvas id="kpiRatios"></canvas></div>
                     </div>
                     <div class="chart-card">
-                        <h3><i class="fa fa-hand-holding-dollar"></i> Prima Promedio: $/V y $/S</h3>
+                        <h3><i class="fa fa-hand-holding-dollar"></i> Prima Promedio: $/V y $/S<button class="kpi-info-btn" onclick="openKpiInfo('prima')" title="Qué mide este KPI" aria-label="Información"><i class="fa fa-info"></i></button></h3>
                         <div class="chart-wrap"><canvas id="kpiPrimaAvg"></canvas></div>
                     </div>
                 </div>
@@ -1536,6 +1633,17 @@
         <div style="position:relative;max-width:92vw;max-height:90vh;">
             <button onclick="closeImagePreview()" style="position:absolute;top:-44px;right:0;background:none;border:none;color:var(--white);font-size:32px;cursor:pointer;z-index:2;line-height:1;">&times;</button>
             <img id="image-preview-img" alt="" style="max-width:92vw;max-height:90vh;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.5);display:block;">
+        </div>
+    </div>
+
+    <!-- KPI INFO MODAL — explicación de cada KPI -->
+    <div class="modal-overlay" id="kpi-info-modal" onclick="if(event.target===this)closeKpiInfo()">
+        <div class="kpi-info-box">
+            <div class="kpi-info-header">
+                <div class="kpi-info-title" id="kpi-info-title">—</div>
+                <button class="kpi-info-close" onclick="closeKpiInfo()" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="kpi-info-body" id="kpi-info-body"></div>
         </div>
     </div>
 
@@ -3283,6 +3391,90 @@
         let charts = {};
         function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
 
+        // ─── KPI INFO: explicaciones de cada KPI (modal) ──────────────────────────
+        const KPI_INFO = {
+            efectividad: {
+                title: '📊 Eficiencia: Conversión P → V',
+                body: `
+                    <h4>¿Qué mide?</h4>
+                    <p>Tu <strong>efectividad final de cierre</strong> — qué porcentaje de los contactos que abordaste terminó comprándote.</p>
+                    <h4>Fórmula</h4>
+                    <p><code>(Cierres V ÷ Contactos P) × 100</code></p>
+                    <h4>Por qué importa</h4>
+                    <p>Es el KPI más importante para un vendedor. Mide tu efectividad de principio a fin del embudo, sumando todas las etapas (P → E → C → V) en un solo número.</p>
+                    <h4>Cómo mejorarla</h4>
+                    <ul>
+                        <li>Si tienes muchos contactos pero pocos cierres, hay fricción en alguna etapa intermedia. Mira el KPI "Mis Conversiones" para ubicar dónde.</li>
+                        <li>Mejor calidad de prospección (P) > mayor cantidad sin calificar.</li>
+                        <li>Trabaja objeciones en E y C, no solo precio en V.</li>
+                    </ul>
+                    <div class="kpi-tip">💡 Un 5–10% en venta en frío suele ser sano. En referidos o cartera caliente puede subir mucho más.</div>
+                `
+            },
+            volumen: {
+                title: '📦 Volumen del Embudo',
+                body: `
+                    <h4>¿Qué mide?</h4>
+                    <p>Cuántas <strong>unidades</strong> de cada etapa del embudo acumulaste en el período seleccionado.</p>
+                    <h4>Las 5 barras</h4>
+                    <ul>
+                        <li><strong>P — Contactos:</strong> personas que abordaste activamente.</li>
+                        <li><strong>E — Entrevistas:</strong> contactos a los que comunicaste valor del producto.</li>
+                        <li><strong>C — Cotizaciones:</strong> personas a quienes presentaste precio formalmente.</li>
+                        <li><strong>V — Cierres:</strong> personas (almas) que te compraron.</li>
+                        <li><strong>S — Solicitudes:</strong> pólizas/contratos firmados. Puede ser mayor que V si una persona compró varias.</li>
+                    </ul>
+                    <h4>Regla del embudo</h4>
+                    <p>En sentido estricto: <code>P ≥ E ≥ C ≥ V</code>. Si alguna etapa supera a la anterior, hay error de registro.</p>
+                    <div class="kpi-tip">💡 El tamaño del embudo determina tu producción. Más entrada (P) bien calificada = más salida (V).</div>
+                `
+            },
+            ratios: {
+                title: '🎯 Eficiencia: Mis Conversiones',
+                body: `
+                    <h4>¿Qué mide?</h4>
+                    <p>La eficiencia <strong>de cada paso individual</strong> del embudo. Te muestra DÓNDE pierdes prospectos.</p>
+                    <h4>Las 3 conversiones</h4>
+                    <ul>
+                        <li><strong>P → E:</strong> de cada contacto, ¿a cuántos lograste entrevistar?</li>
+                        <li><strong>E → C:</strong> de cada entrevista, ¿a cuántos llegaste a cotizar?</li>
+                        <li><strong>C → V:</strong> de cada cotización, ¿a cuántos cerraste?</li>
+                    </ul>
+                    <h4>Cómo leerlo</h4>
+                    <ul>
+                        <li>Si <strong>P → E es bajo</strong>: tu abordaje no engancha — mejora apertura y detección de necesidad.</li>
+                        <li>Si <strong>E → C es bajo</strong>: estás entrevistando, pero no llegas a presentar precio — mejora generación de interés.</li>
+                        <li>Si <strong>C → V es bajo</strong>: cotizas mucho, pero te quedas corto al cerrar — trabaja objeciones y precio.</li>
+                    </ul>
+                    <div class="kpi-tip">💡 Identifica la conversión más baja y enfoca ahí. Es donde el embudo "gotea" más.</div>
+                `
+            },
+            prima: {
+                title: '💰 Prima Promedio: $/V y $/S',
+                body: `
+                    <h4>¿Qué mide?</h4>
+                    <p>El <strong>valor promedio en pesos</strong> de cada cierre y de cada solicitud individual.</p>
+                    <h4>Las 2 barras</h4>
+                    <ul>
+                        <li><strong>$/V — Por cierre:</strong> <code>Prima total ÷ Cierres</code> · cuánto paga en promedio cada persona que te compró.</li>
+                        <li><strong>$/S — Por solicitud:</strong> <code>Prima total ÷ Solicitudes</code> · cuánto vale en promedio cada póliza individual.</li>
+                    </ul>
+                `
+            }
+        };
+
+        window.openKpiInfo = function (key) {
+            const info = KPI_INFO[key];
+            if (!info) return;
+            document.getElementById('kpi-info-title').textContent = info.title;
+            document.getElementById('kpi-info-body').innerHTML = info.body;
+            document.getElementById('kpi-info-modal').classList.add('open');
+        };
+
+        window.closeKpiInfo = function () {
+            document.getElementById('kpi-info-modal').classList.remove('open');
+        };
+
         window.renderKPIs = function () {
             const period = document.getElementById('kpi-period-sel').value;
             let kTotals = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
@@ -3397,11 +3589,20 @@
                         backgroundColor: 'rgba(212,175,55,.4)',
                         borderWidth: 4,
                         pointBackgroundColor: '#d4af37',
-                        pointRadius: 4
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 7,
+                        pointHoverRadius: 10,
+                        // Area de touch invisible mucho mas grande que el punto visual.
+                        // Sin esto, en mobile es muy dificil tocar el punto exacto.
+                        pointHitRadius: 30
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
+                    // mode 'nearest' + intersect: false: el tooltip aparece tocando
+                    // cualquier zona cercana al punto, no solo el punto exacto.
+                    interaction: { mode: 'nearest', intersect: false },
                     scales: {
                         r: {
                             grid: { color: 'rgba(255,255,255,0.1)' },
