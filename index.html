@@ -1360,7 +1360,7 @@
                     </div>
                 </div>
                 <p id="agent-display">Agente: —</p>
-                <div id="karma-badge" onclick="openRulesModal()" role="button" tabindex="0" aria-label="Ver reglas de totopos" title="Toca para ver cómo ganar totopos">
+                <div id="karma-badge" onclick="openRulesModal()" role="button" tabindex="0" aria-label="Ver reglas de totopos" title="Toca para saber como ganarse los totopos">
                     <span class="star"><svg class="totopo-icon"><use href="#totopo"/></svg></span>
                     <span class="karma-num" id="karma-value">0</span>
                     <span class="karma-lbl">totopos</span>
@@ -3638,7 +3638,7 @@
                 if (!rect.width) return;
                 const tt = document.createElement('div');
                 tt.className = 'karma-tooltip';
-                tt.innerHTML = '📜 Toca para ver cómo ganar más totopos';
+                tt.innerHTML = '📜 Toca para saber como ganarse los totopos';
                 // Posición: arriba-izq del badge
                 tt.style.top = (rect.top - 50) + 'px';
                 tt.style.left = Math.max(8, rect.left - 8) + 'px';
