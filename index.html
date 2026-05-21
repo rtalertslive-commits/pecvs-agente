@@ -2213,28 +2213,79 @@
             // esta sesión (evita acoso). Lo verá la próxima vez que abra la app.
         };
 
+        // ─── GUARDAS ANTI DATA-LOSS ─────────────────────────────────────────────
+        // Flags que enforce que syncToCloud no escriba sobre data buena con state malo.
+        //
+        // _cloudLoadOk:        true SOLO si loadFromCloud terminó sin errores
+        // _lastKnownCloudSize: cuántos entries había en Firestore cuando cargamos
+        //
+        // syncToCloud chequea ambos antes de escribir. Si load falló o el state
+        // está más chico que cloud, bloquea + avisa al usuario.
+        // Previene el caso "Lorena" (load silenciosamente fallado → overwrite).
+        let _cloudLoadOk = false;
+        let _lastKnownCloudSize = 0;
+
         async function loadFromCloud() {
             if (!user) return;
-            const docRef = doc(db, "users", user.email);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                state = docSnap.data();
-                // Defensivo: garantizar que TODOS los campos críticos existen como tipo correcto.
-                // Si el doc viene del director (sin entries/karma/skipWeekends), los inicializamos
-                // acá para que el próximo syncToCloud no envíe undefined (Firestore lo rechaza).
-                if (!Array.isArray(state.entries))   state.entries = [];
-                if (!Array.isArray(state.karmaLog))  state.karmaLog = [];
-                if (typeof state.karma !== 'number') state.karma = 0;
-                if (typeof state.karmaLastNotified !== 'number') state.karmaLastNotified = 0;
-                if (typeof state.agentName !== 'string') state.agentName = '';
-                if (typeof state.teamCode !== 'string') state.teamCode = '';
-                if (typeof state.directorCode !== 'string') state.directorCode = '';
-                if (typeof state.regionName !== 'string') state.regionName = '';
-                if (typeof state.companyCode !== 'string') state.companyCode = '';
-                if (typeof state.skipWeekends !== 'boolean') state.skipWeekends = false;
-                if (state.skipWeekendsActivatedAt === undefined) state.skipWeekendsActivatedAt = null;
-                console.log("Cloud data loaded");
+            try {
+                const docRef = doc(db, "users", user.email);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    state = docSnap.data();
+                    // Defensivo: garantizar que TODOS los campos críticos existen como tipo correcto.
+                    // Si el doc viene del director (sin entries/karma/skipWeekends), los inicializamos
+                    // acá para que el próximo syncToCloud no envíe undefined (Firestore lo rechaza).
+                    if (!Array.isArray(state.entries))   state.entries = [];
+                    if (!Array.isArray(state.karmaLog))  state.karmaLog = [];
+                    if (typeof state.karma !== 'number') state.karma = 0;
+                    if (typeof state.karmaLastNotified !== 'number') state.karmaLastNotified = 0;
+                    if (typeof state.agentName !== 'string') state.agentName = '';
+                    if (typeof state.teamCode !== 'string') state.teamCode = '';
+                    if (typeof state.directorCode !== 'string') state.directorCode = '';
+                    if (typeof state.regionName !== 'string') state.regionName = '';
+                    if (typeof state.companyCode !== 'string') state.companyCode = '';
+                    if (typeof state.skipWeekends !== 'boolean') state.skipWeekends = false;
+                    if (state.skipWeekendsActivatedAt === undefined) state.skipWeekendsActivatedAt = null;
+                    console.log("Cloud data loaded");
+                }
+                // ↓↓↓ GUARDAS — marcar load exitoso ↓↓↓
+                _cloudLoadOk = true;
+                _lastKnownCloudSize = (state.entries || []).length;
+                console.log('[guards] _cloudLoadOk=true, _lastKnownCloudSize=', _lastKnownCloudSize);
+                hideLoadErrorBanner();
+            } catch (err) {
+                // ↓↓↓ GUARDA — load falló, NO permitir sync ↓↓↓
+                console.error('[loadFromCloud] FAILED:', err);
+                _cloudLoadOk = false;
+                showLoadErrorBanner(err);
+                throw err;
             }
+        }
+
+        // Banner de error mostrado al usuario si loadFromCloud falla.
+        // Bloquea visualmente el formulario hasta que recargue/reintente.
+        function showLoadErrorBanner(err) {
+            let banner = document.getElementById('load-error-banner');
+            if (banner) { banner.style.display = 'flex'; return; }
+            banner = document.createElement('div');
+            banner.id = 'load-error-banner';
+            banner.style.cssText = `position:fixed; top:0; left:0; right:0; z-index:99999;
+                background:linear-gradient(135deg,#7c2d12,#450a0a); color:#fff;
+                padding:14px 18px; box-shadow:0 4px 16px rgba(0,0,0,0.4);
+                display:flex; align-items:center; gap:12px; font-family:Inter,sans-serif;`;
+            banner.innerHTML = `
+                <div style="font-size:24px;">⚠️</div>
+                <div style="flex:1; font-size:14px; line-height:1.4;">
+                    <div style="font-weight:800; margin-bottom:2px;">No pudimos cargar tu información</div>
+                    <div style="opacity:0.85; font-size:12px;">Para no perder datos, refrescá la app antes de seguir reportando.</div>
+                </div>
+                <button onclick="location.reload()" style="padding:8px 14px; background:#fff; color:#7c2d12; border:none; border-radius:8px; font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap;">Refrescar</button>
+            `;
+            document.body.appendChild(banner);
+        }
+        function hideLoadErrorBanner() {
+            const banner = document.getElementById('load-error-banner');
+            if (banner) banner.style.display = 'none';
         }
 
         // ─── REAL-TIME LISTENER del doc del agente ─────────────────────────────
@@ -2268,6 +2319,11 @@
                 }
                 if (typeof fresh.karmaLastNotified === 'number') state.karmaLastNotified = fresh.karmaLastNotified;
 
+                // ↓↓↓ GUARDA — mantener _lastKnownCloudSize en sync con cambios server-side ↓↓↓
+                if (Array.isArray(fresh.entries)) {
+                    _lastKnownCloudSize = fresh.entries.length;
+                }
+
                 // Campos admin (controlados por director). NO los escribimos en
                 // syncToCloud (whitelist) pero sí los reflejamos local para mostrar
                 // datos correctos y para que solicitarCanje use teamCode/directorCode al día.
@@ -2298,6 +2354,26 @@
 
         async function syncToCloud() {
             if (!user || firebaseConfig.apiKey === "TU_API_KEY") return;
+
+            // ═══ GUARDAS ANTI DATA-LOSS ═══════════════════════════════════════
+            // Guarda 1: si loadFromCloud no completó, no escribimos (data en
+            // Firestore puede ser más fresca que nuestro state local).
+            if (!_cloudLoadOk) {
+                console.warn('[syncToCloud] BLOQUEADO — loadFromCloud no completó OK');
+                showLoadErrorBanner();
+                return;
+            }
+            // Guarda 2: si state.entries se achicó respecto a lo que cargamos,
+            // hay algo raro (state corrupto/perdido). No escribir.
+            const currentSize = Array.isArray(state.entries) ? state.entries.length : 0;
+            if (currentSize < _lastKnownCloudSize) {
+                console.warn('[syncToCloud] BLOQUEADO — entries menores que en cloud:',
+                             currentSize, '<', _lastKnownCloudSize);
+                alert('⚠️ No se pudo guardar tu reporte. Para evitar pérdida de datos, cerrá y volvé a abrir la app, después reintenta.');
+                return;
+            }
+            // ═══════════════════════════════════════════════════════════════
+
             try {
                 // WHITELIST: solo escribir los campos que el agente posee.
                 // Los campos admin (agentName, teamCode, coachNum, promotorTeamCode,
@@ -2314,6 +2390,8 @@
                     karmaLastNotified: typeof state.karmaLastNotified === 'number' ? state.karmaLastNotified : 0
                 };
                 await setDoc(doc(db, "users", user.email), agentOwnedFields, { merge: true });
+                // Mantener _lastKnownCloudSize en sync (lo que acabamos de escribir)
+                _lastKnownCloudSize = agentOwnedFields.entries.length;
                 console.log("Synced to cloud");
             } catch (err) { console.error("Sync error:", err); }
         }
