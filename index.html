@@ -2000,7 +2000,13 @@
                     </label>
                     <div id="notif-recordatorio-time-row" style="display:none; margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:6px; align-items:center; gap:10px;">
                         <span style="font-size:12px; color:rgba(255,255,255,0.7); font-weight:600;">Hora:</span>
-                        <input type="time" id="notif-pref-recordatorio-time" onchange="saveNotifPrefs()" value="19:00" min="00:00" max="23:40" step="600" style="flex:1; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                        <select id="notif-pref-recordatorio-hour" onchange="saveNotifPrefs()" style="background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                            <option value="00">00</option><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19" selected>19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option>
+                        </select>
+                        <span style="font-size:16px; color:#fff; font-weight:600;">:</span>
+                        <select id="notif-pref-recordatorio-min" onchange="saveNotifPrefs()" style="background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                            <option value="00" selected>00</option><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="40">40</option><option value="50">50</option>
+                        </select>
                     </div>
                 </div>
 
@@ -2890,17 +2896,20 @@
             const p = state.notifPrefs || DEFAULT_NOTIF_PREFS;
             const anuncios = document.getElementById('notif-pref-anuncios');
             const record   = document.getElementById('notif-pref-recordatorio');
-            const recordT  = document.getElementById('notif-pref-recordatorio-time');
+            const recordH  = document.getElementById('notif-pref-recordatorio-hour');
+            const recordM  = document.getElementById('notif-pref-recordatorio-min');
             const recordRow= document.getElementById('notif-recordatorio-time-row');
             if (anuncios) anuncios.checked = !!p.anuncios;
             const rec = (p.recordatorio && typeof p.recordatorio === 'object') ? p.recordatorio : DEFAULT_NOTIF_PREFS.recordatorio;
             if (record)   record.checked = !!rec.enabled;
             // Migrar valores legacy: round down al múltiplo de 10 más cercano y cap a 23:40.
             let displayTime = rec.time || '19:00';
-            const [_dHH, _dMM] = displayTime.split(':').map(n => parseInt(n) || 0);
-            displayTime = `${String(_dHH).padStart(2,'0')}:${String(Math.floor(_dMM / 10) * 10).padStart(2,'0')}`;
-            if (displayTime > '23:40') displayTime = '23:40';
-            if (recordT)  recordT.value  = displayTime;
+            let [_dHH, _dMM] = displayTime.split(':').map(n => parseInt(n) || 0);
+            _dMM = Math.floor(_dMM / 10) * 10;
+            if (_dHH === 23 && _dMM === 50) _dMM = 40;
+            if (_dHH > 23) _dHH = 23;
+            if (recordH)  recordH.value = String(_dHH).padStart(2,'0');
+            if (recordM)  recordM.value = String(_dMM).padStart(2,'0');
             if (recordRow) recordRow.style.display = rec.enabled ? 'flex' : 'none';
         }
 
@@ -2916,18 +2925,16 @@
             if (!user) return;
             const anuncios = !!document.getElementById('notif-pref-anuncios')?.checked;
             const recordEn = !!document.getElementById('notif-pref-recordatorio')?.checked;
-            let recordT    = document.getElementById('notif-pref-recordatorio-time')?.value || '19:00';
-            // El scheduler corre cada 10 min en marcas :00, :10, ..., :50. Solo permitimos
-            // múltiplos de 10 min (00:00, 00:10, ..., 23:30, 23:40) para que el push llegue
-            // exactamente a la hora elegida — sin delay de hasta 9 min y sin perderse en
-            // ventanas como 23:50-23:59 (que cruzan medianoche sin matchear ningún tick).
-            // Max 23:40 deja 20 min de margen antes del cierre de día (otorgamiento de totopos).
-            const [_hh, _mm] = recordT.split(':').map(n => parseInt(n) || 0);
-            const _floorMM = Math.floor(_mm / 10) * 10;
-            recordT = `${String(_hh).padStart(2,'0')}:${String(_floorMM).padStart(2,'0')}`;
-            if (recordT > '23:40') recordT = '23:40';
-            const _el = document.getElementById('notif-pref-recordatorio-time');
-            if (_el && _el.value !== recordT) _el.value = recordT;
+            const _hourEl = document.getElementById('notif-pref-recordatorio-hour');
+            const _minEl  = document.getElementById('notif-pref-recordatorio-min');
+            const _hourV  = _hourEl?.value || '19';
+            const _minV   = _minEl?.value || '00';
+            let recordT   = `${_hourV}:${_minV}`;
+            // Clamp 23:50 → 23:40 (deja 20 min de margen antes del cierre de día).
+            if (recordT === '23:50') {
+                recordT = '23:40';
+                if (_minEl) _minEl.value = '40';
+            }
             // Preservar campos escritos server-side (lastFiredDate) cuando el user edita el toggle/tiempo.
             // Sin esto, cambiar el switch borra lastFiredDate y la Cloud Function vuelve a disparar
             // dentro del mismo window de 10 min → notifs duplicadas.
