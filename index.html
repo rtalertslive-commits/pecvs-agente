@@ -2912,9 +2912,13 @@
             const anuncios = !!document.getElementById('notif-pref-anuncios')?.checked;
             const recordEn = !!document.getElementById('notif-pref-recordatorio')?.checked;
             const recordT  = document.getElementById('notif-pref-recordatorio-time')?.value || '19:00';
+            // Preservar campos escritos server-side (lastFiredDate) cuando el user edita el toggle/tiempo.
+            // Sin esto, cambiar el switch borra lastFiredDate y la Cloud Function vuelve a disparar
+            // dentro del mismo window de 10 min → notifs duplicadas.
+            const currentRec = (state.notifPrefs && state.notifPrefs.recordatorio) || {};
             const newPrefs = {
                 anuncios,
-                recordatorio: { enabled: recordEn, time: recordT }
+                recordatorio: { ...currentRec, enabled: recordEn, time: recordT }
             };
             state.notifPrefs = Object.assign(state.notifPrefs || {}, newPrefs);
             if (_saveNotifPrefsTimer) clearTimeout(_saveNotifPrefsTimer);
