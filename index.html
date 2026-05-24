@@ -2000,7 +2000,7 @@
                     </label>
                     <div id="notif-recordatorio-time-row" style="display:none; margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:6px; align-items:center; gap:10px;">
                         <span style="font-size:12px; color:rgba(255,255,255,0.7); font-weight:600;">Hora:</span>
-                        <input type="time" id="notif-pref-recordatorio-time" onchange="saveNotifPrefs()" value="19:00" style="flex:1; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                        <input type="time" id="notif-pref-recordatorio-time" onchange="saveNotifPrefs()" value="19:00" min="00:00" max="23:49" style="flex:1; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 8px; font-size:14px; font-family:inherit;">
                     </div>
                 </div>
 
@@ -2895,7 +2895,10 @@
             if (anuncios) anuncios.checked = !!p.anuncios;
             const rec = (p.recordatorio && typeof p.recordatorio === 'object') ? p.recordatorio : DEFAULT_NOTIF_PREFS.recordatorio;
             if (record)   record.checked = !!rec.enabled;
-            if (recordT)  recordT.value  = rec.time || '19:00';
+            // Clamp valores legacy >= 23:50 (los que no recibirían notif por bug del scheduler)
+            let displayTime = rec.time || '19:00';
+            if (displayTime >= '23:50') displayTime = '23:49';
+            if (recordT)  recordT.value  = displayTime;
             if (recordRow) recordRow.style.display = rec.enabled ? 'flex' : 'none';
         }
 
@@ -2911,7 +2914,16 @@
             if (!user) return;
             const anuncios = !!document.getElementById('notif-pref-anuncios')?.checked;
             const recordEn = !!document.getElementById('notif-pref-recordatorio')?.checked;
-            const recordT  = document.getElementById('notif-pref-recordatorio-time')?.value || '19:00';
+            let recordT    = document.getElementById('notif-pref-recordatorio-time')?.value || '19:00';
+            // El scheduler corre cada 10 min en marcas :00, :10, :20, :30, :40, :50.
+            // Si time >= 23:50 no hay tick que matchee el window [time, time+10) antes de
+            // medianoche → user nunca recibiría su notif ese día. Clamp a 23:49 (le da 10 min
+            // de margen para registrar antes de que se cierre el día y se otorguen los totopos).
+            if (recordT >= '23:50') {
+                recordT = '23:49';
+                const el = document.getElementById('notif-pref-recordatorio-time');
+                if (el) el.value = recordT;
+            }
             // Preservar campos escritos server-side (lastFiredDate) cuando el user edita el toggle/tiempo.
             // Sin esto, cambiar el switch borra lastFiredDate y la Cloud Function vuelve a disparar
             // dentro del mismo window de 10 min → notifs duplicadas.
