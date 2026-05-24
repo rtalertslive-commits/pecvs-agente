@@ -2007,12 +2007,6 @@
                 <div id="notif-prefs-saved" style="display:none; font-size:11px; color:#34d399; margin-top:6px; text-align:right;">✓ Guardado</div>
             </div>
 
-            <details style="margin-top:14px;">
-                <summary style="font-size:10px; color:rgba(255,255,255,0.4); cursor:pointer; user-select:none;">Diagnóstico técnico</summary>
-                <div id="notif-debug" style="font-size:10px; color:rgba(255,255,255,0.5); font-family:monospace; margin-top:6px; word-break:break-all;"></div>
-                <div id="notif-last-result" style="display:none; font-size:11px; font-family:monospace; padding:6px 8px; background:rgba(0,0,0,0.3); border-radius:6px; margin-top:6px; word-break:break-all; line-height:1.4;"></div>
-            </details>
-
             <button class="btn btn-sm" style="margin-top:18px; width:100%;"
                 onclick="closeNotifModal()">Cerrar</button>
         </div>
@@ -2851,9 +2845,7 @@
             const isOn = (perm === 'granted' && subscribed);
             if (masterToggle) masterToggle.checked = isOn;
             if (masterSub) {
-                masterSub.textContent = isOn
-                    ? 'Tu dispositivo recibe avisos del director.'
-                    : 'Activá para recibir avisos importantes.';
+                masterSub.textContent = 'Activá o desactivá las notificaciones.';
                 masterSub.style.color = isOn ? '#34d399' : 'var(--slate)';
             }
             if (isOn) { showPrefs(true); loadNotifPrefsIntoUI(); }
