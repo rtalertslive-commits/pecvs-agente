@@ -72,17 +72,97 @@
         .header {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
+            gap: 10px;
+            padding: 12px 14px;
+            /* bleed lateral hacia los bordes del body para que el sticky cubra el viewport. */
+            margin: -15px -15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(2, 6, 23, 0.92);
+            backdrop-filter: blur(14px) saturate(140%);
+            -webkit-backdrop-filter: blur(14px) saturate(140%);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
         }
+
+        /* Filas del header */
+        .header .row-brand,
+        .header .row-info,
+        .header .row-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header .row-brand { justify-content: space-between; }
+        .header .row-info { flex-wrap: wrap; }
+        .header .row-menu { gap: 8px; }
+        .header .row-menu .btn { flex: 1; }
 
         @media (min-width: 768px) {
             .header {
                 flex-direction: row;
-                justify-content: space-between;
+                flex-wrap: wrap;
                 align-items: center;
+                padding: 12px 24px;
+                gap: 14px;
             }
+            .header .row-brand { flex: 0 0 auto; }
+            .header .row-info  { flex: 1 1 auto; justify-content: center; }
+            .header .row-menu  { flex: 0 0 auto; }
+            .header .row-menu .btn { flex: 0 0 auto; }
+        }
+
+        /* Brand block: monograma + título + version tag */
+        .brand-block { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .brand-title {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            min-width: 0;
+        }
+        .brand-title h1 {
+            font-size: 17px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+            background: none;
+            -webkit-text-fill-color: #fff;
+            margin: 0;
+        }
+        .version-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--gold);
+            background: rgba(212, 175, 55, 0.10);
+            border: 1px solid rgba(212, 175, 55, 0.30);
+            padding: 2px 7px;
+            border-radius: 5px;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+
+        /* Icon buttons group (bell + bullhorn) */
+        .icon-btns {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        /* Row de info (solo karma badge ahora — el nombre del agente vive en Mi Perfil) */
+        /* Karma badge inline (más compacto que el original) */
+        .header #karma-badge {
+            padding: 4px 10px 4px 8px;
+            margin-top: 0;
+            border-radius: 18px;
+        }
+        .header #karma-badge .star { font-size: 14px; }
+        .header #karma-badge .karma-num { font-size: 14px; letter-spacing: 0.5px; }
+        .header #karma-badge .karma-lbl { font-size: 9px; letter-spacing: 1.2px; }
+        .header #karma-badge .karma-info-i {
+            width: 14px; height: 14px; font-size: 8px; margin-left: 2px;
         }
 
         /* BRAND: monograma dorado + wordmark "Actividad" */
@@ -92,18 +172,18 @@
             gap: 14px;
         }
         .brand-mono {
-            width: 48px;
-            height: 48px;
-            border-radius: 11px;
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
             background: linear-gradient(135deg, var(--gold-l) 0%, var(--gold) 50%, #a08015 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Playfair Display', serif;
             font-weight: 900;
-            font-size: 26px;
+            font-size: 20px;
             color: var(--bg);
-            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            box-shadow: 0 3px 10px rgba(212, 175, 55, 0.25), inset 0 1px 0 rgba(255,255,255,0.2);
             flex-shrink: 0;
             line-height: 1;
         }
@@ -157,8 +237,56 @@
         .header-right {
             display: flex;
             gap: 8px;
+            align-items: center;
+            justify-content: space-between;  /* en mobile separa user-menu (izq) del bell (der) */
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            .header-right {
+                width: auto;
+                justify-content: flex-end;
+            }
+        }
+        .header-right .user-menu {
+            display: flex;
+            gap: 8px;
             flex-wrap: wrap;
         }
+        /* Bell + Megaphone — circulares, icon-only, visualmente distintos del menu de user */
+        #notif-bell-btn,
+        #anuncios-btn {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+        }
+        #notif-bell-btn i,
+        #anuncios-btn i {
+            font-size: 15px;
+            margin: 0;
+        }
+        /* Badge numérico para anuncios sin leer (rojo, esquina superior derecha) */
+        #anuncios-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            background: #ef4444;
+            color: #fff;
+            border-radius: 9px;
+            font-size: 10px;
+            font-weight: 800;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--panel, #0f172a);
+            line-height: 1;
+        }
+        #anuncios-badge.show { display: flex; }
 
         /* BUTTONS */
         .btn {
@@ -855,6 +983,11 @@
             padding: 24px;
             width: 100%;
             max-width: 450px;
+            max-height: calc(100dvh - 40px);
+            max-height: calc(100vh - 40px);
+            max-height: 86vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             position: relative;
         }
 
@@ -1351,15 +1484,29 @@
     <div class="app">
         <!-- HEADER -->
         <div class="header">
-            <div class="header-left">
-                <div class="brand">
+            <!-- Row 1: brand (logo + título + versión) + icon buttons (bell, bocina) -->
+            <div class="row-brand">
+                <div class="brand-block">
                     <div class="brand-mono">A</div>
-                    <div>
+                    <div class="brand-title">
                         <h1>Actividad</h1>
-                        <div class="brand-sub"><span class="pulse-text">REGISTRO PROFESIONAL</span> <span class="ver" data-app-version>—</span></div>
+                        <span class="version-tag" data-app-version>—</span>
                     </div>
                 </div>
-                <p id="agent-display">Agente: —</p>
+                <div class="icon-btns">
+                    <button id="notif-bell-btn" class="btn" onclick="openNotifModal()" title="Notificaciones">
+                        <i class="fa fa-bell"></i>
+                        <span id="notif-bell-dot" style="display:none; position:absolute; top:6px; right:6px; width:9px; height:9px; background:var(--gold); border-radius:50%; border:1.5px solid var(--panel, #0f172a);"></span>
+                    </button>
+                    <button id="anuncios-btn" class="btn" onclick="openAnunciosModal()" title="Anuncios de la dirección">
+                        <i class="fa fa-bullhorn"></i>
+                        <span id="anuncios-badge">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Row 2: solo karma badge (el nombre del agente vive en Mi Perfil) -->
+            <div class="row-info">
                 <div id="karma-badge" onclick="openRulesModal()" role="button" tabindex="0" aria-label="Ver reglas de totopos" title="Toca para saber como ganarse los totopos">
                     <span class="star"><svg class="totopo-icon"><use href="#totopo"/></svg></span>
                     <span class="karma-num" id="karma-value">0</span>
@@ -1367,7 +1514,9 @@
                     <span class="karma-info-i"><i class="fa fa-info"></i></span>
                 </div>
             </div>
-            <div class="header-right">
+
+            <!-- Row 3: user menu (Mi Perfil + Salir) -->
+            <div class="row-menu">
                 <button class="btn btn-sm" onclick="openConfig()"><i class="fa fa-user-gear"></i>Mi Perfil</button>
                 <button id="logout-btn" class="btn btn-sm"
                     style="border-color:var(--red) !important; color:var(--red) !important; display:inline-flex !important;"
@@ -1576,7 +1725,9 @@
                         <div style="margin-bottom:24px;">
                             <strong style="color:var(--gold); font-size:1.2em;">P - Personas contactadas en el día</strong><br>
                             <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong>
-                                Personas buscadas activamente que tienes enfrente y a las que les podrías vender. El conteo empieza desde el primer contacto.</p>
+                                Personas buscadas activamente. Empieza a contar desde que hay contacto. En venta en frío,
+                                no cuenta un simple saludo superficial. Trata de obtener datos clave, como nombre,
+                                teléfono, etc.</p>
                             <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Prospección y abordaje inicial.</em>
                         </div>
 
@@ -1811,6 +1962,102 @@
         </div>
     </div>
 
+    <!-- NOTIFICATIONS MODAL — gestionar suscripción y prefs por tipo -->
+    <div class="modal-overlay" id="notif-modal">
+        <div class="modal-box">
+            <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin-top:0;"><i class="fa fa-bell" style="margin-right:8px;"></i>Notificaciones</h2>
+            <p style="font-size:12px; color:var(--slate); margin:0 0 18px;">Recibí avisos importantes de la dirección directamente en tu dispositivo.</p>
+
+            <label id="notif-master-row" style="display:none; align-items:center; justify-content:space-between; padding:14px 16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; margin-bottom:12px; cursor:pointer; gap:12px;">
+                <div style="flex:1; min-width:0;">
+                    <div id="notif-master-title" style="font-size:15px; color:#fff; font-weight:700;">Notificaciones</div>
+                    <div id="notif-master-sub" style="font-size:12px; color:var(--slate); margin-top:3px;">Cargando…</div>
+                </div>
+                <input type="checkbox" id="notif-master-toggle" onchange="onMasterToggle()" style="width:26px; height:26px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;">
+            </label>
+
+            <div id="notif-status" style="display:none; font-size:13px; font-weight:600; color:#fff; margin-bottom:12px; line-height:1.4; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:10px;">Cargando…</div>
+            <button id="notif-action-btn" class="btn btn-sm" style="display:none; width:100%; margin-bottom:10px;" onclick="onNotifActionClick()">Activar notificaciones</button>
+
+            <div id="notif-prefs" style="display:none; margin-top:8px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+                <div style="font-size:11px; color:var(--slate); font-weight:700; margin-bottom:10px; letter-spacing:0.5px;">RECIBIR AVISOS DE:</div>
+
+                <label class="notif-toggle-row" style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer;">
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:14px; color:#fff; font-weight:600;">📢 Anuncios de la dirección</div>
+                        <div style="font-size:11px; color:var(--slate); margin-top:2px;">Broadcasts importantes del director, promotor y coach.</div>
+                    </div>
+                    <input type="checkbox" id="notif-pref-anuncios" onchange="saveNotifPrefs()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;" checked>
+                </label>
+
+                <div style="padding:12px 0;">
+                    <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-size:14px; color:#fff; font-weight:600;">⏰ Recordatorio diario</div>
+                            <div style="font-size:11px; color:var(--slate); margin-top:2px;">Te avisamos si no reportaste actividad.</div>
+                        </div>
+                        <input type="checkbox" id="notif-pref-recordatorio" onchange="onRecordatorioToggle()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;">
+                    </label>
+                    <div id="notif-recordatorio-time-row" style="display:none; margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:6px; align-items:center; gap:10px;">
+                        <span style="font-size:12px; color:rgba(255,255,255,0.7); font-weight:600;">Hora:</span>
+                        <input type="time" id="notif-pref-recordatorio-time" onchange="saveNotifPrefs()" value="19:00" style="flex:1; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                    </div>
+                </div>
+
+                <div id="notif-prefs-saved" style="display:none; font-size:11px; color:#34d399; margin-top:6px; text-align:right;">✓ Guardado</div>
+            </div>
+
+            <details style="margin-top:14px;">
+                <summary style="font-size:10px; color:rgba(255,255,255,0.4); cursor:pointer; user-select:none;">Diagnóstico técnico</summary>
+                <div id="notif-debug" style="font-size:10px; color:rgba(255,255,255,0.5); font-family:monospace; margin-top:6px; word-break:break-all;"></div>
+                <div id="notif-last-result" style="display:none; font-size:11px; font-family:monospace; padding:6px 8px; background:rgba(0,0,0,0.3); border-radius:6px; margin-top:6px; word-break:break-all; line-height:1.4;"></div>
+            </details>
+
+            <button class="btn btn-sm" style="margin-top:18px; width:100%;"
+                onclick="closeNotifModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- ANUNCIOS MODAL — feed de anuncios del director -->
+    <div class="modal-overlay" id="anuncios-modal">
+        <div class="modal-box" style="padding-top:48px;">
+            <!-- × sticky en esquina superior derecha (siempre alcanzable aún con muchas notifs) -->
+            <button onclick="closeAnunciosModal()" aria-label="Cerrar"
+                style="position:absolute; top:12px; right:12px; width:32px; height:32px; padding:0; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.12); border-radius:50%; font-size:18px; line-height:1; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center;">&times;</button>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px;">
+                <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin:0;"><i class="fa fa-bullhorn" style="margin-right:8px;"></i>Anuncios</h2>
+            </div>
+            <p style="font-size:12px; color:var(--slate); margin:0 0 12px;">Mensajes y broadcasts importantes del director, promotor y coach.</p>
+
+            <!-- Acciones bulk: mark all read + clear hidden -->
+            <div id="anuncios-bulk-actions" style="display:none; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+                <button id="anuncios-mark-all-btn" onclick="markAllAnunciosRead()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px;" title="Marcar todos como leídos">
+                    <i class="fa fa-check-double"></i> Marcar leídos
+                </button>
+                <button id="anuncios-clear-read-btn" onclick="clearReadAnuncios()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px;" title="Limpiar (ocultar) los que ya leíste">
+                    <i class="fa fa-broom"></i> Limpiar leídos
+                </button>
+                <button id="anuncios-clear-all-btn" onclick="clearAllAnuncios()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px; border-color:rgba(239,68,68,0.5); color:#f87171;" title="Ocultar todos los anuncios (siguen disponibles si querés volver a verlos manualmente)">
+                    <i class="fa fa-trash-can"></i> Limpiar todos
+                </button>
+            </div>
+
+            <!-- Lista de anuncios (se renderiza desde JS) -->
+            <div id="anuncios-list" style="display:flex; flex-direction:column; gap:10px; min-height:120px;">
+                <!-- Empty state placeholder — se reemplaza cuando hay datos -->
+                <div id="anuncios-empty" style="text-align:center; padding:40px 20px;">
+                    <div style="font-size:48px; opacity:0.3; margin-bottom:12px;">📢</div>
+                    <div style="font-size:14px; color:var(--slate); font-weight:600; margin-bottom:6px;">No tenés anuncios</div>
+                    <div style="font-size:12px; color:rgba(255,255,255,0.4); line-height:1.5;">Cuando el director, promotor o coach mande algo, aparece acá.</div>
+                </div>
+            </div>
+
+            <button class="btn btn-sm" style="margin-top:18px; width:100%;"
+                onclick="closeAnunciosModal()">Cerrar</button>
+        </div>
+    </div>
+
     <!-- HISTORY MODAL -->
     <div class="modal-overlay" id="history-modal">
         <div class="modal-box" style="max-width:500px;">
@@ -1876,6 +2123,43 @@
     </div><!-- /revoked-overlay -->
 
     <!-- KARMA CELEBRATION MODAL -->
+    <!-- Push notification permission banner (compacto, sin copy extra) -->
+    <div id="push-banner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; background:linear-gradient(135deg,#1e3a8a,#0f172a); padding:12px 16px; border-bottom:1px solid rgba(212,175,55,0.3); box-shadow:0 4px 16px rgba(0,0,0,0.4); align-items:center; gap:10px;">
+        <div style="font-size:22px; flex-shrink:0;">🔔</div>
+        <div style="flex:1; color:#fff; font-size:15px; font-weight:700;">¿Activar notificaciones?</div>
+        <button onclick="requestPushPermission()" style="padding:8px 14px; background:var(--gold,#d4af37); color:#000; border:none; border-radius:8px; font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap;">Aceptar</button>
+        <button onclick="dismissPushBanner()" style="padding:8px 12px; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.85); border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap;">Rechazar</button>
+    </div>
+    <style>
+        #push-banner.show { display:flex !important; }
+        .in-app-toast {
+            position:fixed; top:20px; left:50%; transform:translate(-50%,-100px);
+            min-width:280px; max-width:90vw;
+            background:linear-gradient(135deg,#1e293b,#0f172a);
+            border:1px solid rgba(212,175,55,0.4);
+            border-radius:12px; padding:14px 18px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.5);
+            z-index:10005;
+            transition:transform 0.3s ease-out;
+        }
+        .in-app-toast.show { transform:translate(-50%,0); }
+        .in-app-toast .toast-title { color:var(--gold,#d4af37); font-weight:800; font-size:15px; margin-bottom:3px; }
+        .in-app-toast .toast-body { color:#fff; font-size:13px; line-height:1.4; }
+
+        @keyframes bellPulseGold {
+            0%   { box-shadow: 0 0 0 0 rgba(212,175,55,0.7); transform: scale(1); }
+            50%  { box-shadow: 0 0 0 10px rgba(212,175,55,0); transform: scale(1.06); }
+            100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); transform: scale(1); }
+        }
+        #notif-bell-btn.bell-pulsing {
+            animation: bellPulseGold 1.6s ease-in-out infinite;
+            background: rgba(212,175,55,0.18) !important;
+            border-color: var(--gold,#d4af37) !important;
+            color: var(--gold,#d4af37) !important;
+        }
+        #notif-bell-btn.bell-pulsing i { color: var(--gold,#d4af37); }
+    </style>
+
     <div id="karma-celebration">
         <div id="karma-particles"></div>
         <div style="text-align:center;position:relative;z-index:2;padding:30px 20px;max-width:360px;">
@@ -1922,7 +2206,8 @@
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, onSnapshot, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getMessaging, getToken, onMessage, isSupported as isMessagingSupported } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
         // Initialize
         const app = initializeApp(firebaseConfig);
@@ -1930,12 +2215,39 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
+        // Messaging — puede no estar soportado en ciertos browsers/contextos.
+        const VAPID_KEY = "BJAvm3cQqMeJyZZghupjf6-viZ36TR_wMySv33PzeplYhLAWn6RSWIt4Mhj_YFZ-Ju5yiYZty3VRiWBPto8o-Ps";
+        let messaging = null;
+        isMessagingSupported().then(supported => {
+            if (supported) {
+                messaging = getMessaging(app);
+                onMessage(messaging, payload => {
+                    console.log('[push] Foreground message:', payload);
+                    const title = (payload.notification && payload.notification.title) || 'PECVS$';
+                    const body  = (payload.notification && payload.notification.body)  || '';
+                    showInAppToast(title, body);
+                });
+                console.log('[push] Messaging soportado e inicializado');
+            } else {
+                console.log('[push] Messaging NO soportado en este browser/contexto');
+            }
+        });
+
         const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
         const COLS = ['P', 'E', 'C', 'V', 'S'];
         const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         const CHART_COLORS = { P: '#3b82f6', E: '#06b6d4', C: '#a855f7', V: '#10b981', S: '#f59e0b' };
 
-        let state = { agentName: '', teamCode: '', directorCode: '', regionName: '', companyCode: '', entries: [], karma: 0, karmaLog: [], karmaLastNotified: 0, skipWeekends: false, skipWeekendsActivatedAt: null };
+        // notifPrefs por defecto: anuncios ON, recordatorio OFF a las 19:00.
+        // subscribed=true por defecto (first-time = enabled si acepta el banner).
+        // bannerDismissed=false → mostrar banner si perm=default.
+        const DEFAULT_NOTIF_PREFS = {
+            subscribed: true,
+            bannerDismissed: false,
+            anuncios: true,
+            recordatorio: { enabled: false, time: '19:00' }
+        };
+        let state = { agentName: '', teamCode: '', directorCode: '', regionName: '', companyCode: '', entries: [], karma: 0, karmaLog: [], karmaLastNotified: 0, skipWeekends: false, skipWeekendsActivatedAt: null, notifPrefs: { ...DEFAULT_NOTIF_PREFS } };
         let currentWeeks = [];
         let user = null;
         let serverNow = null;
@@ -2055,6 +2367,585 @@
                 });
         });
 
+        // ─── PUSH NOTIFICATIONS ──────────────────────────────────────────────────────
+        // Estados browser-level (no controlables programáticamente):
+        //   - perm 'default'  → nunca preguntado al OS
+        //   - perm 'granted'  → el OS permite
+        //   - perm 'denied'   → el OS bloquea — solo Ajustes del iPhone arregla
+        // Estados app-level (state.notifPrefs):
+        //   - subscribed:       master switch — si el user quiere recibir pushes
+        //   - bannerDismissed:  rechazó el banner → no aparece más automáticamente
+        async function subscribeToPush() {
+            if (!user) return;
+            if (!messaging) { console.log('[push] skip: messaging no disponible'); return; }
+            if (!('Notification' in window)) { console.log('[push] skip: Notification API ausente'); return; }
+            const isIOSDevice = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                || window.navigator.standalone === true;
+            if (isIOSDevice && !isStandalone) {
+                console.log('[push] skip: iOS Safari browser no soporta web push');
+                return;
+            }
+            const perm = Notification.permission;
+            const prefs = state.notifPrefs || DEFAULT_NOTIF_PREFS;
+            if (perm === 'denied') return;
+            if (perm === 'granted') {
+                if (prefs.subscribed !== false) {
+                    try { await registerPushToken(); }
+                    catch (e) { console.error('[push] silent register failed:', e); }
+                }
+                return;
+            }
+            // perm === 'default'
+            if (prefs.bannerDismissed) return;
+            showPushPermissionBanner();
+        }
+
+        async function registerPushToken() {
+            if (!messaging) throw new Error('messaging no inicializado');
+            if (!user) throw new Error('no hay user logueado');
+            _setLastPushResult('Obteniendo token de FCM…', false);
+            const reg = await navigator.serviceWorker.ready;
+            let token;
+            try {
+                token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+            } catch (err) {
+                const msg = 'getToken falló: ' + (err && err.code ? err.code + ' — ' : '') + (err && err.message ? err.message : err);
+                _setLastPushResult(msg, true);
+                throw new Error(msg);
+            }
+            if (!token) {
+                const msg = 'getToken devolvió vacío (permiso revocado?)';
+                _setLastPushResult(msg, true);
+                throw new Error(msg);
+            }
+            _setLastPushResult('Token obtenido. Guardando en Firestore…', false);
+            const tokenId = token.substring(0, 40).replace(/[^a-zA-Z0-9_-]/g, '_');
+            try {
+                await setDoc(doc(db, 'users', user.email, 'pushTokens', tokenId), {
+                    token,
+                    createdAt: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    platform: _getPlatform()
+                }, { merge: true });
+            } catch (err) {
+                const msg = 'setDoc falló (¿reglas Firestore?): ' + (err && err.code ? err.code + ' — ' : '') + (err && err.message ? err.message : err);
+                _setLastPushResult(msg, true);
+                throw new Error(msg);
+            }
+            _setLastPushResult('✅ Token guardado: ' + token.substring(0, 30) + '…', false);
+            return token;
+        }
+
+        function _setLastPushResult(msg, isError) {
+            const el = document.getElementById('notif-last-result');
+            if (!el) return;
+            el.style.color = isError ? '#f87171' : '#34d399';
+            el.textContent = msg;
+            el.style.display = '';
+        }
+
+        function _getPlatform() {
+            const ua = navigator.userAgent;
+            if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+            if (/Android/i.test(ua)) return 'android';
+            return 'desktop';
+        }
+
+        async function _setNotifPrefsField(updates) {
+            if (!user) return;
+            state.notifPrefs = state.notifPrefs || { ...DEFAULT_NOTIF_PREFS };
+            Object.assign(state.notifPrefs, updates);
+            try {
+                await setDoc(doc(db, 'users', user.email), { notifPrefs: state.notifPrefs }, { merge: true });
+            } catch (err) { console.error('[notifPrefs] save error:', err); }
+        }
+
+        async function unsubscribeFromPush() {
+            if (!user) return;
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) await sub.unsubscribe();
+            } catch (e) { console.warn('[push] pushManager.unsubscribe error:', e); }
+            try {
+                const tokensRef = collection(db, 'users', user.email, 'pushTokens');
+                const snap = await getDocs(tokensRef);
+                for (const d of snap.docs) {
+                    try { await deleteDoc(doc(db, 'users', user.email, 'pushTokens', d.id)); }
+                    catch (e) { console.warn('[push] token delete fail:', e); }
+                }
+            } catch (e) { console.warn('[push] tokens collection read error:', e); }
+        }
+
+        window.requestPushPermission = async function () {
+            hidePushPermissionBanner();
+            try {
+                let result = Notification.permission;
+                if (result === 'default') {
+                    result = await Notification.requestPermission();
+                }
+                if (result === 'granted') {
+                    await registerPushToken();
+                    await _setNotifPrefsField({ subscribed: true, bannerDismissed: false });
+                    showInAppToast('✅ Notificaciones activadas', 'Vas a recibir avisos importantes.');
+                } else if (result === 'denied') {
+                    await _setNotifPrefsField({ subscribed: false });
+                    showInAppToast('🚫 Permiso denegado', 'Podés activarlo desde Ajustes del iPhone.');
+                }
+            } catch (err) {
+                console.error('[push] requestPermission error:', err);
+                showInAppToast('❌ Error', err.message || String(err));
+            }
+            if (typeof window.updateNotifStatus === 'function') window.updateNotifStatus();
+        };
+
+        window.dismissPushBanner = async function () {
+            hidePushPermissionBanner();
+            await _setNotifPrefsField({ bannerDismissed: true, subscribed: false });
+        };
+
+        function showPushPermissionBanner() {
+            const banner = document.getElementById('push-banner');
+            if (banner) banner.classList.add('show');
+            const bell = document.getElementById('notif-bell-btn');
+            const dot  = document.getElementById('notif-bell-dot');
+            if (bell) bell.classList.add('bell-pulsing');
+            if (dot)  dot.style.display = '';
+        }
+        function hidePushPermissionBanner() {
+            const banner = document.getElementById('push-banner');
+            if (banner) banner.classList.remove('show');
+            const bell = document.getElementById('notif-bell-btn');
+            const dot  = document.getElementById('notif-bell-dot');
+            if (bell) bell.classList.remove('bell-pulsing');
+            if (dot)  dot.style.display = 'none';
+        }
+
+        window.openNotifModal = function () {
+            const banner = document.getElementById('push-banner');
+            if (banner) banner.classList.remove('show');
+            const bell = document.getElementById('notif-bell-btn');
+            const dot  = document.getElementById('notif-bell-dot');
+            if (bell) bell.classList.remove('bell-pulsing');
+            if (dot)  dot.style.display = 'none';
+            document.getElementById('notif-modal').classList.add('open');
+            window.updateNotifStatus();
+        };
+
+        window.closeNotifModal = function () {
+            document.getElementById('notif-modal').classList.remove('open');
+        };
+
+        // ─── ANUNCIOS (feed real desde Firestore — 3 scopes: region, promoter, coach) ──
+        // 3 listeners independientes que escriben a un cache dict (dedup por id):
+        //   1. Region:   targetDirectorCode === state.directorCode (anuncios del director)
+        //   2. Promoter: targetPromotorTeamCode === mi coach's promotorTeamCode
+        //   3. Coach:    targetTeamCode === state.teamCode (anuncios del coach directo)
+        // El modal renderiza la unión, badge cuenta no-leídos del total.
+        let _anunciosUnsubs = [];       // array de unsubscribe functions
+        let _anunciosDict = {};          // { [id]: { id, ...data } } — dedup natural
+        let _anunciosCache = [];         // array ordenado, derivado del dict para render
+
+        function _rebuildAnunciosCache() {
+            const myId = user?.email || '';
+            // Excluir los que el user ocultó manualmente (hiddenBy)
+            _anunciosCache = Object.values(_anunciosDict)
+                .filter(a => !(a.hiddenBy || []).includes(myId))
+                .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+            const unread = _anunciosCache.filter(a => !(a.readBy || []).includes(myId)).length;
+            updateAnunciosBadge(unread);
+            if (document.getElementById('anuncios-modal').classList.contains('open')) {
+                renderAnunciosList();
+            }
+        }
+
+        function _handleAnunciosSnapshot(snap) {
+            snap.docChanges().forEach(change => {
+                if (change.type === 'removed') {
+                    delete _anunciosDict[change.doc.id];
+                } else {
+                    _anunciosDict[change.doc.id] = { id: change.doc.id, ...change.doc.data() };
+                }
+            });
+            _rebuildAnunciosCache();
+        }
+
+        async function startAnunciosListener() {
+            if (!user) return;
+            // Cleanup any previous listeners (en caso de re-login)
+            stopAnunciosListener();
+
+            // ── Listener 1: scope REGION (director del agente) ──
+            if (state.directorCode) {
+                const qRegion = query(
+                    collection(db, 'announcements'),
+                    where('targetDirectorCode', '==', state.directorCode),
+                    where('targetRoles', 'array-contains', 'users')
+                );
+                _anunciosUnsubs.push(onSnapshot(qRegion, _handleAnunciosSnapshot,
+                    (err) => console.error('[anuncios] region listener:', err)));
+            }
+
+            // ── Listener 2: scope COACH (anuncios mandados directo por mi coach) ──
+            if (state.teamCode) {
+                const qCoach = query(
+                    collection(db, 'announcements'),
+                    where('targetTeamCode', '==', state.teamCode),
+                    where('targetRoles', 'array-contains', 'users')
+                );
+                _anunciosUnsubs.push(onSnapshot(qCoach, _handleAnunciosSnapshot,
+                    (err) => console.error('[anuncios] coach listener:', err)));
+            }
+
+            // ── Listener 3: scope PROMOTER (necesita lookup del coach para saber promotorTeamCode) ──
+            // El agente no guarda promotorTeamCode directo, hay que leerlo del coach.
+            if (state.teamCode) {
+                try {
+                    const cs = await getDocs(query(collection(db, 'coaches'),
+                        where('teamCode', '==', state.teamCode)));
+                    if (!cs.empty) {
+                        const promotorTeamCode = cs.docs[0].data().promotorTeamCode;
+                        if (promotorTeamCode) {
+                            const qPromoter = query(
+                                collection(db, 'announcements'),
+                                where('targetPromotorTeamCode', '==', promotorTeamCode),
+                                where('targetRoles', 'array-contains', 'users')
+                            );
+                            _anunciosUnsubs.push(onSnapshot(qPromoter, _handleAnunciosSnapshot,
+                                (err) => console.error('[anuncios] promoter listener:', err)));
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[anuncios] coach lookup failed:', e);
+                }
+            }
+        }
+
+        function stopAnunciosListener() {
+            _anunciosUnsubs.forEach(u => { try { u(); } catch(e){} });
+            _anunciosUnsubs = [];
+            _anunciosDict = {};
+            _anunciosCache = [];
+        }
+
+        window.openAnunciosModal = function () {
+            document.getElementById('anuncios-modal').classList.add('open');
+            // Iniciar listener si todavía no estaba activo
+            startAnunciosListener();
+            renderAnunciosList();
+        };
+
+        window.closeAnunciosModal = function () {
+            document.getElementById('anuncios-modal').classList.remove('open');
+        };
+
+        function renderAnunciosList() {
+            const empty    = document.getElementById('anuncios-empty');
+            const listEl   = document.getElementById('anuncios-list');
+            const markBtn  = document.getElementById('anuncios-mark-all-btn');
+            const bulkBar  = document.getElementById('anuncios-bulk-actions');
+            const clearReadBtn = document.getElementById('anuncios-clear-read-btn');
+            const myId     = user?.email || '';
+
+            // Bulk actions visible solo si hay items
+            if (bulkBar) bulkBar.style.display = _anunciosCache.length ? 'flex' : 'none';
+
+            if (!_anunciosCache.length) {
+                if (empty) empty.style.display = '';
+                if (listEl) {
+                    Array.from(listEl.children).forEach(c => {
+                        if (c.id !== 'anuncios-empty') c.remove();
+                    });
+                }
+                return;
+            }
+            if (empty) empty.style.display = 'none';
+            const hasUnread = _anunciosCache.some(a => !(a.readBy || []).includes(myId));
+            const hasRead   = _anunciosCache.some(a =>  (a.readBy || []).includes(myId));
+            if (markBtn)       markBtn.style.display       = hasUnread ? '' : 'none';
+            if (clearReadBtn)  clearReadBtn.style.display  = hasRead ? '' : 'none';
+
+            // Render cards
+            if (listEl) {
+                Array.from(listEl.children).forEach(c => {
+                    if (c.id !== 'anuncios-empty') c.remove();
+                });
+                _anunciosCache.forEach(a => {
+                    const isUnread = !(a.readBy || []).includes(myId);
+                    const dt = a.createdAt ? new Date(a.createdAt).toLocaleString('es-MX',
+                        { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+                    const card = document.createElement('div');
+                    card.style.cssText = `position:relative; padding:12px 36px 12px 14px; background:${isUnread ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)'};
+                        border:1px solid ${isUnread ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.08)'};
+                        border-radius:8px; transition:background .15s;`;
+                    card.innerHTML = `
+                        <button onclick="event.stopPropagation(); hideAnuncio('${a.id}')" aria-label="Ocultar"
+                            style="position:absolute; top:8px; right:8px; width:24px; height:24px; padding:0; background:transparent; color:rgba(255,255,255,0.4); border:none; font-size:18px; line-height:1; cursor:pointer; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
+                        <div style="cursor:pointer;" data-mark-read>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; padding-right:8px;">
+                                <div style="font-weight:700; color:${isUnread ? 'var(--gold-l)' : '#fff'}; font-size:14px; line-height:1.3;">
+                                    ${isUnread ? '<span style="color:#ef4444; margin-right:4px;">●</span>' : ''}${escapeHtml(a.title || '')}
+                                </div>
+                                <div style="font-size:11px; color:var(--slate); white-space:nowrap; flex-shrink:0;">${dt}</div>
+                            </div>
+                            <div style="font-size:13px; color:rgba(255,255,255,0.85); line-height:1.45; margin-bottom:6px; white-space:pre-wrap;">${escapeHtml(a.body || '')}</div>
+                            <div style="font-size:10px; color:var(--slate);">— ${escapeHtml(a.createdByName || a.createdBy || '')}</div>
+                        </div>
+                    `;
+                    // Click on card (excepto en el botón ×) marca como leído
+                    const inner = card.querySelector('[data-mark-read]');
+                    if (inner) inner.onclick = () => markAnuncioRead(a.id);
+                    listEl.appendChild(card);
+                });
+            }
+        }
+
+        function updateAnunciosBadge(count) {
+            const badge = document.getElementById('anuncios-badge');
+            if (!badge) return;
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : String(count);
+                badge.classList.add('show');
+            } else {
+                badge.classList.remove('show');
+            }
+        }
+
+        async function markAnuncioRead(annId) {
+            if (!user || !annId) return;
+            const myId = user.email;
+            const ann = _anunciosCache.find(a => a.id === annId);
+            if (!ann) return;
+            const readBy = Array.isArray(ann.readBy) ? ann.readBy : [];
+            if (readBy.includes(myId)) return; // ya leído
+            try {
+                // Append my email a readBy (no usamos arrayUnion porque no está importado;
+                // usamos array literal con set merge para evitar dup duplicate keys es complicado).
+                // Mejor: leer + escribir. Como esto es un click manual, no hay race significativa.
+                const newReadBy = [...new Set([...readBy, myId])];
+                await setDoc(doc(db, 'announcements', annId), { readBy: newReadBy }, { merge: true });
+                // El onSnapshot va a actualizar el cache y re-renderizar automáticamente
+            } catch (err) {
+                console.error('[anuncios] mark read error:', err);
+            }
+        }
+
+        window.markAllAnunciosRead = async function () {
+            if (!user) return;
+            const myId = user.email;
+            const unread = _anunciosCache.filter(a => !(a.readBy || []).includes(myId));
+            for (const a of unread) {
+                await markAnuncioRead(a.id);
+            }
+        };
+
+        // Oculta un anuncio para mí (otros agentes lo siguen viendo). También lo marca como leído.
+        window.hideAnuncio = async function (annId) {
+            if (!user || !annId) return;
+            const myId = user.email;
+            const ann = _anunciosDict[annId];
+            if (!ann) return;
+            const hiddenBy = Array.isArray(ann.hiddenBy) ? ann.hiddenBy : [];
+            const readBy   = Array.isArray(ann.readBy)   ? ann.readBy   : [];
+            if (hiddenBy.includes(myId)) return;
+            try {
+                const newHiddenBy = [...new Set([...hiddenBy, myId])];
+                const newReadBy   = [...new Set([...readBy, myId])];
+                await setDoc(doc(db, 'announcements', annId),
+                    { hiddenBy: newHiddenBy, readBy: newReadBy }, { merge: true });
+                // El onSnapshot lo va a sacar del cache automáticamente
+            } catch (err) {
+                console.error('[anuncios] hide error:', err);
+            }
+        };
+
+        // Oculta todos los que ya leí
+        window.clearReadAnuncios = async function () {
+            if (!user) return;
+            const myId = user.email;
+            const toHide = _anunciosCache.filter(a => (a.readBy || []).includes(myId));
+            for (const a of toHide) {
+                await hideAnuncio(a.id);
+            }
+        };
+
+        // Oculta TODOS (también marca como leídos)
+        window.clearAllAnuncios = async function () {
+            if (!user) return;
+            if (!confirm('¿Ocultar todos los anuncios? Esta acción solo afecta tu vista — el director y otros agentes siguen viéndolos.')) return;
+            const all = [..._anunciosCache];
+            for (const a of all) {
+                await hideAnuncio(a.id);
+            }
+        };
+
+        function showInAppToast(title, body) {
+            const toast = document.createElement('div');
+            toast.className = 'in-app-toast';
+            toast.innerHTML = `
+                <div class="toast-title">${escapeHtml(title)}</div>
+                <div class="toast-body">${escapeHtml(body)}</div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 50);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        window.updateNotifStatus = function () {
+            const statusEl     = document.getElementById('notif-status');
+            const debugEl      = document.getElementById('notif-debug');
+            const btnEl        = document.getElementById('notif-action-btn');
+            const masterRow    = document.getElementById('notif-master-row');
+            const masterToggle = document.getElementById('notif-master-toggle');
+            const masterSub    = document.getElementById('notif-master-sub');
+            const prefsPanel   = document.getElementById('notif-prefs');
+            if (!statusEl || !btnEl) return;
+            const isIOSDevice = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                || window.navigator.standalone === true;
+            const hasNotifAPI = ('Notification' in window);
+            const perm        = hasNotifAPI ? Notification.permission : 'no-api';
+            const messagingOK = !!messaging;
+            const prefs       = state.notifPrefs || DEFAULT_NOTIF_PREFS;
+            const subscribed  = prefs.subscribed !== false;
+            if (debugEl) {
+                debugEl.textContent = [
+                    'platform=' + (isIOSDevice ? 'iOS' : (/Android/i.test(navigator.userAgent) ? 'Android' : 'Desktop')),
+                    'standalone=' + isStandalone,
+                    'perm=' + perm,
+                    'subscribed=' + subscribed,
+                    'bannerDismissed=' + (prefs.bannerDismissed === true)
+                ].join(' · ');
+            }
+            const showStatus = (html) => { statusEl.style.display = ''; statusEl.innerHTML = html; };
+            const hideStatus = () => { statusEl.style.display = 'none'; };
+            const showMaster = (show) => { if (masterRow) masterRow.style.display = show ? 'flex' : 'none'; };
+            const showPrefs  = (show) => { if (prefsPanel) prefsPanel.style.display = show ? 'block' : 'none'; };
+            btnEl.style.display = 'none';
+            if (isIOSDevice && !isStandalone) {
+                showStatus('⚠️ <b>Instalá la app como PWA primero.</b> Compartir → Agregar a inicio.');
+                showMaster(false); showPrefs(false); return;
+            }
+            if (!hasNotifAPI) {
+                showStatus('❌ Este navegador no soporta notificaciones.');
+                showMaster(false); showPrefs(false); return;
+            }
+            if (!messagingOK) {
+                showStatus('❌ Firebase Messaging no disponible en este contexto.');
+                showMaster(false); showPrefs(false); return;
+            }
+            if (perm === 'denied') {
+                if (isIOSDevice) {
+                    showStatus('🚫 <b style="color:#f87171;">Bloqueadas en iOS.</b><br><span style="font-size:11px; color:var(--slate);">Ajustes → Notificaciones → buscá esta app → Permitir.</span>');
+                } else {
+                    showStatus('🚫 <b style="color:#f87171;">Bloqueadas.</b><br><span style="font-size:11px; color:var(--slate);">Candado al lado de la URL → Notificaciones → Permitir. Refrescá.</span>');
+                }
+                showMaster(false); showPrefs(false); return;
+            }
+            hideStatus();
+            showMaster(true);
+            const isOn = (perm === 'granted' && subscribed);
+            if (masterToggle) masterToggle.checked = isOn;
+            if (masterSub) {
+                masterSub.textContent = isOn
+                    ? 'Tu dispositivo recibe avisos del director.'
+                    : 'Activá para recibir avisos importantes.';
+                masterSub.style.color = isOn ? '#34d399' : 'var(--slate)';
+            }
+            if (isOn) { showPrefs(true); loadNotifPrefsIntoUI(); }
+            else { showPrefs(false); }
+        };
+
+        window.onMasterToggle = async function () {
+            const toggle = document.getElementById('notif-master-toggle');
+            if (!toggle || !user) return;
+            const wantOn = toggle.checked;
+            toggle.disabled = true;
+            try {
+                if (wantOn) {
+                    let perm = Notification.permission;
+                    if (perm === 'default') perm = await Notification.requestPermission();
+                    if (perm === 'granted') {
+                        await registerPushToken();
+                        await _setNotifPrefsField({ subscribed: true, bannerDismissed: false });
+                        showInAppToast('✅ Notificaciones activadas', 'Vas a recibir avisos importantes.');
+                    } else if (perm === 'denied') {
+                        toggle.checked = false;
+                        showInAppToast('🚫 Bloqueado por iOS', 'Activá desde Ajustes del iPhone.');
+                    } else {
+                        toggle.checked = false;
+                    }
+                } else {
+                    await unsubscribeFromPush();
+                    await _setNotifPrefsField({ subscribed: false });
+                    showInAppToast('🔕 Desactivadas', 'No vas a recibir más notificaciones.');
+                }
+            } catch (err) {
+                console.error('[push] master toggle error:', err);
+                showInAppToast('❌ Error', err.message || String(err));
+                toggle.checked = !wantOn;
+            } finally {
+                toggle.disabled = false;
+                window.updateNotifStatus();
+            }
+        };
+
+        function loadNotifPrefsIntoUI() {
+            const p = state.notifPrefs || DEFAULT_NOTIF_PREFS;
+            const anuncios = document.getElementById('notif-pref-anuncios');
+            const record   = document.getElementById('notif-pref-recordatorio');
+            const recordT  = document.getElementById('notif-pref-recordatorio-time');
+            const recordRow= document.getElementById('notif-recordatorio-time-row');
+            if (anuncios) anuncios.checked = !!p.anuncios;
+            const rec = (p.recordatorio && typeof p.recordatorio === 'object') ? p.recordatorio : DEFAULT_NOTIF_PREFS.recordatorio;
+            if (record)   record.checked = !!rec.enabled;
+            if (recordT)  recordT.value  = rec.time || '19:00';
+            if (recordRow) recordRow.style.display = rec.enabled ? 'flex' : 'none';
+        }
+
+        window.onRecordatorioToggle = function () {
+            const checkbox = document.getElementById('notif-pref-recordatorio');
+            const row = document.getElementById('notif-recordatorio-time-row');
+            if (row) row.style.display = (checkbox && checkbox.checked) ? 'flex' : 'none';
+            window.saveNotifPrefs();
+        };
+
+        let _saveNotifPrefsTimer = null;
+        window.saveNotifPrefs = function () {
+            if (!user) return;
+            const anuncios = !!document.getElementById('notif-pref-anuncios')?.checked;
+            const recordEn = !!document.getElementById('notif-pref-recordatorio')?.checked;
+            const recordT  = document.getElementById('notif-pref-recordatorio-time')?.value || '19:00';
+            const newPrefs = {
+                anuncios,
+                recordatorio: { enabled: recordEn, time: recordT }
+            };
+            state.notifPrefs = Object.assign(state.notifPrefs || {}, newPrefs);
+            if (_saveNotifPrefsTimer) clearTimeout(_saveNotifPrefsTimer);
+            _saveNotifPrefsTimer = setTimeout(async () => {
+                try {
+                    await setDoc(doc(db, 'users', user.email), { notifPrefs: state.notifPrefs }, { merge: true });
+                    const ok = document.getElementById('notif-prefs-saved');
+                    if (ok) {
+                        ok.style.display = '';
+                        setTimeout(() => { if (ok) ok.style.display = 'none'; }, 1500);
+                    }
+                } catch (err) {
+                    console.error('[notifPrefs] save error:', err);
+                    showInAppToast('❌ Error guardando preferencias', err.message || String(err));
+                }
+            }, 400);
+        };
+
+        window.onNotifActionClick = async function () {
+            // Compatibility shim — el botón está oculto pero por las dudas
+            window.requestPushPermission();
+        };
+
         onAuthStateChanged(auth, async (u) => {
             try {
                 if (u) {
@@ -2073,6 +2964,9 @@
                         await loadFromCloud();
                         startUserDocListener(); // real-time updates desde Firestore
                         init();
+                        subscribeToPush().catch(err => console.error('[push] subscribeToPush:', err));
+                        // Iniciar listener de anuncios para mantener badge y modal actualizados
+                        startAnunciosListener();
                     } else if (status === 'inactive') {
                         document.getElementById('login-overlay').classList.add('hidden');
                         document.getElementById('revoked-overlay').style.display = 'flex';
@@ -2219,7 +3113,7 @@
         //
         // syncToCloud chequea ambos antes de escribir. Si load falló o el state
         // está más chico que cloud, bloquea + avisa al usuario.
-        // Previene el caso "Lorena" (load silenciosamente fallado → overwrite).
+        // Esto previene el caso Lorena (load silenciosamente fallado → overwrite).
         let _cloudLoadOk = false;
         let _lastKnownCloudSize = 0;
 
@@ -2244,19 +3138,33 @@
                     if (typeof state.companyCode !== 'string') state.companyCode = '';
                     if (typeof state.skipWeekends !== 'boolean') state.skipWeekends = false;
                     if (state.skipWeekendsActivatedAt === undefined) state.skipWeekendsActivatedAt = null;
+                    if (!state.notifPrefs || typeof state.notifPrefs !== 'object') {
+                        state.notifPrefs = { ...DEFAULT_NOTIF_PREFS };
+                    } else {
+                        if (typeof state.notifPrefs.subscribed !== 'boolean') state.notifPrefs.subscribed = DEFAULT_NOTIF_PREFS.subscribed;
+                        if (typeof state.notifPrefs.bannerDismissed !== 'boolean') state.notifPrefs.bannerDismissed = DEFAULT_NOTIF_PREFS.bannerDismissed;
+                        if (typeof state.notifPrefs.anuncios !== 'boolean') state.notifPrefs.anuncios = DEFAULT_NOTIF_PREFS.anuncios;
+                        if (!state.notifPrefs.recordatorio || typeof state.notifPrefs.recordatorio !== 'object') {
+                            state.notifPrefs.recordatorio = { ...DEFAULT_NOTIF_PREFS.recordatorio };
+                        } else {
+                            if (typeof state.notifPrefs.recordatorio.enabled !== 'boolean') state.notifPrefs.recordatorio.enabled = false;
+                            if (typeof state.notifPrefs.recordatorio.time !== 'string') state.notifPrefs.recordatorio.time = '19:00';
+                        }
+                    }
                     console.log("Cloud data loaded");
                 }
                 // ↓↓↓ GUARDAS — marcar load exitoso ↓↓↓
                 _cloudLoadOk = true;
                 _lastKnownCloudSize = (state.entries || []).length;
                 console.log('[guards] _cloudLoadOk=true, _lastKnownCloudSize=', _lastKnownCloudSize);
+                // Si había un banner de error de carga anterior, ocultarlo
                 hideLoadErrorBanner();
             } catch (err) {
                 // ↓↓↓ GUARDA — load falló, NO permitir sync ↓↓↓
                 console.error('[loadFromCloud] FAILED:', err);
                 _cloudLoadOk = false;
                 showLoadErrorBanner(err);
-                throw err;
+                throw err;  // re-lanzar para que el caller también lo sepa
             }
         }
 
@@ -2318,6 +3226,8 @@
                 if (typeof fresh.karmaLastNotified === 'number') state.karmaLastNotified = fresh.karmaLastNotified;
 
                 // ↓↓↓ GUARDA — mantener _lastKnownCloudSize en sync con cambios server-side ↓↓↓
+                // Si el director modifica entries (raro pero posible) o si otro device
+                // sincronizó, actualizamos el size esperado en cloud.
                 if (Array.isArray(fresh.entries)) {
                     _lastKnownCloudSize = fresh.entries.length;
                 }
@@ -2469,9 +3379,16 @@
 
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').then(reg => {
-                    // Detección de nueva versión: usamos addEventListener (más robusto
-                    // que asignación directa) + modal custom (confirm() nativo no se ve
-                    // dentro de PWA standalone en iOS).
+                    // ── LAYER 1: SW que YA estaba esperando antes de que cargara la página ──
+                    // Si el SW se instaló en una visita anterior pero el user no aceptó el
+                    // refresh, queda en estado 'waiting'. Al volver a abrir la app lo detectamos
+                    // acá. Esto cubre el caso clásico donde 'updatefound' no dispara porque ya
+                    // disparó antes y la página actual perdió el listener.
+                    if (reg.waiting && navigator.serviceWorker.controller) {
+                        showUpdateModal();
+                    }
+
+                    // ── LAYER 2: updatefound (caso normal, SW se instala mientras la app está abierta) ──
                     reg.addEventListener('updatefound', () => {
                         const newSW = reg.installing;
                         if (!newSW) return;
@@ -2481,6 +3398,7 @@
                             }
                         });
                     });
+
                     // Forzar check de updates al volver el foco a la app y cada hora
                     document.addEventListener('visibilitychange', () => {
                         if (document.visibilityState === 'visible') {
@@ -2490,22 +3408,32 @@
                     setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
                 }).catch(err => console.log("SW error:", err));
 
-                // Auto-reload cuando el SW activa nueva versión (refuerzo del modal,
-                // crítico en iOS PWA donde el modal puede no mostrarse o el usuario
-                // dismissa). Solo recarga si NO estamos en proceso de auth (evita
-                // perder el popup en medio del login).
+                // ── LAYER 3: postMessage 'sw-activated' desde el SW (refuerzo más confiable en iOS) ──
+                // El SW manda este mensaje cuando termina su 'activate' handler. Si la PWA
+                // estaba en background y vuelve, esto puede llegar antes de que disparen los
+                // eventos de updatefound/statechange.
                 let _swReloadDone = false;
                 navigator.serviceWorker.addEventListener('message', (e) => {
                     if (!e.data || e.data.type !== 'sw-activated') return;
                     if (_swReloadDone) return;
                     _swReloadDone = true;
-                    // Si hay overlay de login visible, recargamos (es seguro).
-                    // Si la app ya está cargada con usuario autenticado, dejamos
-                    // el modal de versión nueva manejarlo (usuario decide cuándo).
-                    const loginVisible = !document.getElementById('login-overlay').classList.contains('hidden');
+                    // Login screen → auto-reload silencioso (no interrumpe nada)
+                    // Resto → mostrar modal para que el user decida cuándo refrescar
+                    const loginEl = document.getElementById('login-overlay');
+                    const loginVisible = loginEl && !loginEl.classList.contains('hidden');
                     if (loginVisible) {
                         location.reload();
+                    } else {
+                        showUpdateModal();
                     }
+                });
+
+                // ── LAYER 4: controllerchange (último fallback) ──
+                // Dispara cuando un SW nuevo toma control de la página (después de
+                // skipWaiting() + claim()). Es el indicador más confiable de "ya hay versión nueva
+                // activa, pero el HTML que el user está viendo todavía es el viejo".
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    showUpdateModal();
                 });
             }
 
@@ -3049,7 +3977,18 @@
         };
 
         window.refreshUI = function () {
-            document.getElementById('agent-display').textContent = 'Agente: ' + (state.agentName || '—');
+            // El nombre del agente vive en Mi Perfil. Si por algún motivo todavía
+            // existe el #agent-display en el DOM (rollback, fork, etc.), lo actualizamos
+            // defensivamente. Si no existe (caso actual), no hacemos nada.
+            const agentDisplay = document.getElementById('agent-display');
+            if (agentDisplay) {
+                const nameSpan = agentDisplay.querySelector('.agent-name');
+                if (nameSpan) {
+                    nameSpan.textContent = state.agentName || '—';
+                } else {
+                    agentDisplay.textContent = 'Agente: ' + (state.agentName || '—');
+                }
+            }
             updateKarmaDisplay();
         }
 
