@@ -1938,10 +1938,27 @@
         <div class="modal-box" style="max-width:380px;text-align:center;">
             <div style="font-size:42px;margin-bottom:8px;">🛒</div>
             <h2 style="font-family:'Inter',sans-serif;font-weight:800;color:var(--white);margin:0 0 12px;font-size:18px;">Confirmar canje</h2>
-            <p id="canje-confirm-text" style="color:var(--slate);font-size:13px;margin:0 0 20px;line-height:1.5;"></p>
+            <p id="canje-confirm-text" style="color:var(--slate);font-size:13px;margin:0 0 16px;line-height:1.5;"></p>
+
+            <!-- Selector de cantidad: − [N] + -->
+            <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 14px;">
+                <span style="color:var(--slate);font-size:12px;">Cantidad:</span>
+                <button id="canje-qty-dec" type="button" onclick="changeCanjeQty(-1)" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--gold);background:rgba(15,23,42,0.8);color:var(--gold-l);font-size:18px;font-weight:700;cursor:pointer;padding:0;">−</button>
+                <span id="canje-qty-display" style="font-size:20px;font-weight:800;color:var(--white);min-width:40px;display:inline-block;">1</span>
+                <button id="canje-qty-inc" type="button" onclick="changeCanjeQty(1)" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--gold);background:rgba(15,23,42,0.8);color:var(--gold-l);font-size:18px;font-weight:700;cursor:pointer;padding:0;">+</button>
+            </div>
+
+            <!-- Resumen: costo total y limit info -->
+            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:10px 12px;margin:0 0 16px;font-size:12px;">
+                <div style="color:var(--gold-l);font-weight:700;font-size:15px;margin-bottom:4px;">
+                    <svg class="totopo-icon"><use href="#totopo"/></svg> <span id="canje-total-display">0</span> totopos
+                </div>
+                <div id="canje-limit-info" style="color:var(--slate);font-size:11px;line-height:1.4;"></div>
+            </div>
+
             <div style="display:flex;gap:10px;">
-                <button class="btn btn-sm" style="flex:1;" onclick="cancelCanje()">Cancelar</button>
-                <button class="btn btn-sm" style="flex:1;border-color:var(--green) !important;color:var(--green) !important;" onclick="confirmCanje()">Solicitar</button>
+                <button id="canje-cancel-btn" class="btn btn-sm" style="flex:1;" onclick="cancelCanje()">Cancelar</button>
+                <button id="canje-confirm-btn" class="btn btn-sm" style="flex:1;border-color:var(--green) !important;color:var(--green) !important;" onclick="confirmCanje()">Solicitar</button>
             </div>
         </div>
     </div>
@@ -2556,6 +2573,31 @@
         //   2. Promoter: targetPromotorTeamCode === mi coach's promotorTeamCode
         //   3. Coach:    targetTeamCode === state.teamCode (anuncios del coach directo)
         // El modal renderiza la unión, badge cuenta no-leídos del total.
+
+        // Registro compartido con director/coach/promotor mainnet para parseo [[key]].
+        // Cuando alguien escribe "tocá [[anuncios]]" en el body, el agente ve un
+        // chip circular con el icono real del botón (réplica visual a 22px).
+        const ANUNCIO_UI_ELEMENTS = {
+            notif:      { label: 'Notificaciones', icon: 'fa-bell' },
+            anuncios:   { label: 'Anuncios',       icon: 'fa-bullhorn' },
+            tienda:     { label: 'Tienda',         icon: 'fa-store' },
+            perfil:     { label: 'Mi Perfil',      icon: 'fa-user' },
+            config:     { label: 'Configuración',  icon: 'fa-cog' },
+            karma:      { label: 'Totopos',        icon: 'fa-star' },
+            historial:  { label: 'Historial',      icon: 'fa-clock-rotate-left' },
+            equipo:     { label: 'Mi Equipo',      icon: 'fa-users' },
+            reportes:   { label: 'Reportes',       icon: 'fa-file-lines' },
+        };
+
+        function renderAnuncioBody(text) {
+            const escaped = escapeHtml(text || '');
+            return escaped.replace(/\[\[([\w-]+)\]\]/g, (match, key) => {
+                const el = ANUNCIO_UI_ELEMENTS[key.toLowerCase()];
+                if (!el) return match;
+                return `<span title="${escapeHtml(el.label)}" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; border:1px solid var(--gold); background:rgba(15,23,42,0.8); color:var(--gold-l); font-size:11px; margin:0 3px; vertical-align:middle;"><i class="fa ${el.icon}"></i></span>`;
+            });
+        }
+
         let _anunciosUnsubs = [];       // array de unsubscribe functions
         let _anunciosDict = {};          // { [id]: { id, ...data } } — dedup natural
         let _anunciosCache = [];         // array ordenado, derivado del dict para render
@@ -2702,7 +2744,7 @@
                                 </div>
                                 <div style="font-size:11px; color:var(--slate); white-space:nowrap; flex-shrink:0;">${dt}</div>
                             </div>
-                            <div style="font-size:13px; color:rgba(255,255,255,0.85); line-height:1.45; margin-bottom:6px; white-space:pre-wrap;">${escapeHtml(a.body || '')}</div>
+                            <div style="font-size:13px; color:rgba(255,255,255,0.85); line-height:1.45; margin-bottom:6px; white-space:pre-wrap;">${renderAnuncioBody(a.body || '')}</div>
                             <div style="font-size:10px; color:var(--slate);">— ${escapeHtml(a.createdByName || a.createdBy || '')}</div>
                         </div>
                     `;
@@ -3887,9 +3929,15 @@
 
         // ─── TIENDA ───────────────────────────────────────────────────────────────────
         window.initAgenteTienda = async function() {
-            await renderTiendaItems();
+            // Cargar primero las solicitudes (pobla _karmaComprometido) para que
+            // renderTiendaItems pueda decidir habilitar/deshabilitar botones.
             await renderMisSolicitudes();
+            await renderTiendaItems();
         };
+
+        // Totopos comprometidos en solicitudes pending del user (costo × cantidad sumado).
+        // Karma disponible para nuevas compras = state.karma - _karmaComprometido.
+        let _karmaComprometido = 0;
 
         async function renderTiendaItems() {
             const container = document.getElementById('tienda-items');
@@ -3903,9 +3951,11 @@
                 const snap = await getDoc(doc(db, 'store', catalogId));
                 const items = snap.exists() ? (snap.data().items || []).filter(i => i.activo) : [];
                 if (!items.length) { container.innerHTML = '<div class="empty-state"><i class="fa fa-box-open"></i> Sin items disponibles por ahora.</div>'; return; }
+                const karmaDisponible = (state.karma || 0) - _karmaComprometido;
                 container.innerHTML = items.map(item => {
-                    const puedo = (state.karma || 0) >= item.costo;
                     const sinStock = item.stock === 0;
+                    const costoNum = Number(item.costo) || 0;
+                    const puedo = karmaDisponible >= costoNum;
                     // Escapar TODOS los strings que vengan del catálogo (controlado por
                     // director) — si tiene apóstrofes rompe el onclick, si tiene HTML
                     // se ejecuta en el navegador del agente (XSS).
@@ -3914,19 +3964,23 @@
                     const eDesc = escapeHtml(item.descripcion || '');
                     const eId = escapeHtml(item.id || '');
                     const eCatalog = escapeHtml(catalogId);
-                    const costoNum = Number(item.costo) || 0;
                     const eImgUrl = item.imageUrl ? escapeHtml(item.imageUrl) : '';
                     const visualHtml = eImgUrl
                         ? `<img src="${eImgUrl}" alt="${eNombre}" loading="lazy" onclick="openImagePreview('${eImgUrl}')" style="width:100px;height:100px;object-fit:cover;border-radius:10px;cursor:zoom-in;margin:0 auto;display:block;border:1px solid rgba(212,175,55,0.2);">`
                         : `<div style="font-size:36px;text-align:center;">${eEmoji}</div>`;
+                    const disabled = !puedo || sinStock;
+                    let btnLabel;
+                    if (sinStock)     btnLabel = 'Sin stock';
+                    else if (!puedo)  btnLabel = 'Totopos insuficientes';
+                    else              btnLabel = '🛒 Solicitar canje';
                     return `<div style="background:var(--panel2);border-radius:12px;padding:16px;border:1px solid rgba(212,175,55,0.15);display:flex;flex-direction:column;gap:8px;">
                         ${visualHtml}
                         <div style="font-weight:700;font-size:14px;text-align:center;">${eNombre}</div>
                         <div style="font-size:12px;color:var(--slate);text-align:center;">${eDesc}</div>
                         <div style="text-align:center;font-weight:800;color:var(--gold);"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoNum} totopos</div>
                         ${item.stock >= 0 ? `<div style="text-align:center;font-size:11px;color:var(--slate);">Stock: ${Number(item.stock)||0}</div>` : ''}
-                        <button class="btn btn-sm ${puedo&&!sinStock?'btn-green':''}" ${(!puedo||sinStock)?'disabled':''} onclick="solicitarCanje('${eId}','${eNombre}',${costoNum},'${eEmoji}','${eCatalog}')" style="${sinStock?'opacity:0.4':''}">
-                            ${sinStock ? 'Sin stock' : !puedo ? 'Totopos insuficientes' : '🛒 Solicitar canje'}
+                        <button class="btn btn-sm ${(!disabled)?'btn-green':''}" ${disabled?'disabled':''} onclick="solicitarCanje('${eId}','${eNombre}',${costoNum},'${eEmoji}','${eCatalog}',${item.stock >= 0 ? Number(item.stock) : -1})" style="${sinStock?'opacity:0.5':''}">
+                            ${btnLabel}
                         </button>
                     </div>`;
                 }).join('');
@@ -3939,27 +3993,43 @@
             try {
                 const q = query(collection(db, 'redemptionRequests'), where('emailSolicitante', '==', user.email));
                 const snap = await getDocs(q);
-                const reqs = snap.docs.map(d => d.data()).sort((a,b) => (b.fechaSolicitud||'').localeCompare(a.fechaSolicitud||''));
+                const reqs = snap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a,b) => (b.fechaSolicitud||'').localeCompare(a.fechaSolicitud||''));
+                // Karma comprometido: suma de costo × cantidad de TODAS las pending
+                _karmaComprometido = reqs
+                    .filter(r => r.status === 'pending')
+                    .reduce((sum, r) => sum + (Number(r.costo) || 0) * (Number(r.cantidad) || 1), 0);
                 container.innerHTML = reqs.length ? reqs.map(r => {
-                    const color = r.status==='approved'?'var(--green)':r.status==='rejected'?'var(--red)':'var(--orange)';
-                    const label = r.status==='approved'?'✓ Aprobado':r.status==='rejected'?'✗ Rechazado':'⏳ Pendiente';
-                    // Escapar strings de Firestore antes de inyectar en innerHTML
+                    const isPending = r.status === 'pending';
+                    const isCancelled = r.status === 'cancelled';
+                    const color = r.status==='approved'?'var(--green)':r.status==='rejected'?'var(--red)':isCancelled?'var(--slate)':'var(--orange)';
+                    const label = r.status==='approved'?'✓ Aprobado':r.status==='rejected'?'✗ Rechazado':isCancelled?'⊘ Cancelado':'⏳ Pendiente';
                     const eEmoji = escapeHtml(r.emoji || '🎁');
                     const eName = escapeHtml(r.itemNombre || '');
+                    const eReqId = escapeHtml(r._id || '');
                     const costoNum = Number(r.costo) || 0;
-                    return `<div style="padding:10px 14px;background:var(--panel);border-radius:8px;border-left:3px solid ${color};display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    const cantidad = Number(r.cantidad) || 1;
+                    const totalNum = costoNum * cantidad;
+                    const cantidadLabel = cantidad > 1 ? ` <span style="color:var(--gold-l);font-weight:700;">×${cantidad}</span>` : '';
+                    const costoText = cantidad > 1 ? `${costoNum} × ${cantidad} = ${totalNum}` : String(costoNum);
+                    const rightSide = isPending
+                        ? `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                               <span style="color:${color};font-size:11px;font-weight:700;white-space:nowrap;">${label}</span>
+                               <button class="btn btn-sm" onclick="cancelarMiSolicitud('${eReqId}','${eName.replace(/'/g, "\\'")}')" style="padding:4px 10px;font-size:11px;border-color:rgba(239,68,68,0.5) !important;color:#fca5a5 !important;">
+                                   <i class="fa fa-times"></i> Cancelar
+                               </button>
+                           </div>`
+                        : `<span style="color:${color};font-size:11px;font-weight:700;white-space:nowrap;">${label}</span>`;
+                    return `<div style="padding:10px 14px;background:var(--panel);border-radius:8px;border-left:3px solid ${color};display:flex;justify-content:space-between;align-items:center;gap:8px;${isCancelled?'opacity:0.6;':''}">
                         <div>
-                            <div style="font-weight:600;font-size:13px;">${eEmoji} ${eName}</div>
-                            <div style="font-size:11px;color:var(--slate);"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoNum} totopos &nbsp;·&nbsp; ${new Date(r.fechaSolicitud).toLocaleDateString('es-MX')}</div>
+                            <div style="font-weight:600;font-size:13px;">${eEmoji} ${eName}${cantidadLabel}</div>
+                            <div style="font-size:11px;color:var(--slate);"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoText} totopos &nbsp;·&nbsp; ${new Date(r.fechaSolicitud).toLocaleDateString('es-MX')}</div>
                         </div>
-                        <span style="color:${color};font-size:11px;font-weight:700;white-space:nowrap;">${label}</span>
+                        ${rightSide}
                     </div>`;
                 }).join('') : '<div class="empty-state"><i class="fa fa-inbox"></i> Sin solicitudes aún.</div>';
             } catch(e) {}
         }
 
-        // Entry point del botón de canje. Reemplaza confirm() nativo por modal custom
-        // (confirm() no se ve dentro de PWA standalone iOS).
         // Image preview modal (thumbnail click → imagen grande)
         window.openImagePreview = function (url) {
             if (!url) return;
@@ -3976,42 +4046,129 @@
             if (img) img.src = '';
         };
 
-        window.solicitarCanje = function(itemId, itemNombre, costo, emoji, catalogDoc) {
-            if ((state.karma || 0) < costo) { alert('Totopos insuficientes.'); return; }
-            openCanjeConfirm(itemId, itemNombre, costo, emoji, catalogDoc);
+        // Entry point del botón. Si el karma disponible no cubre 1 unidad, bloquea.
+        window.solicitarCanje = function(itemId, itemNombre, costo, emoji, catalogDoc, stockDisponible) {
+            const karmaDisponible = (state.karma || 0) - _karmaComprometido;
+            if (karmaDisponible < costo) {
+                alert(`Totopos insuficientes. Te quedan ${karmaDisponible} totopos disponibles (ya tenés ${_karmaComprometido} comprometidos en otras solicitudes pendientes).`);
+                return;
+            }
+            openCanjeConfirm(itemId, itemNombre, costo, emoji, catalogDoc, stockDisponible);
         };
 
         // Estado del modal de confirmación de canje
         let _pendingCanje = null;
-        window.openCanjeConfirm = function (itemId, itemNombre, costo, emoji, catalogDoc) {
-            _pendingCanje = { itemId, itemNombre, costo, emoji, catalogDoc };
+        window.openCanjeConfirm = function (itemId, itemNombre, costo, emoji, catalogDoc, stockDisponible) {
+            const karmaDisponible = (state.karma || 0) - _karmaComprometido;
+            const maxPorKarma = costo > 0 ? Math.floor(karmaDisponible / costo) : 1;
+            const stockNum = Number(stockDisponible);
+            const maxPorStock = stockNum < 0 ? Infinity : stockNum;
+            const maxCantidad = Math.max(1, Math.min(maxPorKarma, maxPorStock === Infinity ? 999 : maxPorStock));
+            _pendingCanje = { itemId, itemNombre, costo, emoji, catalogDoc, cantidad: 1, maxCantidad };
             document.getElementById('canje-confirm-text').textContent =
-                `¿Solicitar canje de "${itemNombre}" por ${costo} totopos? El item te queda reservado hasta que el director apruebe.`;
+                `¿Solicitar canje de "${itemNombre}"? El item te queda reservado hasta que el director apruebe.`;
+            _updateCanjeQtyDisplay();
             document.getElementById('canje-confirm-modal').classList.add('open');
         };
+
+        window.changeCanjeQty = function (delta) {
+            if (!_pendingCanje) return;
+            const next = (_pendingCanje.cantidad || 1) + delta;
+            const max = _pendingCanje.maxCantidad || 1;
+            _pendingCanje.cantidad = Math.max(1, Math.min(max, next));
+            _updateCanjeQtyDisplay();
+        };
+
+        function _updateCanjeQtyDisplay() {
+            if (!_pendingCanje) return;
+            const { costo, cantidad, maxCantidad } = _pendingCanje;
+            const total = costo * cantidad;
+            const qtyEl = document.getElementById('canje-qty-display');
+            const totEl = document.getElementById('canje-total-display');
+            const infoEl = document.getElementById('canje-limit-info');
+            const decBtn = document.getElementById('canje-qty-dec');
+            const incBtn = document.getElementById('canje-qty-inc');
+            if (qtyEl) qtyEl.textContent = String(cantidad);
+            if (totEl) totEl.textContent = String(total);
+            if (decBtn) { decBtn.disabled = cantidad <= 1; decBtn.style.opacity = cantidad <= 1 ? '0.4' : '1'; }
+            if (incBtn) { incBtn.disabled = cantidad >= maxCantidad; incBtn.style.opacity = cantidad >= maxCantidad ? '0.4' : '1'; }
+            if (infoEl) {
+                const karmaDisponible = (state.karma || 0) - _karmaComprometido;
+                infoEl.innerHTML = `Te quedan ${karmaDisponible} totopos disponibles${_karmaComprometido > 0 ? ` (${_karmaComprometido} ya comprometidos en otras solicitudes)` : ''}. Máx esta orden: ${maxCantidad}.`;
+            }
+        }
+
         window.confirmCanje = async function () {
             const c = _pendingCanje;
-            document.getElementById('canje-confirm-modal').classList.remove('open');
+            const confirmBtn = document.getElementById('canje-confirm-btn');
+            const cancelBtn  = document.getElementById('canje-cancel-btn');
+            if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando…'; }
+            if (cancelBtn)  cancelBtn.disabled = true;
             _pendingCanje = null;
-            if (!c) return;
-            await window._doSolicitarCanje(c.itemId, c.itemNombre, c.costo, c.emoji, c.catalogDoc);
+            try {
+                if (!c) return;
+                await window._doSolicitarCanje(c.itemId, c.itemNombre, c.costo, c.emoji, c.catalogDoc, c.cantidad);
+            } finally {
+                document.getElementById('canje-confirm-modal').classList.remove('open');
+                if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.innerHTML = 'Solicitar'; }
+                if (cancelBtn)  cancelBtn.disabled = false;
+            }
         };
         window.cancelCanje = function () {
             document.getElementById('canje-confirm-modal').classList.remove('open');
             _pendingCanje = null;
         };
 
-        // Lógica real (llamada desde confirmCanje del modal)
-        window._doSolicitarCanje = async function(itemId, itemNombre, costo, emoji, catalogDoc) {
+        // Cancela una solicitud propia pendiente. Restaura stock (si stockReservado),
+        // marca status='cancelled' (preserva historial — no delete).
+        window.cancelarMiSolicitud = async function (requestId, itemNombre) {
+            if (!user || !requestId) return;
+            if (!confirm(`¿Cancelar tu solicitud de "${itemNombre}"? Si el item se reservó del stock, vuelve a estar disponible.`)) return;
+            try {
+                const reqRef = doc(db, 'redemptionRequests', requestId);
+                await runTransaction(db, async (tx) => {
+                    const reqSnap = await tx.get(reqRef);
+                    if (!reqSnap.exists()) throw new Error('La solicitud ya no existe.');
+                    const req = reqSnap.data();
+                    if (req.status !== 'pending') throw new Error('Esta solicitud ya fue procesada.');
+                    if (req.emailSolicitante !== user.email) {
+                        throw new Error('No podés cancelar una solicitud que no es tuya.');
+                    }
+                    const qty = Math.max(1, Number(req.cantidad) || 1);
+                    let catRef = null, catSnap = null;
+                    if (req.stockReservado && req.catalogDoc && req.itemId) {
+                        catRef = doc(db, 'store', req.catalogDoc);
+                        catSnap = await tx.get(catRef);
+                    }
+                    if (req.stockReservado && catSnap && catSnap.exists()) {
+                        const items = (catSnap.data().items || []).slice();
+                        const idx = items.findIndex(i => i.id === req.itemId);
+                        if (idx >= 0) {
+                            const stock = Number(items[idx].stock);
+                            if (stock >= 0) {
+                                items[idx] = { ...items[idx], stock: stock + qty };
+                                tx.update(catRef, { items });
+                            }
+                        }
+                    }
+                    tx.update(reqRef, { status: 'cancelled', fechaResolucion: new Date().toISOString() });
+                });
+                await renderMisSolicitudes();
+                await renderTiendaItems();
+            } catch (e) {
+                alert('No se pudo cancelar la solicitud:\n' + e.message);
+            }
+        };
+
+        // Lógica real (llamada desde confirmCanje del modal). Cantidad >= 1.
+        window._doSolicitarCanje = async function(itemId, itemNombre, costo, emoji, catalogDoc, cantidad) {
+            const qty = Math.max(1, Number(cantidad) || 1);
             try {
                 // Transacción atómica: validar stock + decrementar + crear solicitud en un solo paso.
-                // Si dos agentes solicitan el último item al mismo tiempo, solo uno gana —
-                // el otro recibe error "ya alguien lo compró" y NO se crea solicitud.
                 const catRef = doc(db, 'store', catalogDoc);
-                const newReqRef = doc(collection(db, 'redemptionRequests')); // ID generado para set en tx
+                const newReqRef = doc(collection(db, 'redemptionRequests'));
 
                 await runTransaction(db, async (tx) => {
-                    // ── READS ──
                     const catSnap = await tx.get(catRef);
                     if (!catSnap.exists()) throw new Error('El catálogo de la tienda no existe.');
                     const items = (catSnap.data().items || []).slice();
@@ -4020,12 +4177,12 @@
                     const item = items[idx];
                     if (item.activo === false) throw new Error(`El item "${itemNombre}" fue desactivado.`);
                     const stock = Number(item.stock);
-                    if (stock === 0) throw new Error(`Ya alguien compró el último "${itemNombre}". Sin stock disponible.`);
-                    // stock < 0 = infinito, stock > 0 = decrementable
-
-                    // ── WRITES ──
-                    if (stock > 0) {
-                        items[idx] = { ...item, stock: stock - 1 };
+                    // stock < 0 = ilimitado, stock >= 0 = decrementable
+                    if (stock >= 0 && stock < qty) {
+                        throw new Error(`Stock insuficiente para "${itemNombre}". Quedan ${stock} disponibles y pediste ${qty}.`);
+                    }
+                    if (stock >= 0) {
+                        items[idx] = { ...item, stock: stock - qty };
                         tx.update(catRef, { items });
                     }
                     tx.set(newReqRef, {
@@ -4036,17 +4193,18 @@
                         directorCode: state.directorCode || '',
                         regionName: state.regionName || '',
                         itemId, itemNombre, costo, emoji, catalogDoc,
+                        cantidad: qty,
                         status: 'pending',
-                        stockReservado: stock > 0,   // marca si hubo decremento (para reincrementar al rechazar)
+                        stockReservado: stock >= 0,   // marca si hubo decremento (para reincrementar al rechazar/cancelar)
                         fechaSolicitud: new Date().toISOString()
                     });
                 });
-                alert(`✅ Solicitud enviada. El item te queda reservado hasta que el director apruebe o rechace.`);
+                const totalCosto = costo * qty;
+                alert(`✅ Solicitud enviada (${qty} × ${itemNombre} = ${totalCosto} totopos). El director va a aprobar o rechazar.`);
                 await renderMisSolicitudes();
                 await renderTiendaItems();
             } catch(e) {
                 alert('No se pudo solicitar el canje:\n' + e.message);
-                // Refrescar la tienda para mostrar el stock actualizado
                 try { await renderTiendaItems(); } catch {}
             }
         };
