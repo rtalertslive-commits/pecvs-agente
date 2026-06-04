@@ -1822,17 +1822,55 @@
 
         <!-- ═══════════════════ TAB: TIENDA ═══════════════════ -->
         <div id="tab-tienda" class="tab-panel">
-            <div class="card" style="margin-bottom:16px;">
-                <p class="card-title"><i class="fa fa-store"></i> Tienda — Canjea tus Totopos</p>
-                <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Selecciona un item y solicita el canje. El director lo aprobará.</p>
-                <div id="tienda-items" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
-                    <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
+            <!-- Sub-tabs -->
+            <div id="tienda-subtabs" style="display:flex; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:2px;">
+                <button id="ts-btn-comprar" onclick="switchTiendaSubtab('comprar')" style="flex:1; padding:10px; background:rgba(212,175,55,0.15); border:1px solid rgba(212,175,55,0.4); border-radius:6px 6px 0 0; color:var(--gold-l); font-weight:700; font-size:13px; cursor:pointer;">🛒 Comprar</button>
+                <button id="ts-btn-solicitudes" onclick="switchTiendaSubtab('solicitudes')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.10); border-radius:6px 6px 0 0; color:rgba(255,255,255,0.7); font-weight:600; font-size:13px; cursor:pointer;">📜 Mis solicitudes</button>
+                <button id="ts-btn-actividad" onclick="switchTiendaSubtab('actividad')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.10); border-radius:6px 6px 0 0; color:rgba(255,255,255,0.7); font-weight:600; font-size:13px; cursor:pointer;">🔥 Actividad</button>
+            </div>
+
+            <!-- Sub-view: COMPRAR -->
+            <div id="ts-view-comprar">
+                <div class="card">
+                    <p class="card-title"><i class="fa fa-store"></i> Canjea tus Totopos</p>
+                    <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Selecciona un item y solicita el canje. El director lo aprobará.</p>
+                    <div id="tienda-items" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+                        <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
+                    </div>
                 </div>
             </div>
-            <div class="card">
-                <p class="card-title"><i class="fa fa-clock-rotate-left"></i> Mis Solicitudes</p>
-                <div id="tienda-mis-solicitudes" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;">
-                    <div class="empty-state"><i class="fa fa-inbox"></i> Sin solicitudes aún.</div>
+
+            <!-- Sub-view: MIS SOLICITUDES -->
+            <div id="ts-view-solicitudes" style="display:none;">
+                <div class="card">
+                    <p class="card-title"><i class="fa fa-clock-rotate-left"></i> Mis Solicitudes</p>
+                    <div id="tienda-mis-solicitudes" style="display:flex;flex-direction:column;gap:8px;">
+                        <div class="empty-state"><i class="fa fa-inbox"></i> Sin solicitudes aún.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-view: ACTIVIDAD (feed + leaderboard) -->
+            <div id="ts-view-actividad" style="display:none;">
+                <div class="card" style="margin-bottom:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
+                        <p class="card-title" style="margin:0;">🏆 <span id="lb-period-label">Top del mes</span></p>
+                        <div id="lb-period-toggle" style="display:flex; gap:4px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.10); border-radius:8px; padding:3px;">
+                            <button id="lb-btn-month" onclick="switchLeaderboardPeriod('month')" style="padding:5px 14px; background:rgba(212,175,55,0.18); border:none; border-radius:5px; color:var(--gold-l); font-weight:700; font-size:12px; cursor:pointer;">Mes</button>
+                            <button id="lb-btn-year" onclick="switchLeaderboardPeriod('year')" style="padding:5px 14px; background:transparent; border:none; border-radius:5px; color:rgba(255,255,255,0.6); font-weight:600; font-size:12px; cursor:pointer;">Año</button>
+                        </div>
+                    </div>
+                    <p style="font-size:11px;color:var(--slate);margin:0 0 12px;">Los agentes que más gastaron en tu región.</p>
+                    <div id="tienda-leaderboard" style="display:flex;flex-direction:column;gap:6px;">
+                        <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <p class="card-title">🔥 Compras recientes</p>
+                    <p style="font-size:11px;color:var(--slate);margin-bottom:12px;">Lo que estaban canjeando otros agentes de tu región.</p>
+                    <div id="tienda-feed" style="display:flex;flex-direction:column;gap:8px;">
+                        <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
+                    </div>
                 </div>
             </div>
         </div><!-- /tab-tienda -->
@@ -3997,6 +4035,8 @@
             // renderTiendaItems pueda decidir habilitar/deshabilitar botones.
             await renderMisSolicitudes();
             await renderTiendaItems();
+            // Default a sub-tab "Comprar" al entrar.
+            switchTiendaSubtab('comprar');
         };
 
         // Totopos comprometidos en solicitudes pending del user (costo × cantidad sumado).
@@ -4109,6 +4149,170 @@
             if (modal) modal.classList.remove('open');
             if (img) img.src = '';
         };
+
+        // ─── SUB-TABS DE LA TIENDA (Comprar / Mis solicitudes / Actividad) ────────
+        window.switchTiendaSubtab = function (which) {
+            const tabs = ['comprar', 'solicitudes', 'actividad'];
+            tabs.forEach(t => {
+                const view = document.getElementById('ts-view-' + t);
+                const btn  = document.getElementById('ts-btn-' + t);
+                const isActive = t === which;
+                if (view) view.style.display = isActive ? '' : 'none';
+                if (btn) {
+                    if (isActive) {
+                        btn.style.background = 'rgba(212,175,55,0.15)';
+                        btn.style.borderColor = 'rgba(212,175,55,0.4)';
+                        btn.style.color = 'var(--gold-l)';
+                        btn.style.fontWeight = '700';
+                    } else {
+                        btn.style.background = 'transparent';
+                        btn.style.borderColor = 'rgba(255,255,255,0.10)';
+                        btn.style.color = 'rgba(255,255,255,0.7)';
+                        btn.style.fontWeight = '600';
+                    }
+                }
+            });
+            if (which === 'actividad') renderActividadTab();
+            if (which === 'solicitudes') renderMisSolicitudes();
+            if (which === 'comprar') renderTiendaItems();
+        };
+
+        // Tiempo relativo en español ("hace 5 min", "hace 2 h", "hace 3 días").
+        function _relativeTimeEs(iso) {
+            if (!iso) return '';
+            const then = new Date(iso).getTime();
+            if (isNaN(then)) return '';
+            const diffMs = Math.max(0, Date.now() - then);
+            const min = Math.floor(diffMs / 60000);
+            if (min < 1) return 'hace instantes';
+            if (min < 60) return `hace ${min} min`;
+            const hours = Math.floor(min / 60);
+            if (hours < 24) return `hace ${hours} h`;
+            const days = Math.floor(hours / 24);
+            if (days === 1) return 'ayer';
+            if (days < 30) return `hace ${days} días`;
+            return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
+        }
+
+        // Cache de solicitudes aprobadas — evita re-querear al cambiar período del leaderboard.
+        let _actividadCache = null;
+        let _actividadPeriod = 'month'; // 'month' | 'year'
+
+        window.switchLeaderboardPeriod = function (period) {
+            _actividadPeriod = period;
+            const monthBtn = document.getElementById('lb-btn-month');
+            const yearBtn  = document.getElementById('lb-btn-year');
+            const label    = document.getElementById('lb-period-label');
+            if (monthBtn && yearBtn) {
+                const active = period === 'month' ? monthBtn : yearBtn;
+                const inactive = period === 'month' ? yearBtn : monthBtn;
+                active.style.background = 'rgba(212,175,55,0.18)';
+                active.style.color = 'var(--gold-l)';
+                active.style.fontWeight = '700';
+                inactive.style.background = 'transparent';
+                inactive.style.color = 'rgba(255,255,255,0.6)';
+                inactive.style.fontWeight = '600';
+            }
+            if (label) label.textContent = period === 'month' ? 'Top del mes' : 'Top del año';
+            if (_actividadCache) _renderLeaderboardFromCache();
+        };
+
+        // Carga las solicitudes aprobadas de toda la región y renderiza:
+        //   1) Leaderboard top 5 gastadores del período elegido (mes o año)
+        //   2) Feed cronológico de las últimas 20 compras aprobadas
+        async function renderActividadTab() {
+            const feedEl = document.getElementById('tienda-feed');
+            const lbEl   = document.getElementById('tienda-leaderboard');
+            if (!user || !state.directorCode) {
+                if (feedEl) feedEl.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Sin director asignado aún.</div>';
+                if (lbEl)   lbEl.innerHTML   = '';
+                return;
+            }
+            if (feedEl) feedEl.innerHTML = '<div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>';
+            if (lbEl)   lbEl.innerHTML   = '<div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>';
+            try {
+                const q = query(
+                    collection(db, 'redemptionRequests'),
+                    where('directorCode', '==', state.directorCode),
+                    where('status', '==', 'approved')
+                );
+                const snap = await getDocs(q);
+                const reqs = snap.docs.map(d => d.data())
+                    .sort((a, b) => (b.fechaResolucion || '').localeCompare(a.fechaResolucion || ''));
+                _actividadCache = reqs;
+
+                // ── FEED: últimas 20 compras aprobadas ──
+                const recientes = reqs.slice(0, 20);
+                if (feedEl) {
+                    feedEl.innerHTML = recientes.length
+                        ? recientes.map(r => {
+                            const eName  = escapeHtml(r.nombreSolicitante || r.emailSolicitante || '?');
+                            const eItem  = escapeHtml(r.itemNombre || '');
+                            const eEmoji = escapeHtml(r.emoji || '🎁');
+                            const costoUnit = Number(r.costo) || 0;
+                            const cantidad = Number(r.cantidad) || 1;
+                            const costoTotal = costoUnit * cantidad;
+                            const cantStr = cantidad > 1 ? ` ×${cantidad}` : '';
+                            const dt = _relativeTimeEs(r.fechaResolucion || r.fechaSolicitud);
+                            const isMine = r.emailSolicitante === user.email;
+                            return `<div style="padding:10px 12px; background:${isMine ? 'rgba(212,175,55,0.10)' : 'var(--panel)'}; border-radius:8px; ${isMine ? 'border:1px solid rgba(212,175,55,0.35);' : ''}">
+                                <div style="font-weight:700; font-size:13px; color:${isMine ? 'var(--gold-l)' : '#fff'};">👤 ${eName}${isMine ? ' (tú)' : ''}</div>
+                                <div style="font-size:12px; color:rgba(255,255,255,0.75); margin-top:3px;">${eEmoji} ${eItem}${cantStr} · <span style="color:var(--gold); font-weight:700;"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoTotal}</span> · <span style="color:var(--slate);">${dt}</span></div>
+                            </div>`;
+                        }).join('')
+                        : '<div class="empty-state"><i class="fa fa-inbox"></i> Sin compras aprobadas en tu región todavía.</div>';
+                }
+
+                _renderLeaderboardFromCache();
+            } catch (e) {
+                console.error('[actividad]', e);
+                if (feedEl) feedEl.innerHTML = '<div class="empty-state">Error cargando actividad.</div>';
+                if (lbEl)   lbEl.innerHTML   = '';
+            }
+        }
+
+        function _renderLeaderboardFromCache() {
+            const lbEl = document.getElementById('tienda-leaderboard');
+            if (!lbEl || !_actividadCache) return;
+            const now = new Date();
+            const startDate = _actividadPeriod === 'year'
+                ? new Date(now.getFullYear(), 0, 1)
+                : new Date(now.getFullYear(), now.getMonth(), 1);
+            const startISO = startDate.toISOString();
+            const reqsPeriod = _actividadCache.filter(r => (r.fechaResolucion || '') >= startISO);
+            const byEmail = {};
+            reqsPeriod.forEach(r => {
+                const email = r.emailSolicitante || '?';
+                const name  = r.nombreSolicitante || email;
+                const spent = (Number(r.costo) || 0) * (Number(r.cantidad) || 1);
+                if (!byEmail[email]) byEmail[email] = { email, name, total: 0 };
+                byEmail[email].total += spent;
+            });
+            const ranking = Object.values(byEmail).sort((a, b) => b.total - a.total);
+            const top5 = ranking.slice(0, 5).map((r, i) => ({ ...r, position: i + 1 }));
+            const myIdx = ranking.findIndex(r => r.email === user.email);
+            if (myIdx >= 5) {
+                top5.push({ ...ranking[myIdx], position: myIdx + 1, _separator: true });
+            }
+            const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+            const emptyMsg = _actividadPeriod === 'year'
+                ? 'Sin gastos en lo que va del año.'
+                : 'Sin gastos en lo que va del mes.';
+            lbEl.innerHTML = top5.length
+                ? top5.map(r => {
+                    const isMe = r.email === user.email;
+                    const medal = medals[r.position] || (r.position + '.');
+                    const sepGap = r._separator ? 'margin-top:10px; position:relative;' : '';
+                    const sepLine = r._separator
+                        ? `<div style="position:absolute; top:-7px; left:0; right:0; border-top:1px dashed rgba(255,255,255,0.2);"></div>` : '';
+                    return `<div style="padding:8px 12px; background:${isMe ? 'rgba(212,175,55,0.15)' : 'var(--panel)'}; border-radius:8px; ${isMe ? 'border:1px solid rgba(212,175,55,0.4);' : ''} display:flex; justify-content:space-between; align-items:center; ${sepGap}">
+                        ${sepLine}
+                        <span style="font-size:13px; ${isMe ? 'font-weight:700; color:var(--gold-l);' : ''}">${medal} ${escapeHtml(r.name)}${isMe ? ' (tú)' : ''}</span>
+                        <span style="color:var(--gold); font-weight:700; font-size:13px;"><svg class="totopo-icon"><use href="#totopo"/></svg> ${r.total}</span>
+                    </div>`;
+                }).join('')
+                : `<div class="empty-state"><i class="fa fa-inbox"></i> ${emptyMsg}</div>`;
+        }
 
         // Entry point del botón. Si el karma disponible no cubre 1 unidad, bloquea.
         window.solicitarCanje = function(itemId, itemNombre, costo, emoji, catalogDoc, stockDisponible) {
