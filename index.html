@@ -2198,6 +2198,7 @@
             <div style="color:rgba(255,255,255,0.7);font-size:15px;margin-bottom:12px;">Ganaste desde tu última visita</div>
             <div id="celebrate-earned" style="font-size:80px;font-weight:900;color:var(--gold);animation:karmaGlow 1.5s ease-in-out infinite;line-height:1;">+0</div>
             <div style="color:var(--gold-l);font-size:16px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;">Totopos <svg class="totopo-icon"><use href="#totopo"/></svg></div>
+            <div id="celebrate-reason" style="color:rgba(255,255,255,0.85); font-size:13px; margin: 0 0 10px; line-height:1.4; max-width:280px; margin-left:auto; margin-right:auto;"></div>
             <div id="celebrate-total" style="color:var(--slate);font-size:13px;margin-bottom:28px;">Saldo total: 0 totopos</div>
             <button onclick="dismissKarmaCelebration()" style="padding:14px 48px;background:linear-gradient(135deg,var(--gold),#f0c040);color:#000;border:none;border-radius:30px;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 20px rgba(212,175,55,0.4);">¡GENIAL! 🎉</button>
         </div>
@@ -3833,9 +3834,51 @@
             }
         }
 
+        // Toma los últimos entries positivos de karmaLog hasta sumar `targetSum`,
+        // que representan lo que el user ganó desde la última vez que vio el modal.
+        function _getRecentUncelebratedEntries(targetSum) {
+            const positives = (state.karmaLog || []).filter(k => (Number(k.points) || 0) > 0);
+            const out = [];
+            let sum = 0;
+            for (let i = positives.length - 1; i >= 0 && sum < targetSum; i--) {
+                out.unshift(positives[i]);
+                sum += Number(positives[i].points) || 0;
+            }
+            return out;
+        }
+
+        // Construye el subtítulo "¿por qué ganó?" en base a los entries uncelebrated.
+        // Distingue cierres de día normales (sin type) de mints manuales del director
+        // (type='manual_grant', con reason opcional).
+        function _buildCelebrateReason(entries) {
+            if (!entries || !entries.length) return '';
+            const grants = entries.filter(e => e.type === 'manual_grant');
+            const dayCloses = entries.filter(e => !e.type);
+            if (grants.length === 0 && dayCloses.length > 0) {
+                return 'Por reportar tu actividad';
+            }
+            if (grants.length >= 1 && dayCloses.length === 0) {
+                if (grants.length === 1) {
+                    const reason = (grants[0].reason || '').trim();
+                    return reason ? `🎁 ${escapeHtml(reason)}` : '🎁 Regalo de tu director';
+                }
+                return `🎁 Recibiste ${grants.length} regalos de tu director`;
+            }
+            return 'Por tu actividad y regalos del director';
+        }
+
         window.showKarmaCelebration = function (earned) {
             document.getElementById('celebrate-earned').textContent = '+' + earned.toLocaleString();
             document.getElementById('celebrate-total').textContent = 'Saldo total: ' + (state.karma || 0).toLocaleString() + ' totopos';
+            // Calcular reason ANTES de actualizar karmaLastNotified (necesita los
+            // entries todavía marcados como uncelebrated).
+            const recentEntries = _getRecentUncelebratedEntries(earned);
+            const reasonText = _buildCelebrateReason(recentEntries);
+            const reasonEl = document.getElementById('celebrate-reason');
+            if (reasonEl) {
+                if (reasonText) { reasonEl.innerHTML = reasonText; reasonEl.style.display = ''; }
+                else            { reasonEl.style.display = 'none'; }
+            }
             document.getElementById('karma-celebration').classList.add('show');
             createCoinParticles();
             playCashSound();
