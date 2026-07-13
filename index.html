@@ -254,7 +254,8 @@
         }
         /* Bell + Megaphone — circulares, icon-only, visualmente distintos del menu de user */
         #notif-bell-btn,
-        #anuncios-btn {
+        #anuncios-btn,
+        #buzon-btn {
             width: 38px;
             height: 38px;
             padding: 0;
@@ -263,7 +264,8 @@
             position: relative;
         }
         #notif-bell-btn i,
-        #anuncios-btn i {
+        #anuncios-btn i,
+        #buzon-btn i {
             font-size: 15px;
             margin: 0;
         }
@@ -892,6 +894,47 @@
             display: flex;
         }
 
+        /* ═══ MI CALENDARIO — grilla mensual de días reportados ═══ */
+        .cal-modal-box {
+            background: var(--panel);
+            border: 1.5px solid var(--gold);
+            border-radius: 14px;
+            padding: 20px;
+            max-width: 92vw;
+            width: 380px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
+        .cal-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--gold); font-weight: 700; flex: 1; line-height: 1.2; }
+        .cal-close-btn { background: none; border: none; color: var(--white); font-size: 24px; cursor: pointer; line-height: 1; padding: 0 4px; }
+        .cal-nav { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .cal-nav-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: var(--white); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-family: inherit; font-size: 14px; }
+        .cal-nav-btn:hover { background: rgba(255,255,255,0.14); }
+        .cal-nav-mes { font-weight: 700; font-size: 14px; min-width: 140px; text-align: center; color: var(--white); }
+        .cal-grid-head { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
+        .cal-grid-body { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 12px; }
+        .cal-cell-head { text-align: center; font-size: 10px; font-weight: 700; color: var(--slate); padding: 6px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform .1s, box-shadow .15s; position: relative; padding: 2px; border: 1px solid transparent; }
+        .cal-cell.empty { visibility: hidden; }
+        .cal-cell.none { background: rgba(255,255,255,0.04); color: var(--slate); }
+        .cal-cell.ok { background: rgba(16,185,129,0.18); color: #10b981; border-color: rgba(16,185,129,0.35); }
+        /* Verde igual que .ok — la plantita hace la diferencia semántica */
+        .cal-cell.ok-no-close { background: rgba(16,185,129,0.18); color: #10b981; border-color: rgba(16,185,129,0.35); }
+        .cal-cell.red { background: rgba(239,68,68,0.18); color: #ef4444; border-color: rgba(239,68,68,0.35); }
+        .cal-cell.sin-actividad { background: rgba(245,158,11,0.18); color: #f59e0b; border-color: rgba(245,158,11,0.35); }
+        .cal-cell.future { opacity: 0.22; cursor: not-allowed; background: rgba(255,255,255,0.015); color: var(--slate); pointer-events: none; }
+        .cal-cell:not(.empty):not(.future):hover { transform: scale(1.06); box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+        .cal-cell.selected { box-shadow: 0 0 0 2px var(--gold); }
+        .cal-cell .cal-num { font-size: 12px; line-height: 1.1; }
+        .cal-cell .cal-icon { font-size: 11px; line-height: 1; }
+        .cal-legend { font-size: 11px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-bottom: 12px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+        .cal-legend-item { display: flex; align-items: center; gap: 6px; color: var(--white); }
+        .cal-legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+        .cal-day-detail { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 12px; font-size: 12px; min-height: 44px; color: var(--white); }
+        .cal-day-detail .cal-detail-empty { color: var(--slate); }
+
         /* ═══ KPI INFO ICON + MODAL ═══ */
         .kpi-info-btn {
             background: rgba(212,175,55,0.10);
@@ -1507,6 +1550,9 @@
                     </div>
                 </div>
                 <div class="icon-btns">
+                    <button id="buzon-btn" class="btn" onclick="openBuzonModal()" title="Enviar sugerencias, errores o comentarios al director">
+                        <i class="fa fa-envelope"></i>
+                    </button>
                     <button id="notif-bell-btn" class="btn" onclick="openNotifModal()" title="Notificaciones">
                         <i class="fa fa-bell"></i>
                         <span id="notif-bell-dot" style="display:none; position:absolute; top:6px; right:6px; width:9px; height:9px; background:var(--gold); border-radius:50%; border:1.5px solid var(--panel, #0f172a);"></span>
@@ -1581,8 +1627,14 @@
                     </div>
                 </div>
 
-                <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.25); border-radius:8px; padding:10px 14px; margin:14px 0; font-size:12px; color:var(--slate); line-height:1.5;">
+                <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.25); border-radius:8px; padding:12px 14px; margin:14px 0; font-size:12px; color:var(--slate); line-height:1.5;">
                     ⏱️ <strong>Día en curso:</strong> edítalo libremente durante el día — agrega, cambia o corrige tus P-E-C-V-S-$ las veces que quieras (se guarda automáticamente). A las <strong>12:00 AM</strong> se hace el corte automático y se te dan los totopos <svg class="totopo-icon"><use href="#totopo"/></svg>
+                    <div style="margin-top:12px; padding-top:12px; border-top:1px dashed rgba(212,175,55,0.35); display:flex; justify-content:center;">
+                        <button onclick="openMyCalendar()" title="Ver todos tus días reportados del mes en un calendario"
+                            style="background:var(--gold); border:none; color:#000; border-radius:8px; padding:10px 18px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 2px 8px rgba(212,175,55,0.25);">
+                            <i class="fa fa-calendar-check"></i> Tu calendario de reportes
+                        </button>
+                    </div>
                 </div>
 
                 <div class="table-scroll">
@@ -1602,7 +1654,7 @@
                         <tbody id="week-body"></tbody>
                         <tfoot>
                             <tr>
-                                <td style="color:var(--gold-l); font-weight:700;">TOTAL SEM</td>
+                                <td style="color:var(--gold-l); font-weight:700;">TOTAL SEM <span id="tt-week-suffix" style="font-weight:500; font-size:9px; opacity:0.75; text-transform:none; letter-spacing:0;"></span></td>
                                 <td id="tt-P" style="text-align:center;">0</td>
                                 <td id="tt-E" style="text-align:center;">0</td>
                                 <td id="tt-C" style="text-align:center;">0</td>
@@ -1612,7 +1664,7 @@
                                 <td></td>
                             </tr>
                             <tr style="background:rgba(212,175,55,0.05);">
-                                <td style="color:var(--gold); font-weight:800;">TOTAL MES</td>
+                                <td style="color:var(--gold); font-weight:800;">TOTAL MES <span id="mt-month-suffix" style="font-weight:500; font-size:9px; opacity:0.75; text-transform:none; letter-spacing:0;"></span></td>
                                 <td id="mt-P" style="text-align:center; font-weight:700;">0</td>
                                 <td id="mt-E" style="text-align:center; font-weight:700;">0</td>
                                 <td id="mt-C" style="text-align:center; font-weight:700;">0</td>
@@ -1631,11 +1683,11 @@
                 <!-- MOBILE TOTALS: solo prima semana + prima mes -->
                 <div class="m-totals">
                     <div class="m-total-card">
-                        <div class="m-total-label">Prima Semana</div>
+                        <div class="m-total-label">Prima Semana <span id="m-tt-week-suffix" style="font-weight:500; font-size:9px; opacity:0.75; text-transform:none; letter-spacing:0;"></span></div>
                         <div class="m-total-value" id="m-tt-$">0.00</div>
                     </div>
                     <div class="m-total-card m-total-month">
-                        <div class="m-total-label">Prima Mes</div>
+                        <div class="m-total-label">Prima Mes <span id="m-mt-month-suffix" style="font-weight:500; font-size:9px; opacity:0.75; text-transform:none; letter-spacing:0;"></span></div>
                         <div class="m-total-value" id="m-mt-$">0.00</div>
                     </div>
                 </div>
@@ -2126,6 +2178,77 @@
         </div>
     </div>
 
+    <!-- BUZÓN DE SUGERENCIAS Y ERRORES (unidireccional agente → director) -->
+    <div class="modal-overlay" id="buzon-modal" onclick="if(event.target===this)closeBuzonModal()">
+        <div class="modal-box" style="padding-top:48px; max-width:520px;">
+            <button onclick="closeBuzonModal()" aria-label="Cerrar"
+                style="position:absolute; top:12px; right:12px; width:32px; height:32px; padding:0; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.12); border-radius:50%; font-size:18px; line-height:1; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center;">&times;</button>
+
+            <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin:0 0 6px;"><i class="fa fa-envelope" style="margin-right:8px;"></i>Buzón</h2>
+            <p style="font-size:12px; color:var(--slate); margin:0 0 16px;">Tu voz cuenta. Mandale a tu director tus ideas, sugerencias o errores que veas — él las lee todas.</p>
+
+            <div style="display:flex; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
+                <button id="buzon-tab-nuevo-btn" onclick="switchBuzonTab('nuevo')" style="flex:1; padding:8px; border-radius:6px; border:none; background:var(--gold); color:#000; font-weight:700; font-size:12px; cursor:pointer;">📝 Nuevo</button>
+                <button id="buzon-tab-mios-btn" onclick="switchBuzonTab('mios')" style="flex:1; padding:8px; border-radius:6px; border:none; background:rgba(255,255,255,0.06); color:var(--slate); font-weight:600; font-size:12px; cursor:pointer;">📬 Mis envíos</button>
+            </div>
+
+            <div id="buzon-tab-nuevo" style="display:block;">
+                <label style="display:block; font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Tipo</label>
+                <select id="buzon-tipo" style="width:100%; margin-bottom:12px;">
+                    <option value="sugerencia">💡 Sugerencia</option>
+                    <option value="bug">🐞 Errores en la app</option>
+                    <option value="otro">💬 Otro</option>
+                </select>
+
+                <label style="display:block; font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Mensaje <span id="buzon-charcount" style="float:right; text-transform:none; letter-spacing:0; color:rgba(255,255,255,0.4);">0 / 500</span></label>
+                <textarea id="buzon-texto" maxlength="500" rows="6" placeholder="Escribí lo que quieras compartir con tu director..." style="width:100%; resize:vertical; margin-bottom:16px; font-family:inherit; padding:10px; background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.12); border-radius:8px; color:var(--white); font-size:13px;" oninput="_updateBuzonCharCount()"></textarea>
+
+                <button id="buzon-send-btn" onclick="sendBuzonMensaje()" style="width:100%; padding:12px; background:var(--gold); color:#000; border:none; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">
+                    <i class="fa fa-paper-plane"></i> Enviar al buzón
+                </button>
+            </div>
+
+            <div id="buzon-tab-mios" style="display:none;">
+                <div id="buzon-mios-list" style="display:flex; flex-direction:column; gap:10px; min-height:120px;">
+                    <div style="text-align:center; padding:40px 20px; color:var(--slate); font-size:12px;">Cargando...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MI CALENDARIO — vista mensual de días reportados -->
+    <div class="modal-overlay" id="my-calendar-modal" onclick="if(event.target===this)closeMyCalendar()">
+        <div class="cal-modal-box">
+            <div class="cal-header">
+                <div class="cal-title">📅 Mis días reportados</div>
+                <button class="cal-close-btn" onclick="closeMyCalendar()">&times;</button>
+            </div>
+            <div class="cal-nav">
+                <button class="cal-nav-btn" onclick="navMyCalendar(-1)" aria-label="Mes anterior">‹</button>
+                <div class="cal-nav-mes" id="my-cal-current-mes">—</div>
+                <button class="cal-nav-btn" onclick="navMyCalendar(1)" aria-label="Mes siguiente">›</button>
+            </div>
+            <div class="cal-grid-head">
+                <div class="cal-cell-head">Lu</div>
+                <div class="cal-cell-head">Ma</div>
+                <div class="cal-cell-head">Mi</div>
+                <div class="cal-cell-head">Ju</div>
+                <div class="cal-cell-head">Vi</div>
+                <div class="cal-cell-head">Sa</div>
+                <div class="cal-cell-head">Do</div>
+            </div>
+            <div class="cal-grid-body" id="my-cal-grid-body"></div>
+            <div class="cal-legend">
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(16,185,129,0.5)"></span> 💪 Actividad con cierre</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(16,185,129,0.5)"></span> 🌱 Actividad sin cierre</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(245,158,11,0.5)"></span> 🌙 Sin intento</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(239,68,68,0.5)"></span> 🔴 Con errores</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(255,255,255,0.1)"></span> ⚪ Sin reporte</div>
+            </div>
+            <div class="cal-day-detail" id="my-cal-day-detail"><span class="cal-detail-empty">Toca un día para ver detalles.</span></div>
+        </div>
+    </div>
+
     <!-- HISTORY MODAL -->
     <div class="modal-overlay" id="history-modal">
         <div class="modal-box" style="max-width:500px;">
@@ -2275,7 +2398,7 @@
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, onSnapshot, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, orderBy, onSnapshot, runTransaction, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getMessaging, getToken, onMessage, isSupported as isMessagingSupported } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
         // Initialize
@@ -2734,6 +2857,253 @@
             document.getElementById('anuncios-modal').classList.remove('open');
         };
 
+        // ═══ BUZÓN DE SUGERENCIAS Y ERRORES (unidireccional agente → director) ═══
+        window.openBuzonModal = function () {
+            document.getElementById('buzon-modal').classList.add('open');
+            switchBuzonTab('nuevo');
+        };
+        window.closeBuzonModal = function () {
+            document.getElementById('buzon-modal').classList.remove('open');
+        };
+        window.switchBuzonTab = function (which) {
+            const tabNuevo = document.getElementById('buzon-tab-nuevo');
+            const tabMios = document.getElementById('buzon-tab-mios');
+            const btnNuevo = document.getElementById('buzon-tab-nuevo-btn');
+            const btnMios = document.getElementById('buzon-tab-mios-btn');
+            const activeStyle = 'background:var(--gold); color:#000; font-weight:700;';
+            const inactiveStyle = 'background:rgba(255,255,255,0.06); color:var(--slate); font-weight:600;';
+            if (which === 'mios') {
+                tabNuevo.style.display = 'none';
+                tabMios.style.display = 'block';
+                btnNuevo.style.cssText = 'flex:1; padding:8px; border-radius:6px; border:none; font-size:12px; cursor:pointer;' + inactiveStyle;
+                btnMios.style.cssText = 'flex:1; padding:8px; border-radius:6px; border:none; font-size:12px; cursor:pointer;' + activeStyle;
+                _loadMisFeedback();
+            } else {
+                tabNuevo.style.display = 'block';
+                tabMios.style.display = 'none';
+                btnNuevo.style.cssText = 'flex:1; padding:8px; border-radius:6px; border:none; font-size:12px; cursor:pointer;' + activeStyle;
+                btnMios.style.cssText = 'flex:1; padding:8px; border-radius:6px; border:none; font-size:12px; cursor:pointer;' + inactiveStyle;
+            }
+        };
+        window._updateBuzonCharCount = function () {
+            const t = document.getElementById('buzon-texto');
+            const c = document.getElementById('buzon-charcount');
+            if (t && c) c.textContent = `${t.value.length} / 500`;
+        };
+        window.sendBuzonMensaje = async function () {
+            const btn = document.getElementById('buzon-send-btn');
+            const texto = (document.getElementById('buzon-texto').value || '').trim();
+            const tipo = document.getElementById('buzon-tipo').value;
+            if (!texto) { alert('Escribí algo antes de enviar.'); return; }
+            if (texto.length > 500) { alert('Máximo 500 caracteres.'); return; }
+            if (!user?.email) { alert('Sesión no lista. Reintentá en unos segundos.'); return; }
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+            try {
+                await addDoc(collection(db, 'feedback'), {
+                    from: user.email,
+                    fromName: state.agentName || user.email,
+                    fromRole: 'agente',
+                    directorCode: state.directorCode || '',
+                    regionName: state.regionName || '',
+                    teamCode: state.teamCode || '',
+                    tipo,
+                    texto,
+                    status: 'pending',
+                    createdAt: serverTimestamp()
+                });
+                document.getElementById('buzon-texto').value = '';
+                _updateBuzonCharCount();
+                btn.innerHTML = '<i class="fa fa-check"></i> ¡Recibido! Gracias por hacer mejor la app 💪';
+                btn.style.background = 'var(--green)';
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa fa-paper-plane"></i> Enviar al buzón';
+                    btn.style.background = 'var(--gold)';
+                }, 2400);
+            } catch (err) {
+                console.error('[buzon] send error:', err);
+                alert('No se pudo enviar. Reintentá en unos segundos.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-paper-plane"></i> Enviar al buzón';
+            }
+        };
+        async function _loadMisFeedback() {
+            const listEl = document.getElementById('buzon-mios-list');
+            if (!listEl || !user?.email) return;
+            listEl.innerHTML = '<div style="text-align:center; padding:40px 20px; color:var(--slate); font-size:12px;">Cargando...</div>';
+            try {
+                const q = query(collection(db, 'feedback'), where('from', '==', user.email));
+                const snap = await getDocs(q);
+                const items = [];
+                snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+                items.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                if (items.length === 0) {
+                    listEl.innerHTML = `
+                        <div style="text-align:center; padding:40px 20px;">
+                            <div style="font-size:48px; opacity:0.3; margin-bottom:12px;">📮</div>
+                            <div style="font-size:14px; color:var(--slate); font-weight:600; margin-bottom:6px;">Sin envíos todavía</div>
+                            <div style="font-size:12px; color:rgba(255,255,255,0.4); line-height:1.5;">Cuando mandes algo desde la pestaña "Nuevo" aparecerá acá.</div>
+                        </div>`;
+                    return;
+                }
+                const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+                const tipoEmoji = { sugerencia: '💡', bug: '🐞', otro: '💬' };
+                const tipoLabel = { sugerencia: 'Sugerencia', bug: 'Errores en la app', otro: 'Otro' };
+                listEl.innerHTML = items.map(it => {
+                    const fecha = it.createdAt?.toDate?.().toLocaleString?.('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) || '—';
+                    return `
+                        <div style="padding:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span style="font-size:11px; color:var(--gold-l); font-weight:700;">${tipoEmoji[it.tipo] || '💬'} ${tipoLabel[it.tipo] || it.tipo}</span>
+                                <span style="font-size:10px; color:var(--slate);">${escapeHtml(fecha)}</span>
+                            </div>
+                            <div style="font-size:12px; color:var(--white); white-space:pre-wrap; line-height:1.5;">${escapeHtml(it.texto)}</div>
+                        </div>`;
+                }).join('');
+            } catch (err) {
+                console.error('[buzon] load mios error:', err);
+                listEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--red); font-size:12px;">No se pudieron cargar tus envíos. Reintentá.</div>';
+            }
+        }
+
+        // ═══ MI CALENDARIO (agente ve sus propios días reportados) ══════════
+        let _myCalYear = null;
+        let _myCalMonth = null;
+        let _myCalSelectedDate = null;
+        let _myCalDayMap = {};
+
+        window.openMyCalendar = function () {
+            const m = parseInt(document.getElementById('sel-month').value) || (new Date().getMonth() + 1);
+            const y = parseInt(document.getElementById('inp-year').value) || new Date().getFullYear();
+            _myCalYear = y;
+            _myCalMonth = m;
+            _myCalSelectedDate = null;
+            _renderMyCalendar();
+            document.getElementById('my-calendar-modal').classList.add('open');
+        };
+        window.closeMyCalendar = function () {
+            document.getElementById('my-calendar-modal').classList.remove('open');
+        };
+        window.navMyCalendar = function (dir) {
+            _myCalMonth += dir;
+            if (_myCalMonth < 1) { _myCalMonth = 12; _myCalYear--; }
+            if (_myCalMonth > 12) { _myCalMonth = 1; _myCalYear++; }
+            _myCalSelectedDate = null;
+            _renderMyCalendar();
+        };
+
+        function _myCalGetDayStatus(dia) {
+            if (!dia) return 'none';
+            if (dia.sinActividad === true) return 'sin-actividad';
+            const sum = (Number(dia.P)||0) + (Number(dia.E)||0) + (Number(dia.C)||0) + (Number(dia.V)||0) + (Number(dia.S)||0);
+            const hasData = sum > 0 || (Number(dia.prima)||0) > 0;
+            if (!hasData) return 'none';
+            try {
+                const { ok } = validateDay(dia);
+                if (!ok) return 'red';
+                const V = Number(dia.V) || 0;
+                return V > 0 ? 'ok' : 'ok-no-close';
+            } catch (e) { return 'none'; }
+        }
+
+        function _myCalIsFuture(year, month1to12, date) {
+            const cellDate = new Date(year, month1to12 - 1, date);
+            cellDate.setHours(0, 0, 0, 0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return cellDate.getTime() > today.getTime();
+        }
+
+        function _renderMyCalendar() {
+            if (!_myCalYear || !_myCalMonth) return;
+            const mesStr = MONTHS_ES[_myCalMonth - 1] + ' ' + _myCalYear;
+            const mesEl = document.getElementById('my-cal-current-mes');
+            if (mesEl) mesEl.textContent = mesStr;
+
+            const weeks = getMonthCalendar(_myCalYear, _myCalMonth);
+            const firstDayName = weeks[0]?.[0]?.dayName || 'Lunes';
+            const leadingEmpty = DAYS.indexOf(firstDayName);
+
+            const entriesThisMonth = (state.entries || []).filter(e => e.mes === mesStr);
+            _myCalDayMap = {};
+            weeks.forEach((week, wIdx) => {
+                const semana = wIdx + 1;
+                const entry = entriesThisMonth.find(e => String(e.semana) === String(semana));
+                week.forEach(({ dayName, date }) => {
+                    const dia = entry?.dias?.find(d => d.dia === dayName) || null;
+                    _myCalDayMap[date] = { dia, status: _myCalGetDayStatus(dia), dayName, semana };
+                });
+            });
+
+            const grid = document.getElementById('my-cal-grid-body');
+            if (!grid) return;
+            const cells = [];
+            for (let i = 0; i < leadingEmpty; i++) cells.push('<div class="cal-cell empty"></div>');
+            const daysInMonth = new Date(_myCalYear, _myCalMonth, 0).getDate();
+            for (let d = 1; d <= daysInMonth; d++) {
+                if (_myCalIsFuture(_myCalYear, _myCalMonth, d)) {
+                    cells.push(`<div class="cal-cell future"><span class="cal-num">${d}</span></div>`);
+                    continue;
+                }
+                const info = _myCalDayMap[d] || { status: 'none' };
+                const icon = info.status === 'ok' ? '💪'
+                    : info.status === 'ok-no-close' ? '🌱'
+                    : info.status === 'red' ? '🔴'
+                    : info.status === 'sin-actividad' ? '🌙'
+                    : info.status === 'none' ? '⚪'
+                    : '';
+                const selected = (_myCalSelectedDate === d) ? ' selected' : '';
+                cells.push(`<div class="cal-cell ${info.status}${selected}" onclick="_myCalShowDayDetail(${d})">
+                    <span class="cal-num">${d}</span>
+                    ${icon ? `<span class="cal-icon">${icon}</span>` : ''}
+                </div>`);
+            }
+            grid.innerHTML = cells.join('');
+            const detail = document.getElementById('my-cal-day-detail');
+            if (detail) detail.innerHTML = '<span class="cal-detail-empty">Toca un día para ver detalles.</span>';
+        }
+
+        window._myCalShowDayDetail = function (date) {
+            const info = _myCalDayMap[date];
+            const detail = document.getElementById('my-cal-day-detail');
+            if (!detail || !info) return;
+            _myCalSelectedDate = date;
+            document.querySelectorAll('#my-cal-grid-body .cal-cell.selected').forEach(c => c.classList.remove('selected'));
+            const cells = document.querySelectorAll('#my-cal-grid-body .cal-cell:not(.empty)');
+            const targetCell = cells[date - 1];
+            if (targetCell) targetCell.classList.add('selected');
+
+            const mesNombre = MONTHS_ES[_myCalMonth - 1];
+            const fechaStr = `${date} de ${mesNombre} (${info.dayName})`;
+
+            if (info.status === 'none') {
+                detail.innerHTML = `<strong>${fechaStr}</strong><br><span class="cal-detail-empty">⚪ No reportaste este día.</span>`;
+                return;
+            }
+            if (info.status === 'sin-actividad') {
+                detail.innerHTML = `<strong>${fechaStr}</strong><br>🌙 Declaraste "Sin intento de venta".`;
+                return;
+            }
+            const d = info.dia || {};
+            const statusLabel = info.status === 'ok' ? '💪 Actividad con cierre — vendiste!'
+                : info.status === 'ok-no-close' ? '🌱 Sin venta pero sembraste, el cierre está en camino'
+                : '🔴 Con errores en el reporte';
+            const primaFmt = (Number(d.prima)||0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            detail.innerHTML = `
+                <strong>${fechaStr}</strong><br>
+                ${statusLabel}
+                <div style="display:flex;gap:10px;margin-top:6px;font-size:11px;flex-wrap:wrap;">
+                    <span>P:<strong>${Number(d.P)||0}</strong></span>
+                    <span>E:<strong>${Number(d.E)||0}</strong></span>
+                    <span>C:<strong>${Number(d.C)||0}</strong></span>
+                    <span>V:<strong>${Number(d.V)||0}</strong></span>
+                    <span>S:<strong>${Number(d.S)||0}</strong></span>
+                    <span style="color:var(--gold)">$<strong>${primaFmt}</strong></span>
+                </div>
+            `;
+        };
+
         function renderAnunciosList() {
             const empty    = document.getElementById('anuncios-empty');
             const listEl   = document.getElementById('anuncios-list');
@@ -2862,6 +3232,7 @@
         const NEW_FEATURES_TO_GLOW = [
             { feature: 'notif',    selector: '#notif-bell-btn' },
             { feature: 'anuncios', selector: '#anuncios-btn' },
+            { feature: 'buzon',    selector: '#buzon-btn' },
         ];
 
         function applyFeatureGlows() {
@@ -4868,6 +5239,27 @@
             // Totales semanales: mobile (solo prima)
             const mTtPrima = document.getElementById('m-tt-$');
             if (mTtPrima) mTtPrima.textContent = '$' + totals.prima.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            // Suffix "N/M (Mes)" para Prima Semana + "(Mes)" para Prima Mes.
+            {
+                const semN = parseInt(document.getElementById('sel-semana').value) || 1;
+                const monthIdx = parseInt(document.getElementById('sel-month').value) || 1;
+                const totalSemanas = (currentWeeks && currentWeeks.length) || 0;
+                const mesName = MONTHS_ES[monthIdx - 1] || '';
+                const weekSuffix = totalSemanas > 0 && mesName ? `${semN}/${totalSemanas} (${mesName})`
+                    : totalSemanas > 0 ? `${semN}/${totalSemanas}`
+                    : mesName ? `(${mesName})`
+                    : '';
+                const monthSuffix = mesName ? `(${mesName})` : '';
+                const ttSuf = document.getElementById('tt-week-suffix');
+                const mTtSuf = document.getElementById('m-tt-week-suffix');
+                const mtSuf = document.getElementById('mt-month-suffix');
+                const mMtSuf = document.getElementById('m-mt-month-suffix');
+                if (ttSuf) ttSuf.textContent = weekSuffix;
+                if (mTtSuf) mTtSuf.textContent = weekSuffix;
+                if (mtSuf) mtSuf.textContent = monthSuffix;
+                if (mMtSuf) mMtSuf.textContent = monthSuffix;
+            }
 
             // ─── FIX: guardar ANTES de calcular el TOTAL MENSUAL ─────────────
             // Antes, mTotals leia state.entries ANTES del save, asi que mostraba
