@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pecvs-agent-mainnet-v1.17.0';
+const CACHE_NAME = 'pecvs-agent-mainnet-v1.18.0';
 const assets = [
     './',
     './index.html',
@@ -82,23 +82,48 @@ self.addEventListener('activate', e => {
     })());
 });
 
+// Timeout de red para la navegación. Sin esto, un fetch colgado (señal mala,
+// torre saturada, captive portal) deja al SW sin responder — y el splash nativo
+// del PWA se queda en pantalla hasta que el browser aborta solo (30-120s).
+// Con 4s servimos cache y la app abre al instante; la próxima carga trae fresh.
+const NAV_TIMEOUT_MS = 4000;
+
 self.addEventListener('fetch', e => {
     // Ignorar requests a dominios externos (Firebase, gstatic, etc.) — solo cacheamos same-origin
     const url = new URL(e.request.url);
     if (url.origin !== self.location.origin) return;
 
-    // Estrategia Network-First para la navegación principal (index.html)
-    // Esto asegura que si hay internet, siempre descargue la última versión de GitHub.
+    // Network-First CON TIMEOUT para la navegación principal (index.html).
+    // Si hay internet decente, descarga la última versión de GitHub.
+    // Si la red tarda más de NAV_TIMEOUT_MS, sirve el cache sin esperar.
     if (e.request.mode === 'navigate') {
-        e.respondWith(
-            fetch(e.request)
-                .then(res => {
+        e.respondWith((async () => {
+            // Preparamos el fallback ANTES de la carrera. './index.html' cubre el
+            // caso de URLs con query params o hash que no matchean exacto.
+            const cached = (await caches.match(e.request))
+                || (await caches.match('./index.html'))
+                || (await caches.match('./'));
+
+            try {
+                const res = await Promise.race([
+                    fetch(e.request),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('sw-nav-timeout')), NAV_TIMEOUT_MS))
+                ]);
+                if (res && res.ok) {
                     const clone = res.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
-                    return res;
-                })
-                .catch(() => caches.match(e.request))
-        );
+                    // Fire-and-forget: un error de cache nunca debe romper la response.
+                    caches.open(CACHE_NAME).then(c => c.put(e.request, clone)).catch(() => {});
+                }
+                return res;
+            } catch (err) {
+                // Timeout o fallo de red → cache si lo tenemos.
+                if (cached) return cached;
+                // Sin cache (primera instalación offline): reintento sin timeout.
+                // Deja que el browser muestre su error de red real en vez de colgarse.
+                return fetch(e.request);
+            }
+        })());
     } else {
         // Cache-First para otros assets estáticos
         e.respondWith(
