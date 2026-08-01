@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pecvs-agent-mainnet-v1.18.0';
+const CACHE_NAME = 'pecvs-agent-mainnet-v1.19.0';
 const assets = [
     './',
     './index.html',
@@ -12,6 +12,19 @@ const assets = [
 // ─── FIREBASE CLOUD MESSAGING ─────────────────────────────────────────────────
 // Importamos los SDKs compat de Firebase para Service Worker. La versión 10.x
 // modular no funciona en SW (solo en módulos ES); por eso usamos -compat.
+// OJO — esto va envuelto en try/catch a proposito. importScripts es SINCRONO y
+// bloqueante: si gstatic falla, la excepcion sube y el Service Worker entero no
+// instala. Sin SW no hay handler de fetch, y el arranque de la app se queda sin
+// respuesta -> pantalla negra.
+//
+// Envuelto, un gstatic caido degrada a "sin notificaciones push" en vez de
+// tumbar la app. El resto del SW (cache, navegacion) se registra igual.
+//
+// Lo que esto NO cubre: si gstatic no falla sino que se CUELGA, importScripts se
+// queda esperando sin timeout. Eso solo se elimina hospedando los SDK en el
+// mismo origen. Pendiente.
+let messaging = null;
+try {
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
@@ -24,7 +37,7 @@ firebase.initializeApp({
     appId: "1:322544925589:web:25021c345574e9ee0c149c"
 });
 
-const messaging = firebase.messaging();
+messaging = firebase.messaging();
 
 // Handler de mensajes en background (app cerrada o no enfocada).
 // Cuando la PWA está abierta, FCM dispara onMessage en el cliente directamente
@@ -44,6 +57,10 @@ messaging.onBackgroundMessage(payload => {
         requireInteraction: false
     });
 });
+} catch (err) {
+    // La app funciona sin push. No funciona sin fetch handler.
+    console.warn('[sw] FCM no disponible, sigo sin push:', err);
+}
 
 // Click en la notificación → abrir/enfocar la app
 self.addEventListener('notificationclick', event => {
@@ -87,11 +104,31 @@ self.addEventListener('activate', e => {
 // del PWA se queda en pantalla hasta que el browser aborta solo (30-120s).
 // Con 4s servimos cache y la app abre al instante; la próxima carga trae fresh.
 const NAV_TIMEOUT_MS = 4000;
+const LAST_RESORT_MS = 15000;
+
+// CDNs de assets estaticos que el <head> carga BLOQUEANDO el render: Chart.js,
+// Font Awesome y Google Fonts. Antes se dejaban pasar sin cachear ("solo
+// cacheamos same-origin"), asi que cada arranque de la app dependia de que los
+// tres CDNs respondieran. Si uno se colgaba —WiFi con captive portal, DNS
+// muerto— el browser no pintaba NADA: pantalla negra hasta que el sistema
+// abortara la peticion, y por eso "se arreglaba" al cambiar de WiFi a LTE.
+// Cacheados, a partir del segundo arranque no vuelven a tocar la red.
+const STATIC_CDN = [
+    'cdn.jsdelivr.net',        // chart.js
+    'cdnjs.cloudflare.com',    // font awesome
+    'fonts.googleapis.com',    // css de fuentes
+    'fonts.gstatic.com'        // archivos de fuentes
+];
 
 self.addEventListener('fetch', e => {
-    // Ignorar requests a dominios externos (Firebase, gstatic, etc.) — solo cacheamos same-origin
     const url = new URL(e.request.url);
-    if (url.origin !== self.location.origin) return;
+    const sameOrigin  = url.origin === self.location.origin;
+    const isStaticCdn = STATIC_CDN.indexOf(url.hostname) !== -1;
+
+    // Todo el resto cross-origin (Firestore, FCM, APIs de hora) se deja pasar
+    // intacto: cachear respuestas de API seria un desastre de datos viejos.
+    if (!sameOrigin && !isStaticCdn) return;
+    if (e.request.method !== 'GET') return;
 
     // Network-First CON TIMEOUT para la navegación principal (index.html).
     // Si hay internet decente, descarga la última versión de GitHub.
@@ -106,7 +143,7 @@ self.addEventListener('fetch', e => {
 
             try {
                 const res = await Promise.race([
-                    fetch(e.request),
+                    fetch(e.request, { cache: 'no-store' }),
                     new Promise((_, reject) =>
                         setTimeout(() => reject(new Error('sw-nav-timeout')), NAV_TIMEOUT_MS))
                 ]);
@@ -119,15 +156,49 @@ self.addEventListener('fetch', e => {
             } catch (err) {
                 // Timeout o fallo de red → cache si lo tenemos.
                 if (cached) return cached;
-                // Sin cache (primera instalación offline): reintento sin timeout.
-                // Deja que el browser muestre su error de red real en vez de colgarse.
-                return fetch(e.request);
+                // Sin cache (primera instalacion offline, o cache recien purgado).
+                // Timeout generoso: suficiente para una conexion mala legitima, pero
+                // ACOTADO — un fetch sin limite aca deja PANTALLA NEGRA indefinida y
+                // solo se recupera al cambiar de red (lo que aborta el fetch colgado).
+                // Al expirar, respondWith rechaza y el browser muestra su error real.
+                return await Promise.race([
+                    fetch(e.request),
+                    new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('sw-last-resort-timeout')), LAST_RESORT_MS))
+                ]);
             }
         })());
     } else {
-        // Cache-First para otros assets estáticos
-        e.respondWith(
-            caches.match(e.request).then(res => res || fetch(e.request))
-        );
+        // Cache-First para assets estaticos, propios y de CDN.
+        e.respondWith((async () => {
+            const cached = await caches.match(e.request);
+
+            if (cached) {
+                // Refresco en segundo plano solo para los CDN: sirve el cache al
+                // instante y va actualizando sin bloquear nada. Si la red esta
+                // muerta, el .catch() lo absorbe y el usuario no se entero.
+                if (isStaticCdn) {
+                    fetch(e.request).then(res => {
+                        if (!res) return;
+                        // Los CDN sin CORS devuelven respuestas 'opaque': status 0 y
+                        // ok=false. Son cacheables igual, asi que hay que aceptarlas
+                        // explicitamente o nunca se guardaria ninguna fuente.
+                        if (res.ok || res.type === 'opaque') {
+                            const clone = res.clone();
+                            caches.open(CACHE_NAME).then(c => c.put(e.request, clone)).catch(() => {});
+                        }
+                    }).catch(() => {});
+                }
+                return cached;
+            }
+
+            // Primera vez: a la red, y guardamos para que no vuelva a depender de ella.
+            const res = await fetch(e.request);
+            if (isStaticCdn && res && (res.ok || res.type === 'opaque')) {
+                const clone = res.clone();
+                caches.open(CACHE_NAME).then(c => c.put(e.request, clone)).catch(() => {});
+            }
+            return res;
+        })());
     }
 });

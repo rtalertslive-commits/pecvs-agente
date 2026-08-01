@@ -10,7 +10,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 
     <!-- PWA / Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
@@ -1033,6 +1033,9 @@
         }
 
         .modal-box {
+            /* Sin esto, al llegar al final del modal el gesto se propaga a la
+               pagina de atras y el modal se siente trabado. */
+            overscroll-behavior: contain;
             background: var(--panel);
             border: 1px solid var(--gold);
             border-radius: 12px;
@@ -2367,20 +2370,83 @@
 
     <script>
         // Sync versión de la app desde sw.js (single source of truth).
-        // Lee CACHE_NAME del service worker y la muestra en title + login footer + header.
-        // Así no tenemos que mantener la versión hardcoded en 3 lugares — basta bumpear sw.js.
-        (async () => {
+        // Version HORNEADA en este archivo. Tiene que coincidir con CACHE_NAME en sw.js.
+        //
+        // Antes esto leia la version desde ./sw.js por red, asi que mostraba la
+        // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
+        // cache, el header decia una version y corria otra. Imposible darse cuenta
+        // de que estabas desactualizado.
+        window.APP_HTML_VERSION = 'v1.19.0';
+
+        // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
+        // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
+        // cache completo deja la app en pantalla negra si la red esta lenta.
+        window.forzarActualizacion = async function () {
+            document.querySelectorAll('[data-app-version]').forEach(el => { el.textContent = 'buscando…'; });
             try {
-                const r = await fetch('./sw.js', { cache: 'no-cache' });
-                const text = await r.text();
-                const match = text.match(/CACHE_NAME\s*=\s*['"`][^'"`]*?v(\d+\.\d+\.\d+)['"`]/);
-                if (!match) return;
-                const v = 'v' + match[1];
-                document.title = 'Actividad — ' + v;
+                if (window.caches) {
+                    for (const n of await caches.keys()) {
+                        const c = await caches.open(n);
+                        await c.delete('./');
+                        await c.delete('./index.html');
+                        await c.delete(location.href.split('#')[0].split('?')[0]);
+                    }
+                }
+            } catch (e) { console.warn('[version] cache:', e); }
+            try { sessionStorage.removeItem('pecvsAutoReloadFor'); } catch (e) {}
+            location.replace(location.pathname + '?v=' + Date.now());
+        };
+
+        (async () => {
+            const RUNNING = window.APP_HTML_VERSION;
+            const paint = (txt, warn) => {
                 document.querySelectorAll('[data-app-version]').forEach(el => {
-                    el.textContent = v;
+                    el.textContent = txt;
+                    el.style.cursor = 'pointer';
+                    el.title = 'Toca para buscar actualización';
+                    el.onclick = window.forzarActualizacion;
+                    if (warn) { el.style.color = '#f59e0b'; el.style.fontWeight = '700'; }
                 });
-            } catch (e) { /* ignore — el placeholder "—" queda visible */ }
+            };
+            document.title = 'Actividad — ' + RUNNING;
+            paint(RUNNING, false);
+
+            try {
+                const r = await fetch('./sw.js', { cache: 'no-store' });
+                const match = (await r.text()).match(/CACHE_NAME\s*=\s*['"`][^'"`]*?v(\d+\.\d+\.\d+)['"`]/);
+                if (!match) return;
+                const PUBLISHED = 'v' + match[1];
+                if (PUBLISHED === RUNNING) return;
+
+                paint(RUNNING + ' → ' + PUBLISHED, true);
+                console.warn('[version] corriendo', RUNNING, 'pero publicado es', PUBLISHED, '— HTML servido desde cache');
+
+                // Recarga automatica, una sola vez por version y por sesion.
+                // NO borra caches antes de recargar: hacerlo quitaba la red de
+                // seguridad justo cuando mas hace falta y provocaba pantalla negra.
+                // DOS marcas, no una. sessionStorage es la normal, pero si el
+                // almacenamiento esta bloqueado —modo privado, cuota llena— tanto
+                // getItem como setItem tiran, yaIntentado se queda en null, nunca
+                // iguala a PUBLISHED y esto RECARGA EN BUCLE INFINITO. La app
+                // quedaria inservible y el usuario ni siquiera podria llegar a
+                // tocar el numero de version para salir.
+                //
+                // La marca en la URL sobrevive a la recarga sin depender de nada.
+                const KEY = 'pecvsAutoReloadFor';
+                const MARCA = 'pecvsR=' + PUBLISHED;
+                let yaIntentado = null;
+                try { yaIntentado = sessionStorage.getItem(KEY); } catch (e) {}
+                const yaEnUrl = location.search.indexOf(MARCA) !== -1;
+
+                if (yaIntentado !== PUBLISHED && !yaEnUrl) {
+                    try { sessionStorage.setItem(KEY, PUBLISHED); } catch (e) {}
+                    console.warn('[version] recargando para tomar', PUBLISHED);
+                    // replace y no reload: deja la marca en la URL y no ensucia el
+                    // historial con una entrada por recarga.
+                    location.replace(location.pathname + location.search +
+                                     (location.search ? '&' : '?') + MARCA);
+                }
+            } catch (e) { /* sin red: queda la version horneada, que es la verdad */ }
         })();
     </script>
 
@@ -3487,8 +3553,11 @@
                     if (status === 'active') {
                         document.getElementById('login-overlay').classList.add('hidden');
                         await loadFromCloud();
-                        startUserDocListener(); // real-time updates desde Firestore
-                        init();
+                        // Cada una en su propio try: si el listener tira, la app
+                        // igual se pinta. Antes un error aca dejaba la pantalla en
+                        // blanco sin ninguna pista de por que.
+                        try { startUserDocListener(); } catch (err) { console.error('[boot] listener:', err); }
+                        try { init(); } catch (err) { console.error('[boot] init:', err); }
                         subscribeToPush().catch(err => console.error('[push] subscribeToPush:', err));
                         // Iniciar listener de anuncios para mantener badge y modal actualizados
                         startAnunciosListener();
