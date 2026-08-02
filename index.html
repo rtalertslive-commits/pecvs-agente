@@ -2566,7 +2566,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v1.20.1';
+        window.APP_HTML_VERSION = 'v1.21.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -6097,7 +6097,7 @@
             // Iterar por currentWeeks en lugar de DOM, así funciona en mobile (cards) o desktop (tabla)
             const semIdx = parseInt(document.getElementById('sel-semana').value) - 1;
             const weekDays = currentWeeks[semIdx] || [];
-            weekDays.forEach(({ dayName: day }) => {
+            weekDays.forEach(({ dayName: day, date: dayNum }) => {
                 const dvals = {};
                 // Clamp a [0, ∞): Math.max(0, ...) bloquea negativos; `|| 0` bloquea NaN/empty
                 COLS.forEach(c => {
@@ -6117,10 +6117,34 @@
                 const any = Object.values(dvals).some(v => typeof v === 'number' && v > 0) || dvals.prima > 0;
                 const cell = document.getElementById('funnel-' + day);
                 if (cell) {
-                    cell.textContent = sinActividad ? '🌙' : (!any ? '—' : (ok ? '🟢' : '🔴'));
+                    // 💪 vs 🌱 se distingue por V (cierres), igual que en el calendario.
+                    // Antes esta celda solo tenía 3 estados y cualquier día válido con
+                    // datos mostraba 🟢 — así que un día de prospección sin cierre se
+                    // veía igual que uno con venta, contradiciendo lo que el mismo día
+                    // muestra en el calendario.
+                    const conCierre = (Number(dvals.V) || 0) > 0;
+                    // Día vacío → ⚪, el mismo emoji del calendario para "no reportó".
+                    // Pero solo si ya pasó o es hoy: en un día futuro de la semana en
+                    // curso, ⚪ se leería como "ya lo perdiste" cuando todavía no le
+                    // tocaba. El calendario hace la misma distinción con .future.
+                    let esFuturo = false;
+                    if (serverNow && dayNum) {
+                        const mSel = parseInt(document.getElementById('sel-month').value);
+                        const ySel = parseInt(document.getElementById('inp-year').value);
+                        const dDate = new Date(ySel, mSel - 1, dayNum);
+                        const hoy = new Date(serverNow.getFullYear(), serverNow.getMonth(), serverNow.getDate());
+                        esFuturo = dDate.getTime() > hoy.getTime();
+                    }
+                    const vacio = esFuturo ? '—' : '⚪';
+                    cell.textContent = sinActividad ? '🌙'
+                        : (!any ? vacio : (ok ? (conCierre ? '💪' : '🌱') : '🔴'));
                     cell.title = sinActividad
                         ? 'Día declarado sin intento de venta — +totopos por honestidad'
-                        : (ok ? 'Todo correcto' : '⚠️ ERRORES:\n• ' + errors.join('\n• '));
+                        : (!any
+                            ? (esFuturo ? 'Todavía no llega este día' : 'Sin reportar — este día no genera totopos')
+                            : (ok
+                                ? (conCierre ? 'Actividad con cierre' : 'Actividad sin cierre — cuenta igual para totopos')
+                                : '⚠️ ERRORES:\n• ' + errors.join('\n• ')));
                 }
                 // Actualizar el mensaje al lado del embudo (solo existe en la card de HOY)
                 const statusMsg = document.getElementById('status-msg-' + day);
