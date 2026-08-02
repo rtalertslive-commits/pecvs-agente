@@ -2199,6 +2199,14 @@
             <i class="fa fa-store"></i>
             <span>Tienda</span>
         </button>
+        <!-- El Foro es un MODAL, no una pestaña: por eso llama a openForo() y no
+             a switchTab(), y va sin data-tab. Al no tener data-tab nunca recibe
+             .active, que es lo correcto — abrir el foro no cambia en qué pestaña
+             estás parado. -->
+        <button class="bn-btn" onclick="openForo()" aria-label="Foro">
+            <i class="fa fa-comments"></i>
+            <span>Foro</span>
+        </button>
     </nav>
 
     <!-- UPDATE AVAILABLE MODAL -->
@@ -2618,7 +2626,233 @@
             color: var(--gold,#7999C2) !important;
         }
         #notif-bell-btn.bell-pulsing i { color: var(--gold,#7999C2); }
+        }
+
+        /* ═══ FORO ═══════════════════════════════════════════════════════════ */
+        .foro-box {
+            background: var(--panel);
+            border: 1.5px solid var(--gold);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            overscroll-behavior: contain;
+            position: relative;
+        }
+        /* Cabecera y pestañas fijas; solo scrollea el cuerpo. Así el botón de
+           cerrar y las categorías siguen alcanzables por largo que sea el hilo. */
+        .foro-head {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 16px 10px; border-bottom: 1px solid var(--border);
+            flex: 0 0 auto;
+        }
+        .foro-title { font-family: 'Source Sans Pro', sans-serif; color: var(--gold); font-size: 19px; font-weight: 700; flex: 1; }
+        .foro-x { background: none; border: none; color: var(--slate); font-size: 26px; line-height: 1; cursor: pointer; padding: 0 4px; }
+        .foro-x:hover { color: var(--white); }
+        .foro-tabs { display: flex; gap: 6px; padding: 10px 12px; overflow-x: auto; flex: 0 0 auto;
+                     border-bottom: 1px solid var(--border); }
+        .foro-tab {
+            flex: 0 0 auto; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            color: var(--slate); border-radius: 20px; padding: 6px 13px; font-size: 12px;
+            font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit;
+        }
+        .foro-tab.on { background: var(--azul-cobalto); border-color: var(--gold); color: var(--on-brand); }
+        .foro-body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: 14px 16px 18px; }
+
+        /* El foro no es un diálogo corto como los demás modales: son hilos largos
+           con imágenes y respuestas. Encajonado en la caja estándar (560px / 88vh
+           con el padding de 20px del overlay) se sentía chiquito al lado de la
+           versión del director, que es pestaña de página completa.
+
+           Todo va scopeado a #foro-modal a propósito — .modal-overlay la comparten
+           15 modales y ensancharla los movería todos. */
+
+        /* Escritorio: más ancho y más alto, pero sigue siendo una ventana. */
+        @media (min-width: 768px) {
+            .foro-box { max-width: 760px; max-height: 92vh; }
+        }
+
+        /* Mobile: pantalla completa, como la pestaña del director. Se quita el
+           padding del overlay, el borde y las esquinas redondeadas — con el
+           recuadro pegado a los bordes, el marco dorado solo roba ancho.
+
+           Pero NO tapa el bottom nav: el foro deja libres los 76px de abajo y la
+           barra queda encima y usable, para poder salir a Bitácora o Tienda sin
+           cerrar el foro primero. */
+        @media (max-width: 767px) {
+            #foro-modal { padding: 0; align-items: flex-start; }
+            .foro-box {
+                max-width: none;
+                width: 100%;
+                max-height: none;
+                /* dvh evita el salto al aparecer/ocultarse la barra del browser.
+                   El 76px + safe-area es exactamente el alto del bottom nav, el
+                   mismo valor que body usa en su padding-bottom. */
+                height: calc(100vh - 76px - env(safe-area-inset-bottom, 0px));
+                height: calc(100dvh - 76px - env(safe-area-inset-bottom, 0px));
+                border: none;
+                border-radius: 0;
+            }
+            /* La caja ahora llega hasta el borde físico de arriba, así que el
+               notch se respeta a mano. Abajo no hace falta: ahí va el nav, que
+               ya trae su propio safe-area-inset. */
+            .foro-head { padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
+
+            /* El overlay del foro es z-index 9999 y el nav 100, así que sin esto
+               el nav queda sepultado. Se sube SOLO mientras el foro está abierto
+               (body.foro-open, que ponen openForo/closeForo): subirlo siempre lo
+               dejaría flotando encima de los otros 14 modales, tapándoles
+               contenido y botones. */
+            body.foro-open .bottom-nav { z-index: 10000; }
+
+            /* En mobile el foro ya vive en el bottom nav, así que el botón del
+               encabezado sobra. NO se borra del HTML: en escritorio el bottom nav
+               está en display:none y el agente no tiene pestaña de foro, así que
+               #foro-btn es el único acceso que queda ahí. */
+            #foro-btn { display: none; }
+        }
+
+        /* ── Buscador ── */
+        .foro-busq-caja {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            border-radius: 8px; padding: 4px 4px 4px 12px;
+        }
+        .foro-busq-caja > .fa-magnifying-glass { color: var(--slate); font-size: 13px; }
+        .foro-busq-input {
+            flex: 1; min-width: 0; background: none; border: none; outline: none;
+            color: var(--white); font-family: inherit; font-size: 13px; padding: 8px 0;
+        }
+        .foro-busq-input::placeholder { color: var(--slate); }
+        /* La X nativa de type=search es invisible en fondo oscuro. */
+        .foro-busq-input::-webkit-search-cancel-button { display: none; }
+        .foro-busq-x {
+            background: none; border: none; color: var(--slate);
+            font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px;
+        }
+        .foro-busq-btn {
+            background: rgba(32, 85, 154, 0.15); border: 1px solid rgba(32, 85, 154, 0.35);
+            color: var(--gold); border-radius: 8px; padding: 7px 13px;
+            font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* ── Secciones de Mis hilos ── */
+        .foro-subs { display: flex; gap: 8px; margin-bottom: 12px; }
+        .foro-sub {
+            flex: 1; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border);
+            color: var(--slate); border-radius: 8px; padding: 9px 6px;
+            font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .foro-sub.on { background: rgba(32, 85, 154, 0.15); border-color: var(--gold); color: var(--gold); }
+
+        /* ── Paginador ── */
+        .foro-pag {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; margin-top: 16px; padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+        .foro-pag-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            color: var(--white); border-radius: 8px; padding: 8px 14px;
+            font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .foro-pag-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .foro-pag-num { font-size: 12px; font-weight: 700; color: var(--slate); }
+
+        /* ── Chips de "Mis hilos" ── */
+        .foro-chip-cat, .foro-chip-mio {
+            border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 700;
+        }
+        .foro-chip-cat { background: rgba(255, 255, 255, 0.07); color: var(--slate); }
+        .foro-chip-mio { background: rgba(32, 85, 154, 0.15); color: var(--gold); }
+        .foro-nota {
+            font-size: 12px; color: var(--slate); line-height: 1.5;
+            margin-bottom: 14px; padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Badges de rol ── */
+        .rol-badge {
+            display: inline-block; font-size: 9px; font-weight: 900; letter-spacing: 0.6px;
+            text-transform: uppercase; padding: 2px 7px; border-radius: 8px;
+            vertical-align: middle; white-space: nowrap;
+        }
+
+        /* ── Lista de hilos ── */
+        .foro-hilo-item {
+            width: 100%; text-align: left; background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border); border-radius: 8px;
+            padding: 12px 13px; margin-bottom: 9px; cursor: pointer; font-family: inherit;
+            display: block;
+        }
+        .foro-hilo-item:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(32, 85, 154, 0.35); }
+        .foro-hilo-titulo { font-size: 13.5px; font-weight: 700; color: var(--white); line-height: 1.35; margin-bottom: 5px; }
+        .foro-meta { font-size: 11px; color: var(--slate); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+
+        /* ── Post y respuestas ── */
+        .foro-post { border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 14px; }
+        .foro-post:last-child { border-bottom: none; }
+        .foro-texto { font-size: 13px; color: var(--white); line-height: 1.6; white-space: pre-wrap; word-break: break-word; margin: 7px 0; }
+        .foro-imgs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+        .foro-imgs img { width: 76px; height: 76px; object-fit: cover; border-radius: 8px;
+                         border: 1px solid var(--border); cursor: pointer; }
+        .foro-oculto { opacity: 0.5; font-style: italic; }
+
+        /* ── Compositor ── */
+        .foro-input, .foro-area {
+            width: 100%; background: rgba(255, 255, 255,0.6); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--white); font-size: 13px; font-family: inherit;
+            padding: 10px; margin-bottom: 10px;
+        }
+        .foro-area { resize: vertical; min-height: 110px; }
+        .foro-priv {
+            display: flex; align-items: flex-start; gap: 9px; background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border); border-radius: 8px; padding: 11px 12px; margin-bottom: 12px;
+            cursor: pointer;
+        }
+        .foro-priv input { margin-top: 2px; flex: 0 0 auto; }
+        .foro-thumbs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
+        .foro-thumb { position: relative; width: 64px; height: 64px; }
+        .foro-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+        .foro-thumb button {
+            position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%;
+            background: var(--red); color: var(--on-brand); border: none; font-size: 12px; line-height: 1; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; padding: 0;
+        }
+        .foro-btn-primary {
+            width: 100%; background: var(--azul-cobalto); color: var(--on-brand); border: none; border-radius: 8px;
+            padding: 12px; font-size: 13px; font-weight: 900; cursor: pointer; font-family: inherit;
+        }
+        .foro-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .foro-empty {
+            text-align: center; color: var(--slate); font-size: 13px;
+            padding: 26px 12px; line-height: 1.6;
+        }
+        .foro-empty i { display: block; font-size: 26px; opacity: 0.35; margin-bottom: 8px; }
+        .foro-link { background: none; border: none; color: var(--gold); font-size: 12px; font-weight: 700;
+                     cursor: pointer; padding: 0; font-family: inherit; }
+
+        /* ── SCROLL DENTRO DE MODALES ──────────────────────────────────────────
+           Sin overscroll-behavior, al llegar al final del scroll el gesto se
+
     </style>
+
+    <div class="modal-overlay" id="foro-modal" onclick="if(event.target===this)closeForo()">
+        <div class="foro-box">
+            <div class="foro-head">
+                <button id="foro-back" class="foro-x" onclick="foroVolver()" style="display:none;" aria-label="Volver">&larr;</button>
+                <span class="foro-title" id="foro-title">Foro</span>
+                <button class="foro-x" onclick="closeForo()" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="foro-tabs" id="foro-tabs"></div>
+            <div class="foro-body" id="foro-body"></div>
+        </div>
+    </div>
 
     <div id="karma-celebration">
         <div id="karma-particles"></div>
@@ -2643,7 +2877,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.0.0';
+        window.APP_HTML_VERSION = 'v2.1.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -2731,13 +2965,15 @@
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, orderBy, onSnapshot, runTransaction, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, orderBy, onSnapshot, runTransaction, deleteDoc, serverTimestamp, updateDoc, limit, startAfter, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { getMessaging, getToken, onMessage, isSupported as isMessagingSupported } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
         // Initialize
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
         const provider = new GoogleAuthProvider();
 
         // Messaging — puede no estar soportado en ciertos browsers/contextos.
@@ -5379,6 +5615,719 @@
                 </div>`;
         }
 
+        // retire a proposito).
+        //
+        // BORRADO SUAVE: nada se borra de Firestore, se marca `oculto`. Las reglas
+        // tienen delete en false. Un toque accidental no destruye nada.
+        const FORO_CATS = [
+            { id: 'general',     label: 'General' },
+            { id: 'ayuda',       label: 'Ayuda' },
+            { id: 'totopos',     label: 'Totopos' },
+            { id: 'sugerencias', label: 'Sugerencias' }
+        ];
+        const FORO_ROLES = {
+            agente:        { label: 'Agente',        bg: 'rgba(32, 85, 154,0.20)',  fg: '#20559A' },
+            coach:         { label: 'Coach',         bg: 'rgba(121, 153, 194,0.20)',   fg: '#7999C2' },
+            promotor:      { label: 'Promotor',      bg: 'rgba(138, 91, 0,0.20)',  fg: '#8A5B00' },
+            director:      { label: 'Director',      bg: 'rgba(32, 85, 154, 0.22)',  fg: '#20559A' },
+            superdirector: { label: 'Superdirector', bg: 'rgba(192, 57, 43,0.20)',   fg: '#C0392B' }
+        };
+        // Este archivo es la app del AGENTE, asi que el rol propio es fijo.
+        const FORO_MI_ROL = 'agente';
+        // Si pasa de esto, se comprime. Debajo sube tal cual — una captura de
+        // pantalla recomprimida pierde legibilidad justo en el texto chico, que es
+        // lo que se quiere mostrar al reportar un error.
+        const FORO_COMPRIMIR_DESDE = 1.5 * 1024 * 1024;
+        const FORO_MAX_DIM = 2000;
+        const FORO_MAX_IMGS = 5;
+
+        // Pseudo-categoria: no es una categoria real en Firestore, es una vista
+        // distinta (otra consulta) que se pinta en la misma barra de pestañas.
+        const FORO_MIOS = '__mios';
+        const FORO_POR_PAGINA = 10;
+
+        let _foroCat = 'general';
+        let _foroVista = 'lista';       // 'lista' | 'hilo' | 'componer'
+        let _foroPag = 0;               // pagina actual, base 0
+        let _foroSub = 'publico';       // dentro de Mis hilos: 'publico' | 'privado'
+        let _foroBusq = '';             // termino activo del buscador ('' = sin buscar)
+        let _foroCursores = [];         // _foroCursores[i] = ultimo snapshot de la pagina i
+        let _foroHayMas = false;
+        let _foroHilos = [];
+        let _foroHilo = null;           // { id, ...data }
+        let _foroResps = [];
+        let _foroUnsub = null;          // listener de respuestas del hilo abierto
+        let _foroImgs = [];             // [{ blob, previewUrl, nombre }]
+        let _foroNavPrevia = null;      // pestaña resaltada antes de abrir el foro
+        let _foroCargando = false;
+
+        // Palabras que salen en casi todos los hilos: como filtro no sirven y solo
+        // engordan el arreglo.
+        const FORO_VACIAS = new Set(('a al algo ago ahi ahora alguien algun alguna algunas alguno algunos ante antes aqui asi aun aunque ' +
+            'bien cada casi como con contra cual cuales cuando cuanto de del desde donde dos el ella ellas ello ellos en entre era ' +
+            'eran eres es esa esas ese eso esos esta estan estas este esto estos fue fueron ha habia han hasta hay hace hacer igual ' +
+            'la las le les lo los mas me mi mis mucho muy nada ni no nos nosotros o os otra otras otro otros para pero poco por ' +
+            'porque pues que quien quienes se sea ser si sin sobre solo son su sus tal tambien tan tanto te tener tiene tienen todo ' +
+            'todos tu tus un una uno unos usted ustedes va van ver vez y ya yo').split(' '));
+
+        // OJO: este tokenizador tiene que ser IDENTICO al de
+        // _backfill-foro-palabras.js. Si divergen, lo que se publique desde la app
+        // no se encuentra con lo que se busque, y al reves.
+        function _foroTokens(titulo, texto) {
+            const crudo = ((titulo || '') + ' ' + (texto || ''))
+                .toLowerCase()
+                .normalize('NFD').replace(/[̀-ͯ]/g, '')
+                .replace(/[^a-z0-9ñ]+/g, ' ')
+                .split(' ');
+            const set = new Set();
+            for (const t of crudo) {
+                if (t.length < 3 || FORO_VACIAS.has(t)) continue;
+                set.add(t);
+                if (set.size >= 300) break;
+            }
+            return Array.from(set);
+        }
+
+        function _foroYo() { return (user && (user.email || user.uid)) || ''; }
+        function _foroDC() { return state.directorCode || ''; }
+
+        function _foroBadge(rol) {
+            const r = FORO_ROLES[rol] || FORO_ROLES.agente;
+            return `<span class="rol-badge" style="background:${r.bg}; color:${r.fg};">${r.label}</span>`;
+        }
+        function _foroFecha(ts) {
+            if (!ts) return '';
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            if (isNaN(d.getTime())) return '';
+            const ahora = new Date();
+            const min = Math.floor((ahora - d) / 60000);
+            if (min < 1) return 'ahora';
+            if (min < 60) return 'hace ' + min + ' min';
+            if (min < 1440) return 'hace ' + Math.floor(min / 60) + ' h';
+            if (min < 10080) return 'hace ' + Math.floor(min / 1440) + ' d';
+            return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+        }
+        function _foroEsMio(d) { const y = _foroYo(); return d && d.autor === y; }
+
+        window.openForo = function () {
+            _foroVista = 'lista';
+            _foroCursores = [];
+            document.getElementById('foro-modal').classList.add('open');
+            // Deja el bottom nav por encima del overlay mientras el foro está
+            // abierto. Ver la regla body.foro-open .bottom-nav en el CSS.
+            document.body.classList.add('foro-open');
+            // Marca el Foro como activo en la barra inferior. Sin esto la barra
+            // seguia resaltando la pestaña de atras: abrias el Foro y abajo
+            // decia "Tienda".
+            _foroNavPrevia = document.querySelector('.bn-btn.active') || null;
+            document.querySelectorAll('.bn-btn').forEach(b => b.classList.remove('active'));
+            const bf = document.querySelector('.bn-btn[aria-label="Foro"]');
+            if (bf) bf.classList.add('active');
+            _foroRenderTabs();
+            _foroCargarLista(0);
+        };
+        window.closeForo = function () {
+            if (_foroUnsub) { try { _foroUnsub(); } catch (e) {} _foroUnsub = null; }
+            _foroLimpiarImgs();
+            document.getElementById('foro-modal').classList.remove('open');
+            document.body.classList.remove('foro-open');
+            // Devuelve el resaltado a la pestaña donde estabas.
+            const bf2 = document.querySelector('.bn-btn[aria-label="Foro"]');
+            if (bf2) bf2.classList.remove('active');
+            if (_foroNavPrevia) { _foroNavPrevia.classList.add('active'); _foroNavPrevia = null; }
+        };
+        window.foroVolver = function () {
+            if (_foroUnsub) { try { _foroUnsub(); } catch (e) {} _foroUnsub = null; }
+            _foroLimpiarImgs();
+            _foroVista = 'lista';
+            _foroHilo = null;
+            _foroResps = [];
+            _foroCargarLista(_foroPag);   // regresa a la pagina donde estabas
+        };
+
+        function _foroChrome() {
+            const back = document.getElementById('foro-back');
+            const tabs = document.getElementById('foro-tabs');
+            const tit = document.getElementById('foro-title');
+            const enLista = _foroVista === 'lista';
+            if (back) back.style.display = enLista ? 'none' : 'block';
+            if (tabs) tabs.style.display = enLista ? 'flex' : 'none';
+            if (tit) tit.textContent = enLista ? 'Foro'
+                : (_foroVista === 'componer' ? 'Nuevo tema' : 'Tema');
+        }
+
+        function _foroRenderTabs() {
+            const el = document.getElementById('foro-tabs');
+            if (!el) return;
+            // Mis hilos va primero: es lo que mas se busca al abrir el foro.
+            const tabs = [{ id: FORO_MIOS, label: '★ Mis hilos' }].concat(FORO_CATS);
+            el.innerHTML = tabs.map(c =>
+                `<button class="foro-tab${c.id === _foroCat ? ' on' : ''}" data-cat="${c.id}">${c.label}</button>`
+            ).join('');
+            el.querySelectorAll('.foro-tab').forEach(b => {
+                b.onclick = () => {
+                    _foroCat = b.dataset.cat;
+                    _foroCursores = [];   // los cursores son de la lista anterior
+                    _foroBusq = '';       // la busqueda no se arrastra entre secciones
+                    _foroSub = 'publico';
+                    _foroRenderTabs();
+                    _foroCargarLista(0);   // cambiar de pestaña siempre arranca en la 1
+                };
+            });
+        }
+
+        // ── LISTA ──
+        // Paginacion por cursor, no por corte en el cliente: se piden 11 y se
+        // muestran 10. El doc 11 nunca se pinta, solo dice si hay pagina
+        // siguiente sin tener que contar la coleccion entera.
+        //
+        // Antes esto traia 60 hilos de dos consultas y los unia en memoria. Se
+        // cambio por costo: 60 lecturas cada vez que alguien abre el foro, por
+        // 76 agentes y varias veces al dia, se come el limite diario. Ahora son
+        // 11 por pagina.
+        //
+        // El filtro de `oculto` va en la consulta y no despues: filtrando en el
+        // cliente, una pagina de 10 con 2 ocultos se mostraria con 8.
+        async function _foroCargarLista(pagina) {
+            _foroVista = 'lista';
+            _foroPag = Math.max(0, pagina || 0);
+            _foroChrome();
+            const body = document.getElementById('foro-body');
+            if (!body) return;
+            body.innerHTML = '<div class="foro-empty"><i class="fa fa-spinner fa-spin"></i> Cargando…</div>';
+            try {
+                if (_foroBusq) await _foroCargarBusqueda();
+                else           await _foroCargarPagina();
+                _foroPintarLista();
+            } catch (e) {
+                console.error('[foro] lista:', e);
+                body.innerHTML = `<div class="foro-empty" style="color:var(--red);">
+                    No se pudo cargar el foro.<br><span style="font-size:11px;">${escapeHtml(e.message || '')}</span></div>`;
+            }
+        }
+
+        // Navegacion normal: una pagina por consulta, con cursor.
+        async function _foroCargarPagina() {
+            const dc = _foroDC(), yo = _foroYo();
+            const col = collection(db, 'forum');
+
+            // Mis hilos cruza todas las categorias y se parte en dos secciones por
+            // visibilidad. `participantes` lo mantienen publicar y responder, y las
+            // reglas solo dejan que te agregues a ti.
+            const base = _foroCat === FORO_MIOS
+                ? [where('directorCode', '==', dc), where('participantes', 'array-contains', yo),
+                   where('visibilidad', '==', _foroSub), where('oculto', '==', false),
+                   orderBy('ultimaRespuestaEn', 'desc')]
+                // El filtro de visibilidad NO es opcional: las reglas validan en vez
+                // de filtrar, y sin el la consulta podria alcanzar un privado ajeno
+                // y fallar entera.
+                : [where('directorCode', '==', dc), where('categoria', '==', _foroCat),
+                   where('visibilidad', '==', 'publico'), where('oculto', '==', false),
+                   orderBy('ultimaRespuestaEn', 'desc')];
+
+            const cursor = _foroPag > 0 ? _foroCursores[_foroPag - 1] : null;
+            const partes = cursor ? base.concat([startAfter(cursor)]) : base;
+            const snap = await getDocs(query(col, ...partes, limit(FORO_POR_PAGINA + 1)));
+
+            const docs = snap.docs;
+            _foroHayMas = docs.length > FORO_POR_PAGINA;
+            const visibles = docs.slice(0, FORO_POR_PAGINA);
+            if (visibles.length) _foroCursores[_foroPag] = visibles[visibles.length - 1];
+            _foroHilos = visibles.map(d => ({ id: d.id, ...d.data() }));
+        }
+
+        // ── BUSCADOR ──
+        // Firestore no tiene busqueda de texto. Lo que hay es `palabras`, el arreglo
+        // de tokens del titulo y el mensaje inicial que se escribe al publicar.
+        // Por eso solo empata PALABRAS COMPLETAS y no busca dentro de las respuestas.
+        //
+        // La busqueda no pagina por cursor como el resto: trae hasta FORO_BUSQ_TOPE
+        // coincidencias de una vez y las parte en el cliente. Es por una limitacion
+        // real — con varias palabras hay que filtrar en memoria (Firestore no cruza
+        // dos array-contains), y filtrar despues de paginar deja paginas de 3 y de 9.
+        let _foroResultados = [];
+        const FORO_BUSQ_TOPE = 60;
+
+        async function _foroCargarBusqueda() {
+            const dc = _foroDC(), yo = _foroYo();
+            const col = collection(db, 'forum');
+            const toks = _foroTokens(_foroBusq, '');
+
+            if (!toks.length) { _foroResultados = []; _foroHilos = []; _foroHayMas = false; return; }
+
+            let crudos;
+            if (_foroCat === FORO_MIOS) {
+                // Aca no se puede usar `palabras`: Firestore admite UN solo
+                // array-contains por consulta y ya lo ocupa `participantes`. Se
+                // traen mis hilos y se filtran en memoria; son pocos.
+                const snap = await getDocs(query(col,
+                    where('directorCode', '==', dc), where('participantes', 'array-contains', yo),
+                    where('visibilidad', '==', _foroSub), where('oculto', '==', false),
+                    orderBy('ultimaRespuestaEn', 'desc'), limit(FORO_BUSQ_TOPE)));
+                crudos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            } else {
+                // Busca en TODAS las categorias, no solo en la que estas parado:
+                // si supieras en cual esta, no necesitarias buscarlo.
+                const snap = await getDocs(query(col,
+                    where('directorCode', '==', dc), where('visibilidad', '==', 'publico'),
+                    where('oculto', '==', false), where('palabras', 'array-contains', toks[0]),
+                    orderBy('ultimaRespuestaEn', 'desc'), limit(FORO_BUSQ_TOPE)));
+                crudos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            }
+
+            // Con varias palabras se exigen TODAS (Y, no O). El primer token ya lo
+            // aplico el indice; los demas se cruzan aca.
+            _foroResultados = crudos.filter(h => {
+                const pal = Array.isArray(h.palabras) ? h.palabras : _foroTokens(h.titulo, h.texto);
+                return toks.every(t => pal.indexOf(t) !== -1);
+            });
+
+            const desde = _foroPag * FORO_POR_PAGINA;
+            _foroHilos = _foroResultados.slice(desde, desde + FORO_POR_PAGINA);
+            _foroHayMas = _foroResultados.length > desde + FORO_POR_PAGINA;
+        }
+
+        window.foroBuscar = function () {
+            const el = document.getElementById('foro-busq');
+            const v = (el && el.value || '').trim();
+            _foroBusq = v;
+            _foroCursores = [];
+            _foroCargarLista(0);
+        };
+        window.foroLimpiarBusq = function () {
+            _foroBusq = '';
+            _foroCursores = [];
+            _foroCargarLista(0);
+        };
+        window.foroSubSeccion = function (cual) {
+            _foroSub = cual;
+            _foroCursores = [];
+            _foroCargarLista(0);
+        };
+
+        window.foroPagina = function (n) {
+            // Solo se puede saltar a una pagina cuyo cursor ya tenemos (la
+            // anterior o la siguiente). Firestore pagina por cursor, no por
+            // numero: no hay forma de brincar a la 7 sin haber pasado por la 6.
+            if (n < 0) return;
+            if (n > _foroPag && !_foroHayMas) return;
+            _foroCargarLista(n);
+            const b = document.getElementById('foro-body');
+            if (b) b.scrollTop = 0;
+        };
+
+        function _foroPintarLista() {
+            const body = document.getElementById('foro-body');
+            if (!body) return;
+            const esMios = _foroCat === FORO_MIOS;
+            const cat = FORO_CATS.find(c => c.id === _foroCat);
+            const yo = _foroYo();
+
+            const items = _foroHilos.map(h => {
+                const priv = h.visibilidad === 'privado'
+                    ? '<i class="fa fa-lock" style="color:var(--orange);" title="Solo lo ve la dirección"></i>' : '';
+                const n = h.numRespuestas || 0;
+                // En "Mis hilos" los temas vienen de las cuatro categorias, asi que
+                // hay que decir de cual es cada uno; dentro de una categoria seria
+                // repetir lo mismo en cada renglon.
+                const dondeCat = esMios ? (FORO_CATS.find(c => c.id === h.categoria) || {}).label : null;
+                const donde = dondeCat
+                    ? `<span class="foro-chip-cat">${escapeHtml(dondeCat)}</span>` : '';
+                const mio = esMios && h.autor === yo
+                    ? '<span class="foro-chip-mio">lo abriste tú</span>' : '';
+                return `<button class="foro-hilo-item" data-id="${escapeHtml(h.id)}">
+                    <div class="foro-hilo-titulo">${priv} ${escapeHtml(h.titulo || '')}</div>
+                    <div class="foro-meta">
+                        ${donde}${mio}
+                        ${_foroBadge(h.autorRol)}
+                        <span>${escapeHtml(h.autorNombre || '')}</span>
+                        <span>·</span><span>${_foroFecha(h.ultimaRespuestaEn || h.creadoEn)}</span>
+                        <span>·</span><span>${n} ${n === 1 ? 'respuesta' : 'respuestas'}</span>
+                    </div>
+                </button>`;
+            }).join('');
+
+            // Sin numeros de pagina salteables a proposito: Firestore pagina por
+            // cursor, no por indice, asi que no se puede brincar a la 7 sin haber
+            // pasado por la 6. Se muestra en cual vas y se avanza de una en una.
+            const hayPag = _foroPag > 0 || _foroHayMas;
+            const paginador = hayPag ? `
+                <div class="foro-pag">
+                    <button class="foro-pag-btn" ${_foroPag === 0 ? 'disabled' : ''}
+                            onclick="foroPagina(${_foroPag - 1})">
+                        <i class="fa fa-chevron-left"></i> Anterior
+                    </button>
+                    <span class="foro-pag-num">Página ${_foroPag + 1}</span>
+                    <button class="foro-pag-btn" ${_foroHayMas ? '' : 'disabled'}
+                            onclick="foroPagina(${_foroPag + 1})">
+                        Siguiente <i class="fa fa-chevron-right"></i>
+                    </button>
+                </div>` : '';
+
+            const buscador = `
+                <div class="foro-busq-caja">
+                    <i class="fa fa-magnifying-glass"></i>
+                    <input id="foro-busq" class="foro-busq-input" type="search"
+                           placeholder="${esMios ? 'Buscar en mis temas…' : 'Buscar en todo el foro…'}"
+                           value="${escapeHtml(_foroBusq)}">
+                    ${_foroBusq
+                        ? `<button class="foro-busq-x" onclick="foroLimpiarBusq()" aria-label="Limpiar">&times;</button>`
+                        : ''}
+                    <button class="foro-busq-btn" onclick="foroBuscar()">Buscar</button>
+                </div>`;
+
+            // Dos secciones dentro de Mis hilos. Van separadas y no mezcladas en una
+            // sola lista porque son cosas distintas: lo publico lo ve el equipo, lo
+            // privado solo la direccion.
+            const subs = esMios ? `
+                <div class="foro-subs">
+                    <button class="foro-sub${_foroSub === 'publico' ? ' on' : ''}"
+                            onclick="foroSubSeccion('publico')">
+                        <i class="fa fa-users"></i> Públicos
+                    </button>
+                    <button class="foro-sub${_foroSub === 'privado' ? ' on' : ''}"
+                            onclick="foroSubSeccion('privado')">
+                        <i class="fa fa-lock"></i> Privados
+                    </button>
+                </div>` : '';
+
+            const encabezado = esMios
+                ? subs + buscador + `<div class="foro-nota">${_foroSub === 'publico'
+                       ? 'Los temas públicos que abriste y en los que respondiste, de todas las secciones.'
+                       : 'Los temas que marcaste como privados. Solo los ve la dirección.'}</div>`
+                : buscador + `<button class="foro-btn-primary" style="margin-bottom:14px;" onclick="foroComponer()">
+                       <i class="fa fa-plus"></i> Nuevo tema en ${cat ? cat.label : ''}
+                   </button>`;
+
+            const sinResultados = `<div class="foro-empty"><i class="fa fa-magnifying-glass"></i>
+                       Nada con “${escapeHtml(_foroBusq)}”.<br>
+                       <span style="font-size:12px;">
+                       Se buscan palabras completas, y solo en el título y el primer mensaje.<br>
+                       <a href="#" onclick="foroLimpiarBusq();return false;" style="color:var(--gold);">
+                       Ver todo de nuevo</a></span></div>`;
+
+            const vacio = _foroBusq ? sinResultados : (esMios
+                ? (_foroSub === 'privado'
+                    ? `<div class="foro-empty"><i class="fa fa-lock"></i>
+                           No tienes temas privados.<br>
+                           <span style="font-size:12px;">Al abrir un tema puedes marcarlo para que
+                           solo lo vea la dirección.</span></div>`
+                    : `<div class="foro-empty"><i class="fa fa-star"></i>
+                           Todavía no participas en ningún tema.<br>
+                           <span style="font-size:12px;">Cuando abras uno o respondas, aparece aquí.</span></div>`)
+                : `<div class="foro-empty"><i class="fa fa-comments"></i>
+                       Todavía no hay temas en ${cat ? cat.label : 'esta sección'}.<br>
+                       <span style="font-size:12px;">Sé el primero.</span></div>`);
+
+            // Una pagina vacia que no es la primera solo pasa si borraron o
+            // escondieron algo mientras navegabas. Mejor ofrecer la salida que
+            // dejarlo mirando un vacio con un "Anterior" chiquito.
+            const nada = _foroPag > 0
+                ? `<div class="foro-empty"><i class="fa fa-inbox"></i>
+                       Aquí ya no hay más temas.<br>
+                       <span style="font-size:12px;">
+                       <a href="#" onclick="foroPagina(0);return false;" style="color:var(--gold);">
+                       Volver al inicio</a></span></div>`
+                : vacio;
+
+            body.innerHTML = encabezado + (items || nada) + paginador;
+            body.querySelectorAll('.foro-hilo-item').forEach(b => {
+                b.onclick = () => foroAbrirHilo(b.dataset.id);
+            });
+            const bq = document.getElementById('foro-busq');
+            if (bq) {
+                bq.onkeydown = ev => { if (ev.key === 'Enter') { ev.preventDefault(); foroBuscar(); } };
+                // El teclado del telefono ofrece "buscar" en vez de Enter, y en
+                // algunos casos dispara search en vez de keydown.
+                bq.onsearch = () => foroBuscar();
+            }
+        }
+
+        // ── HILO ──
+        window.foroAbrirHilo = async function (id) {
+            const body = document.getElementById('foro-body');
+            _foroVista = 'hilo';
+            _foroChrome();
+            body.innerHTML = '<div class="foro-empty"><i class="fa fa-spinner fa-spin"></i> Cargando…</div>';
+            try {
+                const snap = await getDoc(doc(db, 'forum', id));
+                if (!snap.exists()) { body.innerHTML = '<div class="foro-empty">Ese tema ya no está.</div>'; return; }
+                _foroHilo = { id: snap.id, ...snap.data() };
+                if (_foroUnsub) { try { _foroUnsub(); } catch (e) {} }
+                _foroUnsub = onSnapshot(
+                    query(collection(db, 'forum', id, 'respuestas'), orderBy('creadoEn', 'asc')),
+                    s => { _foroResps = s.docs.map(d => ({ id: d.id, ...d.data() })); _foroPintarHilo(); },
+                    err => { console.error('[foro] respuestas:', err); _foroPintarHilo(); }
+                );
+                _foroPintarHilo();
+            } catch (e) {
+                console.error('[foro] hilo:', e);
+                body.innerHTML = `<div class="foro-empty" style="color:var(--red);">No se pudo abrir el tema.</div>`;
+            }
+        };
+
+        function _foroPost(d, esHilo) {
+            const puedeOcultar = _foroEsMio(d) && !d.oculto;
+            if (d.oculto) {
+                return `<div class="foro-post foro-oculto">
+                    <div class="foro-meta">${_foroBadge(d.autorRol)} <span>${escapeHtml(d.autorNombre || '')}</span></div>
+                    <div class="foro-texto">— contenido eliminado —</div>
+                </div>`;
+            }
+            const imgs = (d.imagenes || []).map(im =>
+                `<img src="${escapeHtml(im.url)}" alt="adjunto" onclick="window.open('${escapeHtml(im.url)}','_blank')">`).join('');
+            return `<div class="foro-post">
+                <div class="foro-meta">
+                    ${_foroBadge(d.autorRol)}
+                    <span style="color:var(--white); font-weight:700;">${escapeHtml(d.autorNombre || '')}</span>
+                    <span>·</span><span>${_foroFecha(d.creadoEn)}</span>
+                    ${puedeOcultar ? `<button class="foro-link" style="margin-left:auto; color:var(--red);"
+                        onclick="foroOcultar('${esHilo ? 'hilo' : 'resp'}','${escapeHtml(d.id || '')}')">Eliminar</button>` : ''}
+                </div>
+                ${esHilo ? `<div style="font-size:15px; font-weight: 900; color:var(--white); margin-top:7px;">${escapeHtml(d.titulo || '')}</div>` : ''}
+                <div class="foro-texto">${escapeHtml(d.texto || '')}</div>
+                ${imgs ? `<div class="foro-imgs">${imgs}</div>` : ''}
+            </div>`;
+        }
+
+        function _foroPintarHilo() {
+            const body = document.getElementById('foro-body');
+            if (!body || !_foroHilo) return;
+            const priv = _foroHilo.visibilidad === 'privado'
+                ? `<div style="background:rgba(138, 91, 0,0.10); border:1px solid rgba(138, 91, 0,0.35); border-radius:8px;
+                        padding:9px 11px; font-size:11.5px; color:var(--orange); margin-bottom:12px;">
+                     <i class="fa fa-lock"></i> Tema privado — solo lo ven la dirección y vos.</div>` : '';
+            body.innerHTML = priv
+                + _foroPost({ ..._foroHilo, id: _foroHilo.id }, true)
+                + (_foroResps.length
+                    ? _foroResps.map(r => _foroPost(r, false)).join('')
+                    : '<div style="font-size:12px; color:var(--slate); text-align:center; padding:10px 0;">Sin respuestas todavía.</div>')
+                + `<div style="border-top: 1px solid var(--border); padding-top:14px; margin-top:6px;">
+                     <textarea id="foro-resp-txt" class="foro-area" style="min-height:80px;"
+                       placeholder="Escribe tu respuesta…" maxlength="4000"></textarea>
+                     <div class="foro-thumbs" id="foro-resp-thumbs"></div>
+                     <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+                       <label class="foro-link" style="cursor:pointer;">
+                         <i class="fa fa-image"></i> Adjuntar
+                         <input type="file" accept="image/*" multiple style="display:none;" onchange="foroElegirImgs(this,'foro-resp-thumbs')">
+                       </label>
+                       <span style="font-size:11px; color:var(--slate);">hasta ${FORO_MAX_IMGS} imágenes</span>
+                     </div>
+                     <button class="foro-btn-primary" id="foro-resp-btn" onclick="foroResponder()">Responder</button>
+                   </div>`;
+        }
+
+        // ── COMPONER ──
+        window.foroComponer = function () {
+            _foroVista = 'componer';
+            _foroChrome();
+            _foroLimpiarImgs();
+            const cat = FORO_CATS.find(c => c.id === _foroCat);
+            document.getElementById('foro-body').innerHTML = `
+                <div style="font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">
+                    En ${cat ? cat.label : ''}
+                </div>
+                <input id="foro-new-tit" class="foro-input" maxlength="120" placeholder="Título del tema">
+                <textarea id="foro-new-txt" class="foro-area" maxlength="4000" placeholder="Cuenta de qué se trata…"></textarea>
+                <div class="foro-thumbs" id="foro-new-thumbs"></div>
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+                    <label class="foro-link" style="cursor:pointer;">
+                        <i class="fa fa-image"></i> Adjuntar imágenes
+                        <input type="file" accept="image/*" multiple style="display:none;" onchange="foroElegirImgs(this,'foro-new-thumbs')">
+                    </label>
+                    <span style="font-size:11px; color:var(--slate);">hasta ${FORO_MAX_IMGS}</span>
+                </div>
+                <label class="foro-priv">
+                    <input type="checkbox" id="foro-new-priv">
+                    <span style="font-size:12px; color:var(--slate); line-height:1.5;">
+                        <b style="color:var(--white);">Solo para la dirección</b><br>
+                        Nadie más del equipo lo va a ver. Úsalo si es algo que prefieres tratar en privado.
+                    </span>
+                </label>
+                <button class="foro-btn-primary" id="foro-new-btn" onclick="foroPublicar()">Publicar</button>`;
+        };
+
+        // ── IMAGENES ──
+        function _foroLimpiarImgs() {
+            _foroImgs.forEach(i => { try { URL.revokeObjectURL(i.previewUrl); } catch (e) {} });
+            _foroImgs = [];
+        }
+        // Solo comprime lo que hace falta. Una captura de iPhone (~400 KB) sube
+        // intacta, con su resolucion y su PNG; recomprimirla arruinaria el texto
+        // chico, que es lo que se esta tratando de mostrar.
+        async function _foroPrepararImagen(file) {
+            if (file.size <= FORO_COMPRIMIR_DESDE) return { blob: file, tipo: file.type };
+            const img = await new Promise((res, rej) => {
+                const i = new Image();
+                i.onload = () => res(i);
+                i.onerror = () => rej(new Error('No se pudo leer la imagen'));
+                i.src = URL.createObjectURL(file);
+            });
+            let w = img.naturalWidth, h = img.naturalHeight;
+            if (w > FORO_MAX_DIM || h > FORO_MAX_DIM) {
+                const r = Math.min(FORO_MAX_DIM / w, FORO_MAX_DIM / h);
+                w = Math.round(w * r); h = Math.round(h * r);
+            }
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(img.src);
+            const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.85));
+            return { blob, tipo: 'image/jpeg' };
+        }
+
+        window.foroElegirImgs = async function (input, contenedorId) {
+            const files = Array.from(input.files || []);
+            input.value = '';
+            for (const f of files) {
+                if (_foroImgs.length >= FORO_MAX_IMGS) { alert('Máximo ' + FORO_MAX_IMGS + ' imágenes.'); break; }
+                if (!f.type.startsWith('image/')) { alert('Solo imágenes.'); continue; }
+                try {
+                    const { blob, tipo } = await _foroPrepararImagen(f);
+                    if (blob.size > 2 * 1024 * 1024) { alert('Esa imagen sigue pesando más de 2 MB después de comprimirla.'); continue; }
+                    _foroImgs.push({ blob, tipo, previewUrl: URL.createObjectURL(blob), nombre: f.name });
+                } catch (e) { console.error('[foro] imagen:', e); alert('No se pudo procesar esa imagen.'); }
+            }
+            _foroPintarThumbs(contenedorId);
+        };
+        function _foroPintarThumbs(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = _foroImgs.map((im, i) =>
+                `<div class="foro-thumb"><img src="${im.previewUrl}" alt="">
+                 <button onclick="foroQuitarImg(${i},'${id}')" aria-label="Quitar">&times;</button></div>`).join('');
+        }
+        window.foroQuitarImg = function (i, contenedorId) {
+            const im = _foroImgs[i];
+            if (im) { try { URL.revokeObjectURL(im.previewUrl); } catch (e) {} }
+            _foroImgs.splice(i, 1);
+            _foroPintarThumbs(contenedorId);
+        };
+        // Se sube ANTES de crear el documento, con el id generado a mano. Las
+        // reglas no permiten editar `imagenes` despues de crear, asi que no hay
+        // opcion de crear primero y actualizar despues.
+        async function _foroSubirImgs(threadId) {
+            const dc = _foroDC() || 'sin-dc';
+            const out = [];
+            for (let i = 0; i < _foroImgs.length; i++) {
+                const im = _foroImgs[i];
+                const ext = im.tipo === 'image/png' ? 'png' : 'jpg';
+                const path = `forum/${dc}/${threadId}/${Date.now()}_${i}.${ext}`;
+                const r = storageRef(storage, path);
+                await uploadBytes(r, im.blob, { contentType: im.tipo, cacheControl: 'public, max-age=2592000' });
+                out.push({ url: await getDownloadURL(r), path });
+            }
+            return out;
+        }
+
+        // ── PUBLICAR ──
+        window.foroPublicar = async function () {
+            if (_foroCargando) return;
+            const tit = (document.getElementById('foro-new-tit').value || '').trim();
+            const txt = (document.getElementById('foro-new-txt').value || '').trim();
+            const priv = document.getElementById('foro-new-priv').checked;
+            if (!tit) { alert('Ponle un título al tema.'); return; }
+            if (!txt) { alert('Escribe de qué se trata.'); return; }
+            const btn = document.getElementById('foro-new-btn');
+            _foroCargando = true; btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Publicando…';
+            try {
+                const refHilo = doc(collection(db, 'forum'));
+                const imagenes = await _foroSubirImgs(refHilo.id);
+                await setDoc(refHilo, {
+                    categoria: _foroCat,
+                    visibilidad: priv ? 'privado' : 'publico',
+                    autor: _foroYo(),
+                    autorNombre: state.agentName || _foroYo(),
+                    autorRol: FORO_MI_ROL,
+                    directorCode: _foroDC(),
+                    titulo: tit, texto: txt, imagenes,
+                    numRespuestas: 0, oculto: false,
+                    // Alimenta "Mis hilos". Las reglas solo dejan que te pongas
+                    // a ti al crear, para que nadie fabrique un hilo privado con
+                    // el correo de otro adentro y le de acceso de lectura.
+                    participantes: [_foroYo()],
+                    // Tokens para el buscador. Se calculan UNA vez, al publicar:
+                    // las reglas prohiben editar titulo y texto despues, asi que
+                    // nunca hay que recalcularlos.
+                    palabras: _foroTokens(tit, txt),
+                    creadoEn: serverTimestamp(),
+                    ultimaRespuestaEn: serverTimestamp()
+                });
+                _foroLimpiarImgs();
+                await _foroCargarLista(0);   // el tema nuevo queda hasta arriba
+            } catch (e) {
+                console.error('[foro] publicar:', e);
+                alert('No se pudo publicar: ' + (e.message || e));
+                btn.disabled = false; btn.innerHTML = 'Publicar';
+            } finally { _foroCargando = false; }
+        };
+
+        window.foroResponder = async function () {
+            if (_foroCargando || !_foroHilo) return;
+            const txt = (document.getElementById('foro-resp-txt').value || '').trim();
+            if (!txt) { alert('Escribe tu respuesta.'); return; }
+            const btn = document.getElementById('foro-resp-btn');
+            _foroCargando = true; btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando…';
+            try {
+                const refResp = doc(collection(db, 'forum', _foroHilo.id, 'respuestas'));
+                const imagenes = await _foroSubirImgs(_foroHilo.id);
+                await setDoc(refResp, {
+                    autor: _foroYo(),
+                    autorNombre: state.agentName || _foroYo(),
+                    autorRol: FORO_MI_ROL,
+                    texto: txt, imagenes, oculto: false,
+                    // Denormalizados a proposito: sin esto las reglas tendrian que
+                    // hacer get() del hilo padre en CADA respuesta que se lee.
+                    visibilidad: _foroHilo.visibilidad,
+                    hiloAutor: _foroHilo.autor,
+                    directorCode: _foroHilo.directorCode || _foroDC(),
+                    creadoEn: serverTimestamp()
+                });
+                // Contador y actividad. Si falla no es grave: la respuesta ya quedo.
+                try {
+                    await updateDoc(doc(db, 'forum', _foroHilo.id), {
+                        numRespuestas: (_foroHilo.numRespuestas || 0) + 1,
+                        // Sube el hilo al primer lugar (la lista ordena por este
+                        // campo) y me suma a "Mis hilos". arrayUnion no duplica
+                        // si ya estoy, asi que responder dos veces no crece nada.
+                        ultimaRespuestaEn: serverTimestamp(),
+                        participantes: arrayUnion(_foroYo())
+                    });
+                    _foroHilo.numRespuestas = (_foroHilo.numRespuestas || 0) + 1;
+                } catch (e) { console.warn('[foro] contador:', e); }
+                _foroLimpiarImgs();
+                document.getElementById('foro-resp-txt').value = '';
+                _foroPintarThumbs('foro-resp-thumbs');
+            } catch (e) {
+                console.error('[foro] responder:', e);
+                alert('No se pudo enviar: ' + (e.message || e));
+            } finally {
+                _foroCargando = false;
+                const b = document.getElementById('foro-resp-btn');
+                if (b) { b.disabled = false; b.innerHTML = 'Responder'; }
+            }
+        };
+
+        // ── OCULTAR (borrado suave) ──
+        window.foroOcultar = async function (tipo, id) {
+            if (!confirm('¿Eliminar esto? Deja de verse para todos.')) return;
+            try {
+                const ref = tipo === 'hilo'
+                    ? doc(db, 'forum', id)
+                    : doc(db, 'forum', _foroHilo.id, 'respuestas', id);
+                await updateDoc(ref, { oculto: true, ocultoPor: _foroYo(), ocultoEn: new Date().toISOString() });
+                if (tipo === 'hilo') { foroVolver(); }
+                else { _foroHilo && _foroPintarHilo(); }
+            } catch (e) {
+                console.error('[foro] ocultar:', e);
+                alert('No se pudo eliminar: ' + (e.message || e));
+            }
+        };
+
+
+
         async function awardKarmaForPastDays() {
             if (!serverNow) return;
             const today = new Date(serverNow.getFullYear(), serverNow.getMonth(), serverNow.getDate());
@@ -5897,6 +6846,10 @@
         }
 
         window.switchTab = function (name, btn) {
+            // Con el foro abierto el bottom nav queda encima del overlay, así que
+            // se puede tocar otra sección sin cerrarlo. Sin esto, la pestaña
+            // cambiaría DETRÁS del modal.
+            if (document.body.classList.contains('foro-open') && window.closeForo) closeForo();
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             // Limpiar active en AMBOS navs (top tabs desktop + bottom nav mobile)
             document.querySelectorAll('.tab-btn, .bn-btn').forEach(b => b.classList.remove('active'));
