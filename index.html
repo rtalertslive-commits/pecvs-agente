@@ -1876,11 +1876,15 @@
                     <span class="karma-lbl">totopos</span>
                     <span class="karma-info-i"><i class="fa fa-info"></i></span>
                 </div>
-            </div>
-                <!-- Badge del multiplicador: muestra lo que vale el día, no el % -->
+                <!-- DENTRO de .row-info, junto al de totopos. Afuera era hijo
+                     directo de .header, que en movil es flex en COLUMNA: ahi el
+                     align-items:stretch por defecto lo estiraba a todo el ancho y
+                     lo mandaba a su propio renglon, por mas que su CSS dijera
+                     inline-flex. Asi queda igual que en testnet. -->
                 <div id="mult-badge" onclick="openMultReceipt()" role="button" tabindex="0"
                      aria-label="Ver de dónde sale tu multiplicador" title="Toca para ver de dónde sale"
                      style="display:none;"></div>
+            </div>
 
             <!-- Row 3: user menu (Mi Perfil + Salir) -->
             <div class="row-menu">
@@ -3032,7 +3036,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.10.0';
+        window.APP_HTML_VERSION = 'v2.11.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -5148,24 +5152,59 @@
             // perfecto pero no alcanzó el escalón NO se le puede decir que su
             // reporte no coincidió: reportó bien, le faltó vender.
             if (mx.earned !== true) {
-                let titulo, detalle, accion;
-                if (mx.reason === 'escalon') {
-                    titulo  = 'No alcanzaste el escalón';
-                    detalle = `Ingresaste <b>${_money(mx.ingresado)}</b> en ${mx.basedOn || 'el mes evaluado'}.<br>El primer escalón empieza en <b>${_money(mx.tierMin || _pisoMin())}</b>.`;
-                    accion  = `Te faltaron <b>${_money(Math.max(0, (mx.tierMin || _pisoMin()) - (mx.ingresado || 0)))}</b>.`;
+                // Puede haber MAS DE UNA falla y antes solo se mostraba una.
+                // El director evalua el escalon primero, asi que quien no
+                // llego a los $5,000 se guardaba con reason 'escalon' aunque
+                // ademas su reporte no cuadrara: la app le decia que le falto
+                // vender y se callaba lo otro. Se arreglaba una cosa, seguia
+                // sin ganar, y no entendia por que.
+                const margen   = (pointsConfig && pointsConfig.multMargin) || 10;
+                const coincide = (Number(mx.desvio) || 0) <= margen / 100;
+                const piso     = mx.tierMin || _pisoMin();
+                const faltaron = Math.max(0, piso - (mx.ingresado || 0));
+                const fallas   = [];
+                let accion;
+
+                if (mx.reason === 'sin-csv') {
+                    // No caia en ninguna rama y terminaba en el `else`, que le
+                    // decia "no coincidio tu reporte" a alguien que ni siquiera
+                    // venia en el archivo del corporativo.
+                    fallas.push({
+                        k: 'No apareces en el reporte de Promessa',
+                        v: `El multiplicador se calcula cruzando tu clave con el reporte del corporativo de ${mx.basedOn || 'ese mes'}, y tu clave no venía en ese archivo.`
+                    });
+                    accion = 'Habla con tu coach o con tu director para revisar tu clave.';
                 } else {
-                    const margen = (pointsConfig && pointsConfig.multMargin) || 10;
-                    titulo  = 'No coincidió tu reporte';
-                    detalle = `Reportaste <b>${_money(mx.reportado)}</b> y en Promessa se ingresó <b>${_money(mx.ingresado)}</b>.<br>Diferencia del <b>${Math.round((mx.desvio || 0) * 100)}%</b> — se acepta hasta <b>${margen}%</b>.`;
-                    accion  = 'Registra tus ventas el mismo día en que las cierras.';
+                    if (mx.reason === 'escalon') {
+                        fallas.push({
+                            k: 'No alcanzaste el escalón',
+                            v: `Ingresaste <b>${_money(mx.ingresado)}</b> en ${mx.basedOn || 'el mes evaluado'}. El primer escalón empieza en <b>${_money(piso)}</b>.`
+                        });
+                    }
+                    if (!coincide) {
+                        const tope = Math.floor((mx.ingresado || 0) * (1 + margen / 100));
+                        fallas.push({
+                            k: 'Tu reporte no coincidió',
+                            v: `Reportaste <b>${_money(mx.reportado)}</b> y en Promessa se ingresó <b>${_money(mx.ingresado)}</b>. Se acepta hasta ${margen}% de diferencia, o sea ${_money(tope)}.`
+                        });
+                    }
+                    // Las dos fallas piden acciones distintas, y cuando se dan
+                    // juntas la de reportar bien va primero: sin eso, vender
+                    // mas tampoco alcanza.
+                    accion = (fallas.length > 1)
+                        ? 'Son dos cosas. Primero registra tus ventas el mismo día en que las cierras; con eso arreglado, lo que falta es producción.'
+                        : (coincide
+                            ? `Te faltaron <b>${_money(faltaron)}</b> para el primer escalón.`
+                            : 'Registra tus ventas el mismo día en que las cierras.');
                 }
-                el.innerHTML = head + `
+
+                el.innerHTML = head + fallas.map(f => `
                     <div class="mrec-row">
                         <div class="mrec-ico">✗</div>
-                        <div><div class="mrec-k">${titulo}</div><div class="mrec-v">${detalle}</div></div>
+                        <div><div class="mrec-k">${f.k}</div><div class="mrec-v">${f.v}</div></div>
                         <div></div>
-                    </div>
-                    <div style="background:rgba(32, 85, 154,0.08); border:1px solid rgba(32, 85, 154,0.22); border-radius:8px; padding:12px 14px; margin-top:14px; font-size:12px; color:var(--slate); line-height:1.55;">
+                    </div>`).join('') + `
+                    <div style="background:rgba(32, 85, 154,0.08); border:1px solid rgba(32, 85, 154,0.22); border-radius:8px; padding:12px 14px; margin-top:12px; font-size:12.5px; line-height:1.55;">
                         ${accion}
                     </div>
                     <div style="text-align:center; margin-top:16px; font-size:12px; color:var(--slate);">
