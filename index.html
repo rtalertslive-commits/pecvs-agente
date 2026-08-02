@@ -18,8 +18,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Actividad">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon-v2.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32-v2.png">
     <style>
         /* ═══ SISTEMA DE DISEÑO PROMESSA ═══════════════════════════════════
            Paleta corporativa sobre tema oscuro.
@@ -2991,7 +2991,8 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.14);
         }
         .login-logo img {
-            height: 34px;
+            /* 34px se veia timido para ser lo primero que se ve al abrir. */
+            height: 52px;
             width: auto;
             max-width: 78%;
             /* Sin filtros ni sombras: el manual prohibe agregarle efectos. */
@@ -3036,7 +3037,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.12.0';
+        window.APP_HTML_VERSION = 'v2.13.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el

@@ -1,12 +1,20 @@
-const CACHE_NAME = 'pecvs-agent-mainnet-v2.12.0';
+const CACHE_NAME = 'pecvs-agent-mainnet-v2.13.0';
+// Los iconos llevan sufijo -v2 A PROPOSITO. Chrome decide si tiene que
+// regenerar el WebAPK comparando los campos del manifest, y para los iconos
+// compara la URL, NO el contenido: dejarlos con el mismo nombre y cambiarles
+// los bytes no dispara ninguna actualizacion. Cambiar la ruta si.
+//
+// En iOS no hay forma: el icono se hornea al momento de "Agregar a inicio" y
+// Safari no lo vuelve a leer nunca. Ahi el agente tiene que borrar el acceso
+// directo y volver a agregarlo.
 const assets = [
     './',
     './index.html',
     './manifest.json',
-    './icon-192.png',
-    './icon-512.png',
-    './apple-touch-icon.png',
-    './favicon-32.png',
+    './icon-192-v2.png',
+    './icon-512-v2.png',
+    './apple-touch-icon-v2.png',
+    './favicon-32-v2.png',
     // El logo del login. Va precacheado porque es lo primero que se ve al
     // abrir la app, y sin red la etiqueta trae onerror que esconde el hueco:
     // se veria la pantalla sin marca en vez de rota, pero sin marca.
@@ -52,8 +60,8 @@ messaging.onBackgroundMessage(payload => {
     const data  = payload.data || {};
     return self.registration.showNotification(title, {
         body,
-        icon: './icon-192.png',
-        badge: './favicon-32.png',
+        icon: './icon-192-v2.png',
+        badge: './favicon-32-v2.png',
         data,
         // En Android, tag agrupa notificaciones; en iOS lo ignora
         tag: data.tag || 'pecvs-notif',
