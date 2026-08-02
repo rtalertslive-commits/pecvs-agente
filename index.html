@@ -424,6 +424,12 @@
         @media (max-width: 767px) {
             .tab-nav { display: none; }
             body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+        /* SIN backdrop-filter aqui. Sobre un fondo opaco el desenfoque no se
+           ve —esta difuminando algo que ya esta tapado— pero fuerza a la
+           barra a su propia capa de composicion, y eso es justo lo que
+           despega los position:fixed en Safari de iOS: durante el scroll por
+           inercia la barra se queda flotando a media pantalla en vez de
+           pegada abajo. Se quita el filtro y el fondo va opaco. */
             .bottom-nav {
                 display: flex;
                 position: fixed;
@@ -433,13 +439,14 @@
                 background: #22487C;
                 border-top: 1px solid var(--border);
                 padding: 8px 4px calc(10px + env(safe-area-inset-bottom, 0px));
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
                 z-index: 100;
             }
         }
 
         .bottom-nav .bn-btn {
+            /* relative para que el punto rojo del foro se pueda anclar a la
+               esquina del boton y no al nav entero. */
+            position: relative;
             flex: 1;
             background: none;
             border: none;
@@ -2207,6 +2214,15 @@
 
             <!-- Sub-view: ACTIVIDAD (feed + leaderboard) -->
             <div id="ts-view-actividad" style="display:none;">
+
+                <!-- Top 10 de multiplicadores del mes en curso -->
+                <div class="card" style="margin-bottom:16px;">
+                    <p class="card-title" style="margin:0 0 4px;"><i class="fa fa-bolt"></i> <span id="mult-top-titulo">Multiplicadores activos</span></p>
+                    <p style="font-size:11px;color:var(--slate);margin:0 0 12px;">Los 10 que más multiplican su día este mes en tu región.</p>
+                    <div id="mult-top10" style="display:flex;flex-direction:column;gap:6px;">
+                        <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
+                    </div>
+                </div>
                 <div class="card" style="margin-bottom:16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
                         <p class="card-title" style="margin:0;">🏆 <span id="lb-period-label">Top del mes</span></p>
@@ -2260,6 +2276,7 @@
              estás parado. -->
         <button class="bn-btn" onclick="openForo()" aria-label="Foro">
             <i class="fa fa-comments"></i>
+            <span id="foro-dot" style="display:none; position:absolute; top:2px; right:calc(50% - 16px); width:9px; height:9px; border-radius:50%; background:#E5484D; border:1.5px solid #22487C;"></span>
             <span>Foro</span>
         </button>
     </nav>
@@ -3015,7 +3032,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.9.0';
+        window.APP_HTML_VERSION = 'v2.10.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -4116,6 +4133,10 @@
                         // Iniciar listener de anuncios para mantener badge y modal actualizados
                         startAnunciosListener();
                         applyFeatureGlows();
+                // Punto rojo del foro. Va despues de loadFromCloud porque
+                // necesita state.directorCode, y no se espera: si tarda o
+                // falla, la app ya esta pintada y usable.
+                _foroChequearNuevos().catch(err => console.warn('[foro] dot:', err));
                     } else if (status === 'inactive') {
                         document.getElementById('login-overlay').classList.add('hidden');
                         document.getElementById('revoked-overlay').style.display = 'flex';
@@ -5656,11 +5677,11 @@
             { id: 'sugerencias', label: 'Sugerencias' }
         ];
         const FORO_ROLES = {
-            agente:        { label: 'Agente',        bg: 'rgba(32, 85, 154,0.20)',  fg: '#20559A' },
-            coach:         { label: 'Coach',         bg: 'rgba(121, 153, 194,0.20)',   fg: '#7999C2' },
-            promotor:      { label: 'Promotor',      bg: 'rgba(138, 91, 0,0.20)',  fg: '#8A5B00' },
-            director:      { label: 'Director',      bg: 'rgba(32, 85, 154, 0.22)',  fg: '#20559A' },
-            superdirector: { label: 'Superdirector', bg: 'rgba(192, 57, 43,0.20)',   fg: '#C0392B' }
+            agente:        { label: 'Agente',        bg: 'rgba(126, 173, 247,0.18)', fg: '#7EADF7' },
+            coach:         { label: 'Coach',         bg: 'rgba(111, 215, 155,0.18)', fg: '#6FD79B' },
+            promotor:      { label: 'Promotor',      bg: 'rgba(255, 199, 44,0.18)',  fg: '#FFC72C' },
+            director:      { label: 'Director',      bg: 'rgba(240, 138, 128,0.18)', fg: '#F08A80' },
+            superdirector: { label: 'Superdirector', bg: 'rgba(197, 160, 233,0.18)', fg: '#C5A0E9' }
         };
         // Este archivo es la app del AGENTE, asi que el rol propio es fijo.
         const FORO_MI_ROL = 'agente';
@@ -5739,10 +5760,143 @@
         }
         function _foroEsMio(d) { const y = _foroYo(); return d && d.autor === y; }
 
+
+
+        // ─── TOP 10 DE MULTIPLICADORES ──────────────────────────────────
+        // Se consulta acotado, no trayendo los agentes de la region para
+        // filtrar en el cliente: con 147 agentes eso serian 147 lecturas cada
+        // vez que alguien abre la pestaña. Con el indice compuesto son 10.
+        //
+        // El filtro por `multiplier.month` es lo que hace que la lista sea de
+        // ACTIVOS y no de historicos: un multiplicador ganado en junio sigue
+        // en el documento, pero ya no paga.
+        async function renderMultTop10() {
+            const cont = document.getElementById('mult-top10');
+            if (!cont) return;
+            const dc = state.directorCode || '';
+            if (!dc) { cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Sin región configurada.</div>'; return; }
+
+            const hoy = new Date();
+            const mesKey = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0');
+            const tit = document.getElementById('mult-top-titulo');
+            if (tit) tit.textContent = 'Multiplicadores de ' + MONTHS_ES[hoy.getMonth()];
+
+            try {
+                const snap = await getDocs(query(
+                    collection(db, 'users'),
+                    where('directorCode', '==', dc),
+                    where('multiplier.month', '==', mesKey),
+                    where('multiplier.earned', '==', true),
+                    orderBy('multiplier.bonusPct', 'desc'),
+                    limit(10)));
+
+                if (snap.empty) {
+                    cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Todavía nadie tiene multiplicador activo este mes.</div>';
+                    return;
+                }
+                const base = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+                const yo = (auth.currentUser && auth.currentUser.email) || '';
+                const medalla = i => (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.');
+
+                cont.innerHTML = snap.docs.map((d, i) => {
+                    const x = d.data(), m = x.multiplier || {};
+                    const vale = Math.round(base * (1 + (Number(m.bonusPct) || 0) / 100));
+                    const soyYo = d.id === yo;
+                    return `
+                    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;
+                                background:${soyYo ? 'rgba(255,199,44,0.12)' : 'rgba(255,255,255,0.04)'};
+                                border:1px solid ${soyYo ? 'rgba(255,199,44,0.45)' : 'var(--border)'};">
+                        <span style="width:26px;text-align:center;font-size:13px;font-weight:800;color:var(--slate);">${medalla(i)}</span>
+                        <span style="flex:1;font-size:12.5px;font-weight:${soyYo ? '900' : '600'};color:${soyYo ? 'var(--gold-l)' : 'var(--white)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                            ${escapeHtml(x.agentName || d.id)}${soyYo ? ' <span style="font-size:10px;">(tú)</span>' : ''}
+                        </span>
+                        <span style="font-size:11px;color:var(--slate);white-space:nowrap;">${m.daysReported || 0}/${m.daysInMonth || 0} días</span>
+                        <span class="mult-chip-demo" style="padding:3px 10px;"><i class="fa fa-bolt"></i> <b>${vale}</b></span>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                console.warn('[mult] top10:', e && e.message);
+                cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> No se pudo cargar el top de multiplicadores.</div>';
+            }
+        }
+
+        // ─── PUNTO ROJO DEL FORO ────────────────────────────────────────
+        // Sin push y sin listener abierto. Un listener en tiempo real sobre el
+        // foro cobra lecturas todo el rato que la app este abierta; esto son
+        // DOS lecturas por chequeo, y solo se chequea al abrir la app y al
+        // volver a ella. La marca de "ya lo vi" vive en localStorage: no
+        // cuesta escrituras y basta para un punto rojo.
+        const FORO_VISTO_KEY = 'pecvsForoVisto';
+        let _foroUltimoChequeo = 0;
+
+        function _foroVistoHasta() {
+            try { return Number(localStorage.getItem(FORO_VISTO_KEY)) || 0; } catch (e) { return 0; }
+        }
+        function _foroMarcarVisto() {
+            try { localStorage.setItem(FORO_VISTO_KEY, String(Date.now())); } catch (e) {}
+            const d = document.getElementById('foro-dot');
+            if (d) d.style.display = 'none';
+        }
+
+        async function _foroChequearNuevos() {
+            const d = document.getElementById('foro-dot');
+            if (!d) return;
+            const dc = _foroDC(), yo = _foroYo();
+            if (!dc || !yo) return;
+
+            // Throttle: volver a la app varias veces seguidas no dispara una
+            // consulta cada vez.
+            const ahora = Date.now();
+            if (ahora - _foroUltimoChequeo < 120000) return;
+            _foroUltimoChequeo = ahora;
+
+            const visto = _foroVistoHasta();
+            // Sin marca previa no se pinta nada: estrenar la funcion no deberia
+            // dejar a todos con un punto rojo de hilos viejos que ya leyeron.
+            if (!visto) { _foroMarcarVisto(); return; }
+
+            try {
+                const col = collection(db, 'forum');
+                // Dos consultas de UN documento cada una: lo mas nuevo del feed
+                // publico y lo mas nuevo de los hilos donde participo (que
+                // incluye los privados). Una sola no alcanza: Firestore no deja
+                // combinar "publico O soy participante" en una query.
+                const [pub, mios] = await Promise.all([
+                    getDocs(query(col,
+                        where('directorCode', '==', dc),
+                        where('visibilidad', '==', 'publico'),
+                        where('oculto', '==', false),
+                        orderBy('ultimaRespuestaEn', 'desc'), limit(1))),
+                    getDocs(query(col,
+                        where('directorCode', '==', dc),
+                        where('participantes', 'array-contains', yo),
+                        where('oculto', '==', false),
+                        orderBy('ultimaRespuestaEn', 'desc'), limit(1)))
+                ]);
+                let masNuevo = 0;
+                [pub, mios].forEach(s => s.forEach(doc => {
+                    const t = doc.data().ultimaRespuestaEn;
+                    const ms = t && t.toDate ? t.toDate().getTime() : 0;
+                    if (ms > masNuevo) masNuevo = ms;
+                }));
+                d.style.display = masNuevo > visto ? '' : 'none';
+            } catch (e) {
+                // Falta de indice o de red: el punto simplemente no aparece.
+                console.warn('[foro] chequeo de nuevos:', e && e.message);
+            }
+        }
+
+        // Al volver a la app (cambiar de pestaña del navegador, desbloquear el
+        // telefono) se revisa de nuevo. No hay intervalo corriendo de fondo.
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) _foroChequearNuevos();
+        });
+
         window.openForo = function () {
             _foroVista = 'lista';
             _foroCursores = [];
             document.getElementById('foro-modal').classList.add('open');
+            _foroMarcarVisto();
             // Deja el bottom nav por encima del overlay mientras el foro está
             // abierto. Ver la regla body.foro-open .bottom-nav en el CSS.
             document.body.classList.add('foro-open');
@@ -6554,7 +6708,7 @@
                     }
                 }
             });
-            if (which === 'actividad') renderActividadTab();
+            if (which === 'actividad') { renderActividadTab(); renderMultTop10(); }
             if (which === 'solicitudes') renderMisSolicitudes();
             if (which === 'comprar') renderTiendaItems();
         };
