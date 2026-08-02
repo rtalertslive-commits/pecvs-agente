@@ -7,34 +7,56 @@
     <title>Actividad — Registro Profesional</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 
     <!-- PWA / Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#d4af37">
+    <meta name="theme-color" content="#071D49">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Actividad">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <style>
+        /* ═══ SISTEMA DE DISEÑO PROMESSA ═══════════════════════════════════
+           Paleta corporativa sobre tema oscuro.
+
+           Los NOMBRES se conservan aunque ya no describan el color: hay cientos
+           de usos repartidos en el archivo y renombrarlos seria tocarlos todos
+           para no ganar nada. El nombre es historico, el ROL es el que importa.
+
+           Un detalle que no es obvio: el cobalto sobre Oxford da 1.9:1 de
+           contraste, asi que NO sirve como color de texto. El cobalto se queda
+           para RELLENOS de boton (con texto blanco da 7.5:1) y el papel de
+           acento de texto lo toma el azul medio, que sobre Oxford da 5.4:1. */
         :root {
-            --bg: #020617;
-            --panel: #0f172a;
-            --panel2: #1e293b;
-            --gold: #d4af37;
-            --gold-l: #fef08a;
-            --white: #f8fafc;
-            --slate: #94a3b8;
-            --border: rgba(212, 175, 55, 0.2);
-            --green: #10b981;
-            --orange: #f59e0b;
-            --red: #ef4444;
-            --blue: #3b82f6;
-            --teal: #06b6d4;
+            /* Colores base del sistema */
+            --azul-cobalto: #20559A;
+            --azul-oxford:  #071D49;
+            --amarillo:     #FFC72C;
+            --azul-medio:   #7999C2;
+            --azul-claro:   #D2DDEB;
+
+            /* Roles (nombres heredados) */
+            --bg: #071D49;          /* pagina: azul Oxford */
+            --panel: #0E2A5C;       /* tarjeta: Oxford elevado */
+            --panel2: #143566;      /* superficie mas elevada */
+            --gold: #7999C2;        /* acento de TEXTO y bordes */
+            --gold-l: #FFC72C;      /* enfasis: el amarillo, micro-acento */
+            --white: #FFFFFF;       /* texto principal */
+            --slate: #A9BFD9;       /* texto secundario */
+            --border: rgba(255, 255, 255, 0.14);
+            --green: #6FD79B;
+            --orange: #FFC72C;
+            --red: #F08A80;
+            --blue: #7999C2;
+            --teal: #7999C2;
+
+            /* Texto sobre relleno de marca (cobalto solido). */
+            --on-brand: #FFFFFF;
         }
 
         * {
@@ -47,7 +69,7 @@
         body {
             background: var(--bg);
             color: var(--white);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Source Sans Pro', sans-serif;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
@@ -79,10 +101,10 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(2, 6, 23, 0.92);
+            background: rgba(7, 29, 73, 0.92);
             backdrop-filter: blur(14px) saturate(140%);
             -webkit-backdrop-filter: blur(14px) saturate(140%);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+            border-bottom: 1px solid rgba(32, 85, 154, 0.18);
             box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
         }
 
@@ -123,7 +145,7 @@
         }
         .brand-title h1 {
             font-size: 17px;
-            font-weight: 800;
+            font-weight: 900;
             color: #fff;
             letter-spacing: -0.2px;
             white-space: nowrap;
@@ -135,8 +157,8 @@
             font-size: 10px;
             font-weight: 700;
             color: var(--gold);
-            background: rgba(212, 175, 55, 0.10);
-            border: 1px solid rgba(212, 175, 55, 0.30);
+            background: rgba(32, 85, 154, 0.10);
+            border: 1px solid rgba(32, 85, 154, 0.30);
             padding: 2px 7px;
             border-radius: 5px;
             letter-spacing: 0.5px;
@@ -175,21 +197,21 @@
             width: 36px;
             height: 36px;
             border-radius: 9px;
-            background: linear-gradient(135deg, var(--gold-l) 0%, var(--gold) 50%, #a08015 100%);
+            background: linear-gradient(135deg, var(--gold-l) 0%, var(--gold) 50%, #20559A 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Playfair Display', serif;
+            font-family: 'Source Sans Pro', sans-serif;
             font-weight: 900;
             font-size: 20px;
-            color: var(--bg);
-            box-shadow: 0 3px 10px rgba(212, 175, 55, 0.25), inset 0 1px 0 rgba(255,255,255,0.2);
+            color: var(--on-brand);
+            box-shadow: 0 3px 10px rgba(32, 85, 154, 0.25), inset 0 1px 0 rgba(255,255,255,0.2);
             flex-shrink: 0;
             line-height: 1;
         }
         .header-left h1 {
-            font-family: 'Inter', sans-serif;
-            font-weight: 800;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 900;
             font-size: 19px;
             margin: 0;
             color: var(--white);
@@ -220,7 +242,7 @@
             }
             50% {
                 color: var(--gold-l);
-                text-shadow: 0 0 10px rgba(212, 175, 55, 0.7), 0 0 20px rgba(212, 175, 55, 0.35);
+                text-shadow: 0 0 10px rgba(32, 85, 154, 0.7), 0 0 20px rgba(32, 85, 154, 0.35);
             }
         }
         .pulse-text {
@@ -277,15 +299,15 @@
             min-width: 18px;
             height: 18px;
             padding: 0 5px;
-            background: #ef4444;
+            background: #F08A80;
             color: #fff;
             border-radius: 9px;
             font-size: 10px;
-            font-weight: 800;
+            font-weight: 900;
             display: none;
             align-items: center;
             justify-content: center;
-            border: 2px solid var(--panel, #0f172a);
+            border: 2px solid var(--panel, #0E2A5C);
             line-height: 1;
         }
         #anuncios-badge.show { display: flex; }
@@ -299,8 +321,8 @@
             border-radius: 8px;
         }
         @keyframes novedadGlowPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.65); }
-            50%      { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(32, 85, 154, 0.65); }
+            50%      { box-shadow: 0 0 0 10px rgba(32, 85, 154, 0); }
         }
 
         /* BUTTONS */
@@ -312,7 +334,7 @@
             padding: 12px 16px;
             border-radius: 8px;
             border: 1px solid var(--gold);
-            background: rgba(15, 23, 42, .8);
+            background: rgba(14, 42, 92, .8);
             color: var(--gold-l);
             font-size: 13px;
             font-weight: 600;
@@ -325,8 +347,8 @@
            Sin esto, el touch en mobile dispara :hover y se queda "pegado". */
         @media (hover: hover) and (pointer: fine) {
             .btn:hover {
-                background: var(--gold);
-                color: var(--bg);
+                background: var(--azul-cobalto);
+                color: var(--on-brand);
             }
             .btn-green:hover {
                 background: var(--green);
@@ -400,7 +422,7 @@
                 bottom: 0;
                 left: 0;
                 right: 0;
-                background: rgba(2, 6, 23, 0.92);
+                background: rgba(7, 29, 73, 0.92);
                 border-top: 1px solid var(--border);
                 padding: 8px 4px calc(10px + env(safe-area-inset-bottom, 0px));
                 backdrop-filter: blur(10px);
@@ -455,15 +477,26 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--gold);
-            font-weight: 800;
+            font-weight: 900;
             margin: 0 0 15px;
+        }
+
+        /* Pleca: la barrita amarilla del sistema Promessa, encima de cada
+           titulo de seccion. Va por ::before para no tocar el HTML de cada uno. */
+        .card-title::before {
+            content: '';
+            display: block;
+            width: 34px;
+            height: 4px;
+            background: var(--amarillo);
+            margin-bottom: 9px;
         }
 
         /* CONFIG ELEMENTS */
         input[type=text],
         input[type=number],
         select {
-            background: rgba(2, 6, 23, .6);
+            background: rgba(7, 29, 73, .6);
             border: 1px solid rgba(255, 255, 255, .1);
             color: var(--white);
             padding: 12px;
@@ -575,12 +608,12 @@
 
         /* HOY: card grande, prominente */
         .m-day-today {
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.12), rgba(212, 175, 55, 0.04));
+            background: linear-gradient(135deg, rgba(32, 85, 154, 0.12), rgba(32, 85, 154, 0.04));
             border: 2px solid var(--gold);
             border-radius: 12px;
             padding: 16px;
             margin: 10px 0;
-            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.15);
+            box-shadow: 0 4px 20px rgba(32, 85, 154, 0.15);
         }
         .m-today-header {
             display: flex;
@@ -589,25 +622,25 @@
             margin-bottom: 14px;
         }
         .m-today-day {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Source Sans Pro', sans-serif;
             font-size: 20px;
             font-weight: 700;
             color: var(--gold-l);
         }
         .m-today-day small {
             display: block;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Source Sans Pro', sans-serif;
             font-size: 11px;
             color: var(--slate);
             font-weight: 400;
         }
         .m-today-badge {
-            background: var(--gold);
-            color: var(--bg);
+            background: var(--azul-cobalto);
+            color: var(--on-brand);
             padding: 4px 10px;
             border-radius: 20px;
             font-size: 10px;
-            font-weight: 800;
+            font-weight: 900;
             letter-spacing: 1px;
         }
         .m-today-grid {
@@ -651,7 +684,7 @@
         .m-field input:focus {
             outline: none;
             border-color: var(--gold);
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+            box-shadow: 0 0 0 3px rgba(32, 85, 154, 0.15);
         }
         /* Conceptos: layout 2-cols en desktop, single-col reordenado en mobile.
            Mobile order: visual funnel → defs → MÉTRICAS DE VOLUMEN Y VALOR → totopos */
@@ -679,7 +712,7 @@
             align-items: center;
             margin-top: 14px;
             padding-top: 12px;
-            border-top: 1px solid rgba(212, 175, 55, 0.15);
+            border-top: 1px solid rgba(32, 85, 154, 0.15);
             font-size: 12px;
         }
         .m-funnel { font-weight: 700; }
@@ -711,8 +744,8 @@
         /* Botón "Sin intento de venta hoy" — solo cuando todo está en 0 y no marcado */
         .btn-no-activity {
             width: 100%;
-            background: rgba(148,163,184,0.08);
-            border: 1.5px dashed rgba(148,163,184,0.4);
+            background: rgba(169, 191, 217,0.08);
+            border: 1.5px dashed rgba(169, 191, 217,0.4);
             color: var(--slate);
             padding: 10px;
             border-radius: 8px;
@@ -729,8 +762,8 @@
         }
         @media (hover: hover) and (pointer: fine) {
             .btn-no-activity:hover {
-                background: rgba(148,163,184,0.15);
-                border-color: rgba(148,163,184,0.6);
+                background: rgba(169, 191, 217,0.15);
+                border-color: rgba(169, 191, 217,0.6);
                 color: var(--white);
             }
         }
@@ -741,7 +774,7 @@
         }
         .m-today-noactivity .moon { font-size: 56px; line-height: 1; margin-bottom: 12px; }
         .m-today-noactivity h3 {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Source Sans Pro', sans-serif;
             font-size: 15px;
             font-weight: 700;
             margin: 0 0 6px;
@@ -781,7 +814,7 @@
             position: absolute;
             cursor: pointer;
             inset: 0;
-            background: rgba(148,163,184,0.3);
+            background: rgba(169, 191, 217,0.3);
             transition: 0.2s;
             border-radius: 999px;
         }
@@ -882,7 +915,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(2, 6, 23, .95);
+            background: rgba(7, 29, 73, .95);
             z-index: 9999;
             justify-content: center;
             align-items: center;
@@ -907,7 +940,7 @@
             position: relative;
         }
         .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
-        .cal-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--gold); font-weight: 700; flex: 1; line-height: 1.2; }
+        .cal-title { font-family: 'Source Sans Pro', sans-serif; font-size: 16px; color: var(--gold); font-weight: 700; flex: 1; line-height: 1.2; }
         .cal-close-btn { background: none; border: none; color: var(--white); font-size: 24px; cursor: pointer; line-height: 1; padding: 0 4px; }
         .cal-nav { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 14px; }
         .cal-nav-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: var(--white); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-family: inherit; font-size: 14px; }
@@ -919,11 +952,11 @@
         .cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform .1s, box-shadow .15s; position: relative; padding: 2px; border: 1px solid transparent; }
         .cal-cell.empty { visibility: hidden; }
         .cal-cell.none { background: rgba(255,255,255,0.04); color: var(--slate); }
-        .cal-cell.ok { background: rgba(16,185,129,0.18); color: #10b981; border-color: rgba(16,185,129,0.35); }
+        .cal-cell.ok { background: rgba(111, 215, 155,0.18); color: #6FD79B; border-color: rgba(111, 215, 155,0.35); }
         /* Verde igual que .ok — la plantita hace la diferencia semántica */
-        .cal-cell.ok-no-close { background: rgba(16,185,129,0.18); color: #10b981; border-color: rgba(16,185,129,0.35); }
-        .cal-cell.red { background: rgba(239,68,68,0.18); color: #ef4444; border-color: rgba(239,68,68,0.35); }
-        .cal-cell.sin-actividad { background: rgba(245,158,11,0.18); color: #f59e0b; border-color: rgba(245,158,11,0.35); }
+        .cal-cell.ok-no-close { background: rgba(111, 215, 155,0.18); color: #6FD79B; border-color: rgba(111, 215, 155,0.35); }
+        .cal-cell.red { background: rgba(240, 138, 128,0.18); color: #F08A80; border-color: rgba(240, 138, 128,0.35); }
+        .cal-cell.sin-actividad { background: rgba(255, 199, 44,0.18); color: #FFC72C; border-color: rgba(255, 199, 44,0.35); }
         .cal-cell.future { opacity: 0.22; cursor: not-allowed; background: rgba(255,255,255,0.015); color: var(--slate); pointer-events: none; }
         .cal-cell:not(.empty):not(.future):hover { transform: scale(1.06); box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
         .cal-cell.selected { box-shadow: 0 0 0 2px var(--gold); }
@@ -937,8 +970,8 @@
 
         /* ═══ KPI INFO ICON + MODAL ═══ */
         .kpi-info-btn {
-            background: rgba(212,175,55,0.10);
-            border: 1px solid rgba(212,175,55,0.25);
+            background: rgba(32, 85, 154,0.10);
+            border: 1px solid rgba(32, 85, 154,0.25);
             color: var(--gold);
             border-radius: 50%;
             width: 22px;
@@ -955,7 +988,7 @@
             vertical-align: middle;
         }
         .kpi-info-btn:hover {
-            background: rgba(212,175,55,0.22);
+            background: rgba(32, 85, 154,0.22);
             border-color: var(--gold);
             transform: scale(1.1);
         }
@@ -978,10 +1011,10 @@
             gap: 12px;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 1px solid rgba(212,175,55,0.2);
+            border-bottom: 1px solid rgba(32, 85, 154,0.2);
         }
         .kpi-info-title {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Source Sans Pro', sans-serif;
             color: var(--gold);
             font-size: 17px;
             font-weight: 700;
@@ -1016,7 +1049,7 @@
         .kpi-info-body ul { margin: 0 0 12px; padding-left: 18px; }
         .kpi-info-body li { margin-bottom: 4px; }
         .kpi-info-body code {
-            background: rgba(212,175,55,0.12);
+            background: rgba(32, 85, 154,0.12);
             color: var(--gold);
             padding: 2px 6px;
             border-radius: 4px;
@@ -1024,8 +1057,8 @@
             font-family: 'Courier New', monospace;
         }
         .kpi-info-body .kpi-tip {
-            background: rgba(16,185,129,0.08);
-            border-left: 3px solid var(--green, #10b981);
+            background: rgba(111, 215, 155,0.08);
+            border-left: 3px solid var(--green, #6FD79B);
             padding: 8px 12px;
             border-radius: 6px;
             margin-top: 12px;
@@ -1066,8 +1099,8 @@
         }
 
         .info-box {
-            background: rgba(6, 182, 212, .06);
-            border: 1px solid rgba(6, 182, 212, .2);
+            background: rgba(121, 153, 194, .06);
+            border: 1px solid rgba(121, 153, 194, .2);
             border-radius: 8px;
             padding: 12px;
             font-size: 11px;
@@ -1085,13 +1118,9 @@
             0%,100% { transform: scale(1) rotate(-6deg); }
             50%      { transform: scale(1.3) rotate(6deg); }
         }
-        @keyframes karmaGlow {
-            0%,100% { text-shadow: 0 0 20px rgba(212,175,55,0.6); }
-            50%      { text-shadow: 0 0 50px rgba(212,175,55,1), 0 0 80px rgba(255,215,0,0.6); }
-        }
         @keyframes karmaPulse {
-            0%,100% { box-shadow: 0 0 8px rgba(212,175,55,0.3); }
-            50%      { box-shadow: 0 0 20px rgba(212,175,55,0.8), 0 0 40px rgba(212,175,55,0.3); }
+            0%,100% { box-shadow: 0 0 8px rgba(32, 85, 154,0.3); }
+            50%      { box-shadow: 0 0 20px rgba(32, 85, 154,0.8), 0 0 40px rgba(32, 85, 154,0.3); }
         }
         /* ── MULTIPLICADOR: badge junto al contador ────────────────────────── */
         #mult-badge {
@@ -1112,9 +1141,9 @@
         #mult-badge:hover { transform: translateY(-1px); }
         #mult-badge:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
         #mult-badge.mult-on {
-            background: linear-gradient(135deg, rgba(16,185,129,0.22), rgba(16,185,129,0.08));
-            border: 1.5px solid rgba(16,185,129,0.55);
-            color: #6ee7b7;
+            background: linear-gradient(135deg, rgba(111, 215, 155,0.22), rgba(111, 215, 155,0.08));
+            border: 1.5px solid rgba(111, 215, 155,0.55);
+            color: #6FD79B;
         }
         #mult-badge.mult-off {
             background: rgba(255,255,255,0.05);
@@ -1132,9 +1161,9 @@
             font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
-            background: linear-gradient(135deg, rgba(16,185,129,0.22), rgba(16,185,129,0.08));
-            border: 1.5px solid rgba(16,185,129,0.55);
-            color: #6ee7b7;
+            background: linear-gradient(135deg, rgba(111, 215, 155,0.22), rgba(111, 215, 155,0.08));
+            border: 1.5px solid rgba(111, 215, 155,0.55);
+            color: #6FD79B;
         }
         .mult-chip-demo b { font-size: 15px; font-weight: 900; }
         /* Contador de totopos falso, solo para ubicar el badge en la pantalla */
@@ -1147,9 +1176,9 @@
             font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
-            background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.06));
-            border: 1.5px solid rgba(212,175,55,0.5);
-            color: var(--gold-l, #e5c76b);
+            background: linear-gradient(135deg, rgba(32, 85, 154,0.18), rgba(32, 85, 154,0.06));
+            border: 1.5px solid rgba(32, 85, 154,0.5);
+            color: var(--gold-l, #7999C2);
         }
         .karma-chip-demo b { font-size: 14px; font-weight: 900; color: var(--white); }
         .mult-demo-wrap {
@@ -1161,7 +1190,7 @@
             padding: 14px 10px;
             margin: 10px 0 8px;
             border-radius: 10px;
-            background: rgba(15,23,42,0.55);
+            background: rgba(14, 42, 92,0.55);
             border: 1px dashed rgba(255,255,255,0.14);
         }
 
@@ -1178,39 +1207,39 @@
         .mrec-ico { font-size: 15px; line-height: 1.3; }
         .mrec-k { font-size: 12px; font-weight: 700; color: var(--white); }
         .mrec-v { font-size: 11.5px; color: var(--slate); margin-top: 2px; line-height: 1.45; }
-        .mrec-n { font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .mrec-n { font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
         /* ── Tarjeta invitación del multiplicador (solo hasta el primer tap) ──
            Verde a propósito: es el mismo color del badge que van a ver cuando
            lo ganen, así asocian las dos cosas sin que nadie se lo explique. */
         .cov-invite {
-            border: 1.5px solid rgba(16,185,129,0.5);
+            border: 1.5px solid rgba(111, 215, 155,0.5);
             border-radius: 10px;
-            background: linear-gradient(135deg, rgba(16,185,129,0.14), rgba(16,185,129,0.03));
+            background: linear-gradient(135deg, rgba(111, 215, 155,0.14), rgba(111, 215, 155,0.03));
             padding: 14px;
             cursor: pointer;
         }
-        .cov-invite .cov-fill { background: linear-gradient(90deg, var(--green), #6ee7b7); }
+        .cov-invite .cov-fill { background: linear-gradient(90deg, var(--green), #6FD79B); }
         .cov-invite-head {
             display: flex; align-items: center; gap: 8px;
             margin-bottom: 11px; flex-wrap: wrap;
         }
         .cov-chip-nuevo {
             display: inline-flex; align-items: center; gap: 4px;
-            background: #6ee7b7; color: #04231a;
+            background: #6FD79B; color: #04231a;
             font-size: 9.5px; font-weight: 900; letter-spacing: 0.09em;
             padding: 3px 8px; border-radius: 20px;
             text-transform: uppercase; white-space: nowrap;
         }
-        .cov-invite-claim { font-size: 12.5px; font-weight: 800; color: #6ee7b7; }
+        .cov-invite-claim { font-size: 12.5px; font-weight: 900; color: #6FD79B; }
         .cov-invite-btn {
             display: block; width: 100%; margin-top: 12px;
-            background: rgba(16,185,129,0.9); color: #04231a;
+            background: rgba(111, 215, 155,0.9); color: #04231a;
             border: none; border-radius: 8px; padding: 11px;
-            font-size: 12.5px; font-weight: 800; cursor: pointer;
+            font-size: 12.5px; font-weight: 900; cursor: pointer;
             font-family: inherit;
         }
         .cov-invite-btn:active { transform: scale(0.98); }
-        .cov-invite-btn:focus-visible { outline: 2px solid #6ee7b7; outline-offset: 2px; }
+        .cov-invite-btn:focus-visible { outline: 2px solid #6FD79B; outline-offset: 2px; }
 
         /* Barra de cobertura */
         .cov-bar {
@@ -1223,7 +1252,7 @@
         .cov-fill {
             height: 100%;
             border-radius: 5px;
-            background: linear-gradient(90deg, var(--gold), #f0d67a);
+            background: linear-gradient(90deg, var(--gold), #7999C2);
             transition: width .4s ease;
         }
         /* Barra de 3 tramos: lo ganado, lo perdido y lo que todavía se puede.
@@ -1232,9 +1261,9 @@
         .cov-split { display: flex; height: 9px; border-radius: 5px; overflow: hidden;
                      background: rgba(255,255,255,0.09); margin: 8px 0 7px; }
         .cov-seg { height: 100%; transition: width .4s ease; }
-        .cov-seg-ok    { background: linear-gradient(90deg, var(--gold), #f0d67a); }
+        .cov-seg-ok    { background: linear-gradient(90deg, var(--gold), #7999C2); }
         .cov-seg-lost  { background: repeating-linear-gradient(45deg,
-                            rgba(239,68,68,0.38) 0 4px, rgba(239,68,68,0.16) 4px 8px); }
+                            rgba(240, 138, 128,0.38) 0 4px, rgba(240, 138, 128,0.16) 4px 8px); }
         .cov-seg-open  { background: rgba(255,255,255,0.07); }
         .cov-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--slate); }
         .cov-legend i { font-style: normal; }
@@ -1245,8 +1274,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.06));
-            border: 1.5px solid rgba(212,175,55,0.5);
+            background: linear-gradient(135deg, rgba(32, 85, 154,0.18), rgba(32, 85, 154,0.06));
+            border: 1.5px solid rgba(32, 85, 154,0.5);
             border-radius: 24px;
             padding: 5px 16px 5px 10px;
             margin-top: 6px;
@@ -1258,12 +1287,12 @@
         #karma-badge:hover {
             transform: scale(1.04);
             border-color: var(--gold);
-            box-shadow: 0 0 16px rgba(212,175,55,0.45);
+            box-shadow: 0 0 16px rgba(32, 85, 154,0.45);
         }
         #karma-badge:active { transform: scale(0.98); }
         #karma-badge .karma-info-i {
-            background: rgba(212,175,55,0.30);
-            border: 1px solid rgba(212,175,55,0.7);
+            background: rgba(32, 85, 154,0.30);
+            border: 1px solid rgba(32, 85, 154,0.7);
             color: var(--gold);
             border-radius: 50%;
             width: 16px;
@@ -1281,8 +1310,8 @@
            para indicar que el badge es clickeable. Auto-fade tras 6s o al click. */
         .karma-tooltip {
             position: fixed;
-            background: rgba(212,175,55,0.97);
-            color: #0f172a;
+            background: rgba(32, 85, 154,0.97);
+            color: #0E2A5C;
             padding: 9px 14px;
             border-radius: 10px;
             font-size: 12px;
@@ -1302,7 +1331,7 @@
             top: 100%;
             left: 24px;
             border: 8px solid transparent;
-            border-top-color: rgba(212,175,55,0.97);
+            border-top-color: rgba(32, 85, 154,0.97);
         }
         @keyframes karmaTooltipFloat {
             0%, 100% { transform: translateY(0); }
@@ -1327,11 +1356,11 @@
             justify-content: space-between;
             margin-bottom: 14px;
             padding-bottom: 12px;
-            border-bottom: 1px solid rgba(212,175,55,0.2);
+            border-bottom: 1px solid rgba(32, 85, 154,0.2);
             gap: 10px;
         }
         .rules-modal-title {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Source Sans Pro', sans-serif;
             color: var(--gold);
             font-size: 18px;
             font-weight: 700;
@@ -1363,14 +1392,14 @@
             color: var(--slate);
             margin-top: 8px;
             padding: 8px 12px;
-            background: rgba(245,158,11,0.08);
-            border-left: 3px solid #f59e0b;
+            background: rgba(255, 199, 44,0.08);
+            border-left: 3px solid #FFC72C;
             border-radius: 6px;
         }
         #karma-badge .star { font-size: 20px; }
         #karma-badge .karma-num {
             color: var(--gold);
-            font-weight: 800;
+            font-weight: 900;
             font-size: 22px;
             letter-spacing: 1px;
             line-height: 1;
@@ -1403,6 +1432,53 @@
             flex-direction: column;
         }
         #karma-celebration.show { display: flex; }
+
+        /* ── Modal de totopos ganados ────────────────────────────────────────
+           El amarillo se concentra en la cifra. El manual lo reserva para
+           "plecas y micro-acentos": una cifra de 62px estira esa definicion,
+           pero es lo unico que el agente vino a ver y dejarla en blanco
+           convertia el premio en un aviso. */
+        .cel-tarjeta {
+            position: relative; z-index: 2; text-align: center;
+            width: 100%; max-width: 320px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 26px 22px 22px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        /* La pleca del sistema, el otro uso autorizado del amarillo. */
+        .cel-pleca { width: 34px; height: 4px; background: var(--amarillo); margin-bottom: 14px; }
+        .cel-grito { font-size: 22px; font-weight: 900; color: #FFFFFF; letter-spacing: 0.01em; margin-bottom: 4px; }
+        /* Sin mayusculas sostenidas: el manual solo las permite en kickers
+           cortos, y "¡Felicidades!" no lo es. TOTOPOS si califica. */
+        .cel-desde { font-size: 13px; color: var(--slate); margin-bottom: 10px; }
+        .cel-cifra {
+            font-size: 62px; font-weight: 900; line-height: 0.95;
+            letter-spacing: -0.035em; color: var(--amarillo);
+            font-variant-numeric: tabular-nums;
+        }
+        .cel-unidad {
+            font-size: 13px; font-weight: 800; color: #FFFFFF;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            margin: 5px 0 12px; display: flex; align-items: center; gap: 6px;
+        }
+        .cel-motivo { font-size: 13px; color: var(--slate); line-height: 1.45; max-width: 260px; margin: 0 auto; }
+        .cel-saldo {
+            font-size: 12.5px; color: var(--slate);
+            margin-top: 12px; padding-top: 12px; width: 100%;
+            border-top: 1px solid var(--border);
+        }
+        .cel-boton {
+            margin-top: 18px; width: 100%;
+            /* Cobalto porque el manual lo define como color de accion por
+               defecto. Antes era un degradado dorado con radio de 30px. */
+            background: var(--azul-cobalto); color: #FFFFFF;
+            border: none; border-radius: 8px; padding: 13px;
+            font-family: inherit; font-size: 14px; font-weight: 800;
+            letter-spacing: 0.01em; cursor: pointer;
+        }
+        .cel-boton:focus-visible { outline: 2px solid var(--amarillo); outline-offset: 2px; }
         #karma-particles {
             position: fixed;
             inset: 0;
@@ -1438,7 +1514,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            background: radial-gradient(circle at top right, #143566, #0E2A5C);
             z-index: 9999;
             display: flex;
             align-items: center;
@@ -1467,8 +1543,8 @@
 
         .login-card h2 {
             color: var(--white);
-            font-family: 'Inter', sans-serif;
-            font-weight: 800;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 900;
             font-size: 28px;
             margin: 0;
             letter-spacing: -0.5px;
@@ -1494,7 +1570,7 @@
             height: 76px;
             border-radius: 18px;
             font-size: 42px;
-            box-shadow: 0 8px 28px rgba(212, 175, 55, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+            box-shadow: 0 8px 28px rgba(32, 85, 154, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
         }
         .login-brand .login-sub {
             font-size: 10px;
@@ -1539,7 +1615,7 @@
             padding: 12px;
             border-radius: 10px;
             border: 1.5px solid var(--gold);
-            background: rgba(212, 175, 55, 0.08);
+            background: rgba(32, 85, 154, 0.08);
             color: var(--gold-l);
             font-size: 13px;
             font-weight: 700;
@@ -1550,8 +1626,8 @@
             gap: 8px;
         }
         .btn-install:hover {
-            background: var(--gold);
-            color: var(--bg);
+            background: var(--azul-cobalto);
+            color: var(--on-brand);
         }
         .btn-install.show { display: inline-flex; }
         .btn-install .ic { font-size: 16px; }
@@ -1578,8 +1654,8 @@
             text-align: center;
         }
         #ios-install-modal h3 {
-            font-family: 'Inter', sans-serif;
-            font-weight: 800;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 900;
             font-size: 18px;
             color: var(--white);
             margin: 0 0 14px;
@@ -1594,8 +1670,8 @@
         }
         #ios-install-modal ol strong { color: var(--gold-l); }
         #ios-install-modal .close-btn {
-            background: var(--gold);
-            color: var(--bg);
+            background: var(--azul-cobalto);
+            color: var(--on-brand);
             border: none;
             border-radius: 8px;
             padding: 10px 24px;
@@ -1620,7 +1696,7 @@
             left: 50%;
             width: 2px;
             height: 12px;
-            background: var(--gold);
+            background: var(--azul-cobalto);
             transform: translateX(-50%);
         }
         #ios-install-modal .share-icon::after {
@@ -1721,7 +1797,7 @@
                     </button>
                     <button id="notif-bell-btn" class="btn" onclick="openNotifModal()" title="Notificaciones">
                         <i class="fa fa-bell"></i>
-                        <span id="notif-bell-dot" style="display:none; position:absolute; top:6px; right:6px; width:9px; height:9px; background:var(--gold); border-radius:50%; border:1.5px solid var(--panel, #0f172a);"></span>
+                        <span id="notif-bell-dot" style="display:none; position:absolute; top:6px; right:6px; width:9px; height:9px; background:var(--azul-cobalto); border-radius:50%; border:1.5px solid var(--panel, #0E2A5C);"></span>
                     </button>
                     <button id="anuncios-btn" class="btn" onclick="openAnunciosModal()" title="Anuncios de la dirección">
                         <i class="fa fa-bullhorn"></i>
@@ -1797,13 +1873,13 @@
                     </div>
                 </div>
 
-                <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.25); border-radius:8px; padding:12px 14px; margin:14px 0; font-size:12px; color:var(--slate); line-height:1.5;">
+                <div style="background:rgba(32, 85, 154,0.08); border:1px solid rgba(32, 85, 154,0.25); border-radius:8px; padding:12px 14px; margin:14px 0; font-size:12px; color:var(--slate); line-height:1.5;">
                     ⏱️ <strong>Día en curso:</strong> edítalo libremente durante el día — agrega, cambia o corrige tus P-E-C-V-S-$ las veces que quieras (se guarda automáticamente). A las <strong>12:00 AM</strong> se hace el corte automático y se te dan los totopos <svg class="totopo-icon"><use href="#totopo"/></svg>
                     <!-- El OTRO reloj: lo que está construyendo para el mes que viene -->
-                    <div id="cov-block" style="margin-top:12px; padding-top:12px; border-top:1px dashed rgba(212,175,55,0.35);"></div>
-                    <div style="margin-top:12px; padding-top:12px; border-top:1px dashed rgba(212,175,55,0.35); display:flex; justify-content:center;">
+                    <div id="cov-block" style="margin-top:12px; padding-top:12px; border-top:1px dashed rgba(32, 85, 154,0.35);"></div>
+                    <div style="margin-top:12px; padding-top:12px; border-top:1px dashed rgba(32, 85, 154,0.35); display:flex; justify-content:center;">
                         <button onclick="openMyCalendar()" title="Ver todos tus días reportados del mes en un calendario"
-                            style="background:var(--gold); border:none; color:#000; border-radius:8px; padding:10px 18px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 2px 8px rgba(212,175,55,0.25);">
+                            style="background:var(--azul-cobalto); border:none; color: var(--on-brand); border-radius:8px; padding:10px 18px; font-size:12px; font-weight: 900; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 2px 8px rgba(32, 85, 154,0.25);">
                             <i class="fa fa-calendar-check"></i> Tu calendario de reportes
                         </button>
                     </div>
@@ -1835,8 +1911,8 @@
                                 <td id="tt-$" style="text-align:right; color:var(--gold-l);">0.00</td>
                                 <td></td>
                             </tr>
-                            <tr style="background:rgba(212,175,55,0.05);">
-                                <td style="color:var(--gold); font-weight:800;">TOTAL MES <span id="mt-month-suffix" style="font-weight:500; font-size:9px; opacity:0.75; text-transform:none; letter-spacing:0;"></span></td>
+                            <tr style="background:rgba(32, 85, 154,0.05);">
+                                <td style="color:var(--gold); font-weight: 900;">TOTAL MES <span id="mt-month-suffix" style="font-weight:500; font-size:9px; opacity:0.75; text-transform:none; letter-spacing:0;"></span></td>
                                 <td id="mt-P" style="text-align:center; font-weight:700;">0</td>
                                 <td id="mt-E" style="text-align:center; font-weight:700;">0</td>
                                 <td id="mt-C" style="text-align:center; font-weight:700;">0</td>
@@ -1877,7 +1953,7 @@
                     style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <h2 style="margin:0;"><i class="fa fa-chart-pie"></i> Mis KPIs</h2>
-                        <span id="kpi-week-indicator" style="font-size:11px; color:var(--teal); font-weight:600; padding:4px 8px; background:rgba(6,182,212,0.1); border-radius:4px; display:none;"></span>
+                        <span id="kpi-week-indicator" style="font-size:11px; color:var(--teal); font-weight:600; padding:4px 8px; background:rgba(121, 153, 194,0.1); border-radius:4px; display:none;"></span>
                     </div>
                     <select id="kpi-period-sel" class="num-input" style="width:auto; height:35px;"
                         onchange="renderKPIs()">
@@ -1952,7 +2028,7 @@
         <div id="tab-conceptos" class="tab-panel">
             <div class="card" style="padding: 25px;">
                 <h2
-                    style="font-family:'Playfair Display',serif; color:var(--gold); border-bottom: 2px solid var(--gold); padding-bottom:10px; margin-bottom:25px; font-size:22px;">
+                    style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); border-bottom: 2px solid var(--gold); padding-bottom:10px; margin-bottom:25px; font-size:22px;">
                     <i class="fa fa-graduation-cap-solid"></i> EL EMBUDO DE EFECTIVIDAD
                 </h2>
 
@@ -2000,15 +2076,15 @@
                     <!-- VISUAL EMBUDO — desktop: columna der sticky · mobile: order 1 -->
                     <div class="conceptos-visual"
                         style="background: rgba(255,255,255,0.03); border-radius:15px; padding:25px; text-align:center; border: 1px solid rgba(255,255,255,0.05); height: fit-content; position: sticky; top: 20px;">
-                        <h2 style="font-family:'Playfair Display',serif; color:var(--white); margin-top:0;">EMBUDO MATEMÁTICO</h2>
-                        <div style="background:var(--gold); color:var(--bg); padding:4px 15px; border-radius:20px; display:inline-block; font-weight:bold; font-size:12px; margin-bottom:30px;">
+                        <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--white); margin-top:0;">EMBUDO MATEMÁTICO</h2>
+                        <div style="background:var(--azul-cobalto); color: var(--on-brand); padding:4px 15px; border-radius:20px; display:inline-block; font-weight:bold; font-size:12px; margin-bottom:30px;">
                             REGLA: P ≥ E ≥ C ≥ V
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 250px; margin: 0 auto; width:100%;">
-                            <div style="width: 100%; height: 45px; background: #3b82f6; clip-path: polygon(0% 0%, 100% 0%, 95% 100%, 5% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">P - Contactos</div>
-                            <div style="width: 100%; height: 45px; background: #06b6d4; clip-path: polygon(5% 0%, 95% 0%, 90% 100%, 10% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">E - Entrevistas</div>
-                            <div style="width: 100%; height: 45px; background: #a855f7; clip-path: polygon(10% 0%, 90% 0%, 85% 100%, 15% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">C - Cotizaciones</div>
-                            <div style="width: 100%; height: 50px; background: #10b981; clip-path: polygon(15% 0%, 85% 0%, 80% 100%, 20% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">V - Cierres</div>
+                            <div style="width: 100%; height: 45px; background: #7999C2; clip-path: polygon(0% 0%, 100% 0%, 95% 100%, 5% 100%); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color:white;">P - Contactos</div>
+                            <div style="width: 100%; height: 45px; background: #7999C2; clip-path: polygon(5% 0%, 95% 0%, 90% 100%, 10% 100%); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color:white;">E - Entrevistas</div>
+                            <div style="width: 100%; height: 45px; background: #7999C2; clip-path: polygon(10% 0%, 90% 0%, 85% 100%, 15% 100%); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color:white;">C - Cotizaciones</div>
+                            <div style="width: 100%; height: 50px; background: #6FD79B; clip-path: polygon(15% 0%, 85% 0%, 80% 100%, 20% 100%); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color:white;">V - Cierres</div>
                         </div>
                         <p style="font-size:13px; color:var(--slate); margin-top:35px; line-height:1.6; text-align:justify; border-top: 1px solid rgba(255,255,255,0.1); padding-top:20px;">
                             En sentido estricto el número debe ir de mayor a menor (o como máximo igual) en cada etapa del proceso. Es decir: <strong>nunca puede haber más entrevistas que prospectos contactados</strong>, ni más cotizaciones que entrevistas realizadas, ni más ventas concretadas que cotizaciones.
@@ -2017,7 +2093,7 @@
 
                     <!-- MÉTRICAS DE VOLUMEN Y VALOR (S + $) — desktop: full-width · mobile: order 3 -->
                     <div class="conceptos-prima">
-                        <h2 style="font-family:'Playfair Display',serif; color:var(--gold); border-bottom: 2px solid var(--gold); padding-bottom:10px; margin:20px 0 25px; font-size:22px;">
+                        <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); border-bottom: 2px solid var(--gold); padding-bottom:10px; margin:20px 0 25px; font-size:22px;">
                             <i class="fa fa-chart-line"></i> MÉTRICAS DE VOLUMEN Y VALOR
                         </h2>
                         <div style="margin-bottom:24px;">
@@ -2048,7 +2124,7 @@
         <div id="tab-tienda" class="tab-panel">
             <!-- Sub-tabs -->
             <div id="tienda-subtabs" style="display:flex; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:2px;">
-                <button id="ts-btn-comprar" onclick="switchTiendaSubtab('comprar')" style="flex:1; padding:10px; background:rgba(212,175,55,0.15); border:1px solid rgba(212,175,55,0.4); border-radius:6px 6px 0 0; color:var(--gold-l); font-weight:700; font-size:13px; cursor:pointer;">🛒 Comprar</button>
+                <button id="ts-btn-comprar" onclick="switchTiendaSubtab('comprar')" style="flex:1; padding:10px; background:rgba(32, 85, 154,0.15); border:1px solid rgba(32, 85, 154,0.4); border-radius:6px 6px 0 0; color:var(--gold-l); font-weight:700; font-size:13px; cursor:pointer;">🛒 Comprar</button>
                 <button id="ts-btn-solicitudes" onclick="switchTiendaSubtab('solicitudes')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.10); border-radius:6px 6px 0 0; color:rgba(255,255,255,0.7); font-weight:600; font-size:13px; cursor:pointer;">📜 Mis solicitudes</button>
                 <button id="ts-btn-actividad" onclick="switchTiendaSubtab('actividad')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.10); border-radius:6px 6px 0 0; color:rgba(255,255,255,0.7); font-weight:600; font-size:13px; cursor:pointer;">🔥 Actividad</button>
             </div>
@@ -2080,7 +2156,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
                         <p class="card-title" style="margin:0;">🏆 <span id="lb-period-label">Top del mes</span></p>
                         <div id="lb-period-toggle" style="display:flex; gap:4px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.10); border-radius:8px; padding:3px;">
-                            <button id="lb-btn-month" onclick="switchLeaderboardPeriod('month')" style="padding:5px 14px; background:rgba(212,175,55,0.18); border:none; border-radius:5px; color:var(--gold-l); font-weight:700; font-size:12px; cursor:pointer;">Mes</button>
+                            <button id="lb-btn-month" onclick="switchLeaderboardPeriod('month')" style="padding:5px 14px; background:rgba(32, 85, 154,0.18); border:none; border-radius:5px; color:var(--gold-l); font-weight:700; font-size:12px; cursor:pointer;">Mes</button>
                             <button id="lb-btn-year" onclick="switchLeaderboardPeriod('year')" style="padding:5px 14px; background:transparent; border:none; border-radius:5px; color:rgba(255,255,255,0.6); font-weight:600; font-size:12px; cursor:pointer;">Año</button>
                         </div>
                     </div>
@@ -2129,7 +2205,7 @@
     <div class="modal-overlay" id="update-available-modal">
         <div class="modal-box" style="max-width:340px;text-align:center;">
             <div style="font-size:48px;margin-bottom:8px;">🚀</div>
-            <h2 style="font-family:'Inter',sans-serif;font-weight:800;color:var(--white);margin:0 0 8px;font-size:18px;">Nueva versión disponible</h2>
+            <h2 style="font-family:'Source Sans Pro',sans-serif;font-weight: 900;color:var(--white);margin:0 0 8px;font-size:18px;">Nueva versión disponible</h2>
             <p style="color:var(--slate);font-size:13px;margin:0 0 20px;line-height:1.5;">Recargá la app para obtener las últimas mejoras y arreglos.</p>
             <div style="display:flex;gap:10px;">
                 <button class="btn btn-sm" style="flex:1;" onclick="dismissUpdate()">Después</button>
@@ -2142,7 +2218,7 @@
     <div class="modal-overlay" id="logout-confirm-modal" onclick="if(event.target===this)cancelLogout()">
         <div class="modal-box" style="max-width:340px;text-align:center;">
             <div style="font-size:42px;margin-bottom:8px;">👋</div>
-            <h2 style="font-family:'Inter',sans-serif;font-weight:800;color:var(--white);margin:0 0 8px;font-size:18px;">¿Cerrar sesión?</h2>
+            <h2 style="font-family:'Source Sans Pro',sans-serif;font-weight: 900;color:var(--white);margin:0 0 8px;font-size:18px;">¿Cerrar sesión?</h2>
             <p style="color:var(--slate);font-size:13px;margin:0 0 20px;">Tendrás que volver a entrar con Google la próxima vez.</p>
             <div style="display:flex;gap:10px;">
                 <button class="btn btn-sm" style="flex:1;" onclick="cancelLogout()">Cancelar</button>
@@ -2205,7 +2281,7 @@
                     <li>🌙 <strong>"Sin intento de venta hoy"</strong> — declaraste honestamente que no hubo actividad. Cuenta igual. La opción aparece cuando todos los valores están en 0.</li>
                 </ul>
                 <p style="color:var(--slate); font-size:12.5px;">Si el semáforo queda en 🔴 (datos rotos / embudo inválido) ese día <strong>no</strong> genera totopos. El corte se hace a las <strong>12:00 AM</strong> — durante el día puedes corregir las veces que quieras.</p>
-                <div class="nota">⚠️ <strong style="color:#f59e0b;">Auditoría:</strong> Se revisará al final del mes si lo reportado coincide con lo ingresado.                <div id="rules-mult-block"></div>
+                <div class="nota">⚠️ <strong style="color:#FFC72C;">Auditoría:</strong> Se revisará al final del mes si lo reportado coincide con lo ingresado.                <div id="rules-mult-block"></div>
             </div>
                 <p style="margin-top:14px;"><strong>¿Para qué sirven?</strong> Los canjéas en la pestaña <strong>Tienda</strong> por premios que el director pone disponibles.</p>
                 <p style="color:var(--slate); font-size:12.5px; margin-top:6px;"><em>Tu compromiso y consistencia con el reporte diario.</em></p>
@@ -2217,19 +2293,19 @@
     <div class="modal-overlay" id="canje-confirm-modal" onclick="if(event.target===this)cancelCanje()">
         <div class="modal-box" style="max-width:380px;text-align:center;">
             <div style="font-size:42px;margin-bottom:8px;">🛒</div>
-            <h2 style="font-family:'Inter',sans-serif;font-weight:800;color:var(--white);margin:0 0 12px;font-size:18px;">Confirmar canje</h2>
+            <h2 style="font-family:'Source Sans Pro',sans-serif;font-weight: 900;color:var(--white);margin:0 0 12px;font-size:18px;">Confirmar canje</h2>
             <p id="canje-confirm-text" style="color:var(--slate);font-size:13px;margin:0 0 16px;line-height:1.5;"></p>
 
             <!-- Selector de cantidad: − [N] + -->
             <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 14px;">
                 <span style="color:var(--slate);font-size:12px;">Cantidad:</span>
-                <button id="canje-qty-dec" type="button" onclick="changeCanjeQty(-1)" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--gold);background:rgba(15,23,42,0.8);color:var(--gold-l);font-size:18px;font-weight:700;cursor:pointer;padding:0;">−</button>
-                <span id="canje-qty-display" style="font-size:20px;font-weight:800;color:var(--white);min-width:40px;display:inline-block;">1</span>
-                <button id="canje-qty-inc" type="button" onclick="changeCanjeQty(1)" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--gold);background:rgba(15,23,42,0.8);color:var(--gold-l);font-size:18px;font-weight:700;cursor:pointer;padding:0;">+</button>
+                <button id="canje-qty-dec" type="button" onclick="changeCanjeQty(-1)" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--gold);background:rgba(14, 42, 92,0.8);color:var(--gold-l);font-size:18px;font-weight:700;cursor:pointer;padding:0;">−</button>
+                <span id="canje-qty-display" style="font-size:20px;font-weight: 900;color:var(--white);min-width:40px;display:inline-block;">1</span>
+                <button id="canje-qty-inc" type="button" onclick="changeCanjeQty(1)" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--gold);background:rgba(14, 42, 92,0.8);color:var(--gold-l);font-size:18px;font-weight:700;cursor:pointer;padding:0;">+</button>
             </div>
 
             <!-- Resumen: costo total y limit info -->
-            <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:8px;padding:10px 12px;margin:0 0 16px;font-size:12px;">
+            <div style="background:rgba(32, 85, 154,0.08);border:1px solid rgba(32, 85, 154,0.25);border-radius:8px;padding:10px 12px;margin:0 0 16px;font-size:12px;">
                 <div style="color:var(--gold-l);font-weight:700;font-size:15px;margin-bottom:4px;">
                     <svg class="totopo-icon"><use href="#totopo"/></svg> <span id="canje-total-display">0</span> totopos
                 </div>
@@ -2246,22 +2322,22 @@
     <!-- CONFIG MODAL -->
     <div class="modal-overlay" id="config-modal">
         <div class="modal-box">
-            <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin-top:0;">Mi Perfil</h2>
+            <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin-top:0;">Mi Perfil</h2>
             <p style="font-size:11px; color:var(--slate); margin:0 0 15px;">Si algún dato está incorrecto, contacta al director para que lo corrija.</p>
             <div style="display:flex; flex-direction:column; gap:12px;">
-                <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
+                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:10px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI NOMBRE COMPLETO</label>
                     <span id="disp-myname" style="font-size:16px; font-weight:700; color:#fff;">—</span>
                 </div>
-                <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
+                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:10px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI CORREO</label>
                     <span id="disp-myemail" style="font-size:13px; font-weight:600; color:#fff; word-break:break-all;">—</span>
                 </div>
-                <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
+                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:10px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI CLAVE DE AGENTE</label>
-                    <span id="disp-mycode" style="font-size:22px; font-weight:800; color:var(--gold); letter-spacing:6px;">—</span>
+                    <span id="disp-mycode" style="font-size:22px; font-weight: 900; color:var(--gold); letter-spacing:6px;">—</span>
                 </div>
-                <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
+                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:10px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI REGIÓN</label>
                     <span id="disp-myregion" style="font-size:16px; font-weight:700; color:#fff;">—</span>
                 </div>
@@ -2275,7 +2351,7 @@
     <!-- NOTIFICATIONS MODAL — gestionar suscripción y prefs por tipo -->
     <div class="modal-overlay" id="notif-modal">
         <div class="modal-box">
-            <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin-top:0;"><i class="fa fa-bell" style="margin-right:8px;"></i>Notificaciones</h2>
+            <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin-top:0;"><i class="fa fa-bell" style="margin-right:8px;"></i>Notificaciones</h2>
             <p style="font-size:12px; color:var(--slate); margin:0 0 18px;">Recibí avisos importantes de la dirección directamente en tu dispositivo.</p>
 
             <label id="notif-master-row" style="display:none; align-items:center; justify-content:space-between; padding:14px 16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; margin-bottom:12px; cursor:pointer; gap:12px;">
@@ -2320,7 +2396,7 @@
                     </div>
                 </div>
 
-                <div id="notif-prefs-saved" style="display:none; font-size:11px; color:#34d399; margin-top:6px; text-align:right;">✓ Guardado</div>
+                <div id="notif-prefs-saved" style="display:none; font-size:11px; color:#6FD79B; margin-top:6px; text-align:right;">✓ Guardado</div>
             </div>
 
             <button class="btn btn-sm" style="margin-top:18px; width:100%;"
@@ -2336,7 +2412,7 @@
                 style="position:absolute; top:12px; right:12px; width:32px; height:32px; padding:0; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.12); border-radius:50%; font-size:18px; line-height:1; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center;">&times;</button>
 
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px;">
-                <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin:0;"><i class="fa fa-bullhorn" style="margin-right:8px;"></i>Anuncios</h2>
+                <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin:0;"><i class="fa fa-bullhorn" style="margin-right:8px;"></i>Anuncios</h2>
             </div>
             <p style="font-size:12px; color:var(--slate); margin:0 0 12px;">Mensajes y broadcasts importantes del director, promotor y coach.</p>
 
@@ -2348,7 +2424,7 @@
                 <button id="anuncios-clear-read-btn" onclick="clearReadAnuncios()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px;" title="Limpiar (ocultar) los que ya leíste">
                     <i class="fa fa-broom"></i> Limpiar leídos
                 </button>
-                <button id="anuncios-clear-all-btn" onclick="clearAllAnuncios()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px; border-color:rgba(239,68,68,0.5); color:#f87171;" title="Ocultar todos los anuncios (siguen disponibles si quieres volver a verlos manualmente)">
+                <button id="anuncios-clear-all-btn" onclick="clearAllAnuncios()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px; border-color:rgba(240, 138, 128,0.5); color:#F08A80;" title="Ocultar todos los anuncios (siguen disponibles si quieres volver a verlos manualmente)">
                     <i class="fa fa-trash-can"></i> Limpiar todos
                 </button>
             </div>
@@ -2374,11 +2450,11 @@
             <button onclick="closeBuzonModal()" aria-label="Cerrar"
                 style="position:absolute; top:12px; right:12px; width:32px; height:32px; padding:0; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.12); border-radius:50%; font-size:18px; line-height:1; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center;">&times;</button>
 
-            <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin:0 0 6px;"><i class="fa fa-envelope" style="margin-right:8px;"></i>Buzón</h2>
+            <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin:0 0 6px;"><i class="fa fa-envelope" style="margin-right:8px;"></i>Buzón</h2>
             <p style="font-size:12px; color:var(--slate); margin:0 0 16px;">Tu voz cuenta. Mandale a tu director tus ideas, sugerencias o errores que veas — él las lee todas.</p>
 
             <div style="display:flex; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
-                <button id="buzon-tab-nuevo-btn" onclick="switchBuzonTab('nuevo')" style="flex:1; padding:8px; border-radius:6px; border:none; background:var(--gold); color:#000; font-weight:700; font-size:12px; cursor:pointer;">📝 Nuevo</button>
+                <button id="buzon-tab-nuevo-btn" onclick="switchBuzonTab('nuevo')" style="flex:1; padding:8px; border-radius:6px; border:none; background:var(--azul-cobalto); color: var(--on-brand); font-weight:700; font-size:12px; cursor:pointer;">📝 Nuevo</button>
                 <button id="buzon-tab-mios-btn" onclick="switchBuzonTab('mios')" style="flex:1; padding:8px; border-radius:6px; border:none; background:rgba(255,255,255,0.06); color:var(--slate); font-weight:600; font-size:12px; cursor:pointer;">📬 Mis envíos</button>
             </div>
 
@@ -2391,9 +2467,9 @@
                 </select>
 
                 <label style="display:block; font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Mensaje <span id="buzon-charcount" style="float:right; text-transform:none; letter-spacing:0; color:rgba(255,255,255,0.4);">0 / 500</span></label>
-                <textarea id="buzon-texto" maxlength="500" rows="6" placeholder="Escribí lo que quieras compartir con tu director..." style="width:100%; resize:vertical; margin-bottom:16px; font-family:inherit; padding:10px; background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.12); border-radius:8px; color:var(--white); font-size:13px;" oninput="_updateBuzonCharCount()"></textarea>
+                <textarea id="buzon-texto" maxlength="500" rows="6" placeholder="Escribí lo que quieras compartir con tu director..." style="width:100%; resize:vertical; margin-bottom:16px; font-family:inherit; padding:10px; background:rgba(14, 42, 92,0.6); border:1px solid rgba(255,255,255,0.12); border-radius:8px; color:var(--white); font-size:13px;" oninput="_updateBuzonCharCount()"></textarea>
 
-                <button id="buzon-send-btn" onclick="sendBuzonMensaje()" style="width:100%; padding:12px; background:var(--gold); color:#000; border:none; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">
+                <button id="buzon-send-btn" onclick="sendBuzonMensaje()" style="width:100%; padding:12px; background:var(--azul-cobalto); color: var(--on-brand); border:none; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">
                     <i class="fa fa-paper-plane"></i> Enviar al buzón
                 </button>
             </div>
@@ -2430,10 +2506,10 @@
             </div>
             <div class="cal-grid-body" id="my-cal-grid-body"></div>
             <div class="cal-legend">
-                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(16,185,129,0.5)"></span> 💪 Actividad con cierre</div>
-                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(16,185,129,0.5)"></span> 🌱 Actividad sin cierre</div>
-                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(245,158,11,0.5)"></span> 🌙 Sin intento</div>
-                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(239,68,68,0.5)"></span> 🔴 Con errores</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(111, 215, 155,0.5)"></span> 💪 Actividad con cierre</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(111, 215, 155,0.5)"></span> 🌱 Actividad sin cierre</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(255, 199, 44,0.5)"></span> 🌙 Sin intento</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(240, 138, 128,0.5)"></span> 🔴 Con errores</div>
                 <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(255,255,255,0.1)"></span> ⚪ Sin reporte</div>
             </div>
             <div class="cal-day-detail" id="my-cal-day-detail"><span class="cal-detail-empty">Toca un día para ver detalles.</span></div>
@@ -2445,7 +2521,7 @@
     <!-- HISTORY MODAL -->
     <div class="modal-overlay" id="history-modal">
         <div class="modal-box" style="max-width:500px;">
-            <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin-top:0;">Mis Reportes Enviados
+            <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin-top:0;">Mis Reportes Enviados
             </h2>
             <div id="history-list"
                 style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
@@ -2455,10 +2531,10 @@
     </div>
 
     <!-- REGISTER OVERLAY -->
-    <div id="register-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#1e293b,#0f172a); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+    <div id="register-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#143566,#0E2A5C); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
         <div class="login-card" style="max-width:420px;">
             <div style="font-size:40px; margin-bottom:16px;">📝</div>
-            <h2 style="color:var(--gold); font-family:'Playfair Display',serif; margin-bottom:8px;">Solicitar Acceso</h2>
+            <h2 style="color:var(--gold); font-family:'Source Sans Pro',sans-serif; margin-bottom:8px;">Solicitar Acceso</h2>
             <p style="color:var(--slate); font-size:13px; margin-bottom:24px;">Tu cuenta de Google no está registrada. Ingresa tus datos para solicitar acceso al sistema.</p>
             <div style="text-align:left; display:flex; flex-direction:column; gap:14px; margin-bottom:20px;">
                 <div>
@@ -2476,7 +2552,7 @@
                     </select>
                 </div>
             </div>
-            <div style="background:rgba(212,175,55,0.1); border:1px solid rgba(212,175,55,0.3); border-radius:8px; padding:12px; font-size:12px; color:var(--gold-l); margin-bottom:20px; text-align:left; line-height:1.6;">
+            <div style="background:rgba(32, 85, 154,0.1); border:1px solid rgba(32, 85, 154,0.3); border-radius:8px; padding:12px; font-size:12px; color:var(--gold-l); margin-bottom:20px; text-align:left; line-height:1.6;">
                 <i class="fa fa-circle-info"></i> Tu solicitud será revisada por el director, quien te asignará tu rol y equipo.
             </div>
             <button id="reg-submit-btn" onclick="submitRegistration()" style="width:100%; padding:13px; border-radius:10px; background:var(--green); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;">
@@ -2487,20 +2563,20 @@
     </div>
 
     <!-- PENDING OVERLAY -->
-    <div id="pending-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#1e293b,#0f172a); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+    <div id="pending-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#143566,#0E2A5C); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
         <div class="login-card" style="max-width:400px;">
             <div style="font-size:50px; margin-bottom:16px;">⏳</div>
-            <h2 style="color:var(--orange); font-family:'Playfair Display',serif; margin-bottom:8px;">Solicitud Pendiente</h2>
+            <h2 style="color:var(--orange); font-family:'Source Sans Pro',sans-serif; margin-bottom:8px;">Solicitud Pendiente</h2>
             <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu solicitud de acceso está pendiente de aprobación por el director. Por favor intenta más tarde.</p>
             <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div>
 
     <!-- REVOKED OVERLAY -->
-    <div id="revoked-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#1e293b,#0f172a); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+    <div id="revoked-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#143566,#0E2A5C); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
         <div class="login-card" style="max-width:400px;">
             <div style="font-size:50px; margin-bottom:16px;">🚫</div>
-            <h2 style="color:var(--red); font-family:'Playfair Display',serif; margin-bottom:8px;">Acceso Revocado</h2>
+            <h2 style="color:var(--red); font-family:'Source Sans Pro',sans-serif; margin-bottom:8px;">Acceso Revocado</h2>
             <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu acceso al sistema ha sido revocado. Contacta al director si crees que es un error.</p>
             <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
@@ -2508,10 +2584,10 @@
 
     <!-- KARMA CELEBRATION MODAL -->
     <!-- Push notification permission banner (compacto, sin copy extra) -->
-    <div id="push-banner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; background:linear-gradient(135deg,#1e3a8a,#0f172a); padding:12px 16px; border-bottom:1px solid rgba(212,175,55,0.3); box-shadow:0 4px 16px rgba(0,0,0,0.4); align-items:center; gap:10px;">
+    <div id="push-banner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; background:linear-gradient(135deg,#1e3a8a,#0E2A5C); padding:12px 16px; border-bottom:1px solid rgba(32, 85, 154,0.3); box-shadow:0 4px 16px rgba(0,0,0,0.4); align-items:center; gap:10px;">
         <div style="font-size:22px; flex-shrink:0;">🔔</div>
         <div style="flex:1; color:#fff; font-size:15px; font-weight:700;">¿Activar notificaciones?</div>
-        <button onclick="requestPushPermission()" style="padding:8px 14px; background:var(--gold,#d4af37); color:#000; border:none; border-radius:8px; font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap;">Aceptar</button>
+        <button onclick="requestPushPermission()" style="padding:8px 14px; background:var(--gold,#7999C2); color: var(--on-brand); border:none; border-radius:8px; font-weight: 900; font-size:13px; cursor:pointer; white-space:nowrap;">Aceptar</button>
         <button onclick="dismissPushBanner()" style="padding:8px 12px; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.85); border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap;">Rechazar</button>
     </div>
     <style>
@@ -2519,42 +2595,43 @@
         .in-app-toast {
             position:fixed; top:20px; left:50%; transform:translate(-50%,-100px);
             min-width:280px; max-width:90vw;
-            background:linear-gradient(135deg,#1e293b,#0f172a);
-            border:1px solid rgba(212,175,55,0.4);
+            background:linear-gradient(135deg,#143566,#0E2A5C);
+            border:1px solid rgba(32, 85, 154,0.4);
             border-radius:12px; padding:14px 18px;
             box-shadow:0 8px 32px rgba(0,0,0,0.5);
             z-index:10005;
             transition:transform 0.3s ease-out;
         }
         .in-app-toast.show { transform:translate(-50%,0); }
-        .in-app-toast .toast-title { color:var(--gold,#d4af37); font-weight:800; font-size:15px; margin-bottom:3px; }
+        .in-app-toast .toast-title { color:var(--gold,#7999C2); font-weight: 900; font-size:15px; margin-bottom:3px; }
         .in-app-toast .toast-body { color:#fff; font-size:13px; line-height:1.4; }
 
         @keyframes bellPulseGold {
-            0%   { box-shadow: 0 0 0 0 rgba(212,175,55,0.7); transform: scale(1); }
-            50%  { box-shadow: 0 0 0 10px rgba(212,175,55,0); transform: scale(1.06); }
-            100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); transform: scale(1); }
+            0%   { box-shadow: 0 0 0 0 rgba(32, 85, 154,0.7); transform: scale(1); }
+            50%  { box-shadow: 0 0 0 10px rgba(32, 85, 154,0); transform: scale(1.06); }
+            100% { box-shadow: 0 0 0 0 rgba(32, 85, 154,0); transform: scale(1); }
         }
         #notif-bell-btn.bell-pulsing {
             animation: bellPulseGold 1.6s ease-in-out infinite;
-            background: rgba(212,175,55,0.18) !important;
-            border-color: var(--gold,#d4af37) !important;
-            color: var(--gold,#d4af37) !important;
+            background: rgba(32, 85, 154,0.18) !important;
+            border-color: var(--gold,#7999C2) !important;
+            color: var(--gold,#7999C2) !important;
         }
-        #notif-bell-btn.bell-pulsing i { color: var(--gold,#d4af37); }
+        #notif-bell-btn.bell-pulsing i { color: var(--gold,#7999C2); }
     </style>
 
     <div id="karma-celebration">
         <div id="karma-particles"></div>
-        <div style="text-align:center;position:relative;z-index:2;padding:30px 20px;max-width:360px;">
-            <div style="animation:karmaBounce 0.7s ease-in-out infinite;display:inline-block;margin-bottom:8px;"><svg style="width:70px;height:70px;display:block;"><use href="#totopo"/></svg></div>
-            <div style="font-family:'Playfair Display',serif;color:var(--gold);font-size:34px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">¡Felicidades!</div>
-            <div style="color:rgba(255,255,255,0.7);font-size:15px;margin-bottom:12px;">Ganaste desde tu última visita</div>
-            <div id="celebrate-earned" style="font-size:80px;font-weight:900;color:var(--gold);animation:karmaGlow 1.5s ease-in-out infinite;line-height:1;">+0</div>
-            <div style="color:var(--gold-l);font-size:16px;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:6px;">Totopos <svg class="totopo-icon"><use href="#totopo"/></svg></div>
-            <div id="celebrate-reason" style="color:rgba(255,255,255,0.85); font-size:13px; margin: 0 0 10px; line-height:1.4; max-width:280px; margin-left:auto; margin-right:auto;"></div>
-            <div id="celebrate-total" style="color:var(--slate);font-size:13px;margin-bottom:28px;">Saldo total: 0 totopos</div>
-            <button onclick="dismissKarmaCelebration()" style="padding:14px 48px;background:linear-gradient(135deg,var(--gold),#f0c040);color:#000;border:none;border-radius:30px;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 20px rgba(212,175,55,0.4);">¡GENIAL! 🎉</button>
+        <div class="cel-tarjeta">
+            <div class="cel-pleca"></div>
+            <div style="animation:karmaBounce 0.7s ease-in-out infinite;display:inline-block;margin-bottom:10px;"><svg style="width:64px;height:64px;display:block;"><use href="#totopo"/></svg></div>
+            <div class="cel-grito">¡Felicidades!</div>
+            <div class="cel-desde">Ganaste desde tu última visita</div>
+            <div id="celebrate-earned" class="cel-cifra">+0</div>
+            <div class="cel-unidad">Totopos <svg class="totopo-icon"><use href="#totopo"/></svg></div>
+            <div id="celebrate-reason" class="cel-motivo"></div>
+            <div id="celebrate-total" class="cel-saldo">Saldo total: 0 totopos</div>
+            <button onclick="dismissKarmaCelebration()" class="cel-boton">Genial</button>
         </div>
     </div>
 
@@ -2566,7 +2643,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v1.21.0';
+        window.APP_HTML_VERSION = 'v2.0.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -2595,7 +2672,7 @@
                     el.style.cursor = 'pointer';
                     el.title = 'Toca para buscar actualización';
                     el.onclick = window.forzarActualizacion;
-                    if (warn) { el.style.color = '#f59e0b'; el.style.fontWeight = '700'; }
+                    if (warn) { el.style.color = '#FFC72C'; el.style.fontWeight = '700'; }
                 });
             };
             document.title = 'Actividad — ' + RUNNING;
@@ -2684,7 +2761,28 @@
         const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
         const COLS = ['P', 'E', 'C', 'V', 'S'];
         const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        const CHART_COLORS = { P: '#3b82f6', E: '#06b6d4', C: '#a855f7', V: '#10b981', S: '#f59e0b' };
+        // Chart.js no hereda del CSS: dibuja en canvas con sus propios valores,
+        // pensados para fondo claro. Se fijan una vez para que cualquier texto o
+        // rejilla que no declare color no termine en el gris de fabrica, que
+        // sobre navy es casi invisible. Los tooltips vienen en negro solido y
+        // desentonan con todo lo demas.
+        let _chartDefaultsListos = false;
+        function _chartDefaults() {
+            if (_chartDefaultsListos || typeof Chart === 'undefined') return;
+            Chart.defaults.color = '#D2DDEB';
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.10)';
+            const tt = Chart.defaults.plugins && Chart.defaults.plugins.tooltip;
+            if (tt) {
+                tt.backgroundColor = '#143566';
+                tt.titleColor = '#FFFFFF';
+                tt.bodyColor = '#D2DDEB';
+                tt.borderColor = '#A9BFD9';
+                tt.borderWidth = 1;
+            }
+            _chartDefaultsListos = true;
+        }
+
+        const CHART_COLORS = { P: '#3E7AC4', E: '#7999C2', C: '#A9BFD9', V: '#FFC72C', S: '#E8EFF7' };
 
         // notifPrefs por defecto: anuncios ON, recordatorio OFF a las 19:00.
         // subscribed=true por defecto (first-time = enabled si acepta el banner).
@@ -2888,7 +2986,7 @@
         function _setLastPushResult(msg, isError) {
             const el = document.getElementById('notif-last-result');
             if (!el) return;
-            el.style.color = isError ? '#f87171' : '#34d399';
+            el.style.color = isError ? '#F08A80' : '#6FD79B';
             el.textContent = msg;
             el.style.display = '';
         }
@@ -3012,7 +3110,7 @@
             return escaped.replace(/\[\[([\w-]+)\]\]/g, (match, key) => {
                 const el = ANUNCIO_UI_ELEMENTS[key.toLowerCase()];
                 if (!el) return match;
-                return `<span title="${escapeHtml(el.label)}" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; border:1px solid var(--gold); background:rgba(15,23,42,0.8); color:var(--gold-l); font-size:11px; margin:0 3px; vertical-align:middle;"><i class="fa ${el.icon}"></i></span>`;
+                return `<span title="${escapeHtml(el.label)}" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; border:1px solid var(--gold); background:rgba(14, 42, 92,0.8); color:var(--gold-l); font-size:11px; margin:0 3px; vertical-align:middle;"><i class="fa ${el.icon}"></i></span>`;
             });
         }
 
@@ -3126,7 +3224,7 @@
             const tabMios = document.getElementById('buzon-tab-mios');
             const btnNuevo = document.getElementById('buzon-tab-nuevo-btn');
             const btnMios = document.getElementById('buzon-tab-mios-btn');
-            const activeStyle = 'background:var(--gold); color:#000; font-weight:700;';
+            const activeStyle = 'background:var(--azul-cobalto); color: var(--on-brand); font-weight:700;';
             const inactiveStyle = 'background:rgba(255,255,255,0.06); color:var(--slate); font-weight:600;';
             if (which === 'mios') {
                 tabNuevo.style.display = 'none';
@@ -3396,8 +3494,8 @@
                     const dt = a.createdAt ? new Date(a.createdAt).toLocaleString('es-MX',
                         { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
                     const card = document.createElement('div');
-                    card.style.cssText = `position:relative; padding:12px 36px 12px 14px; background:${isUnread ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)'};
-                        border:1px solid ${isUnread ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.08)'};
+                    card.style.cssText = `position:relative; padding:12px 36px 12px 14px; background:${isUnread ? 'rgba(32, 85, 154,0.08)' : 'rgba(255,255,255,0.03)'};
+                        border:1px solid ${isUnread ? 'rgba(32, 85, 154,0.35)' : 'rgba(255,255,255,0.08)'};
                         border-radius:8px; transition:background .15s;`;
                     card.innerHTML = `
                         <button onclick="event.stopPropagation(); hideAnuncio('${a.id}')" aria-label="Ocultar"
@@ -3405,7 +3503,7 @@
                         <div style="cursor:pointer;" data-mark-read>
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; padding-right:8px;">
                                 <div style="font-weight:700; color:${isUnread ? 'var(--gold-l)' : '#fff'}; font-size:14px; line-height:1.3;">
-                                    ${isUnread ? '<span style="color:#ef4444; margin-right:4px;">●</span>' : ''}${escapeHtml(a.title || '')}
+                                    ${isUnread ? '<span style="color:#F08A80; margin-right:4px;">●</span>' : ''}${escapeHtml(a.title || '')}
                                 </div>
                                 <div style="font-size:11px; color:var(--slate); white-space:nowrap; flex-shrink:0;">${dt}</div>
                             </div>
@@ -3602,9 +3700,9 @@
             }
             if (perm === 'denied') {
                 if (isIOSDevice) {
-                    showStatus('🚫 <b style="color:#f87171;">Bloqueadas en iOS.</b><br><span style="font-size:11px; color:var(--slate);">Ajustes → Notificaciones → buscá esta app → Permitir.</span>');
+                    showStatus('🚫 <b style="color:#F08A80;">Bloqueadas en iOS.</b><br><span style="font-size:11px; color:var(--slate);">Ajustes → Notificaciones → buscá esta app → Permitir.</span>');
                 } else {
-                    showStatus('🚫 <b style="color:#f87171;">Bloqueadas.</b><br><span style="font-size:11px; color:var(--slate);">Candado al lado de la URL → Notificaciones → Permitir. Refrescá.</span>');
+                    showStatus('🚫 <b style="color:#F08A80;">Bloqueadas.</b><br><span style="font-size:11px; color:var(--slate);">Candado al lado de la URL → Notificaciones → Permitir. Refrescá.</span>');
                 }
                 showMaster(false); showPrefs(false); return;
             }
@@ -3614,7 +3712,7 @@
             if (masterToggle) masterToggle.checked = isOn;
             if (masterSub) {
                 masterSub.textContent = 'Activá o desactivá las notificaciones.';
-                masterSub.style.color = isOn ? '#34d399' : 'var(--slate)';
+                masterSub.style.color = isOn ? '#6FD79B' : 'var(--slate)';
             }
             if (isOn) { showPrefs(true); loadNotifPrefsIntoUI(); }
             else { showPrefs(false); }
@@ -3968,10 +4066,10 @@
             banner.innerHTML = `
                 <div style="font-size:24px;">⚠️</div>
                 <div style="flex:1; font-size:14px; line-height:1.4;">
-                    <div style="font-weight:800; margin-bottom:2px;">No pudimos cargar tu información</div>
+                    <div style="font-weight: 900; margin-bottom:2px;">No pudimos cargar tu información</div>
                     <div style="opacity:0.85; font-size:12px;">Para no perder datos, refrescá la app antes de seguir reportando.</div>
                 </div>
-                <button onclick="location.reload()" style="padding:8px 14px; background:#fff; color:#7c2d12; border:none; border-radius:8px; font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap;">Refrescar</button>
+                <button onclick="location.reload()" style="padding:8px 14px; background:#fff; color:#7c2d12; border:none; border-radius:8px; font-weight: 900; font-size:13px; cursor:pointer; white-space:nowrap;">Refrescar</button>
             `;
             document.body.appendChild(banner);
         }
@@ -4755,7 +4853,7 @@
             if (!el || !mx) return;
             const base = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
             const mes  = _mesLargo(mx.month);
-            const head = `<h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin:0 0 4px; font-size:20px;">Tu multiplicador</h2>
+            const head = `<h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin:0 0 4px; font-size:20px;">Tu multiplicador</h2>
                 <div style="font-size:12px; color:var(--slate); margin-bottom:16px; text-transform:capitalize;">${mes} ${String(mx.month || '').split('-')[0]}</div>`;
 
             // ── No lo ganó ──────────────────────────────────────────────────
@@ -4780,7 +4878,7 @@
                         <div><div class="mrec-k">${titulo}</div><div class="mrec-v">${detalle}</div></div>
                         <div></div>
                     </div>
-                    <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.22); border-radius:8px; padding:12px 14px; margin-top:14px; font-size:12px; color:var(--slate); line-height:1.55;">
+                    <div style="background:rgba(32, 85, 154,0.08); border:1px solid rgba(32, 85, 154,0.22); border-radius:8px; padding:12px 14px; margin-top:14px; font-size:12px; color:var(--slate); line-height:1.55;">
                         ${accion}
                     </div>
                     <div style="text-align:center; margin-top:16px; font-size:12px; color:var(--slate);">
@@ -4822,9 +4920,9 @@
                     <div class="mrec-n" style="color:${covFull ? 'var(--green)' : 'var(--gold)'};">${covPct}%</div>
                 </div>
 
-                <div style="background:linear-gradient(135deg, rgba(16,185,129,0.18), rgba(16,185,129,0.05)); border:1px solid rgba(16,185,129,0.4); border-radius:10px; padding:16px; margin-top:16px; text-align:center;">
+                <div style="background:linear-gradient(135deg, rgba(111, 215, 155,0.18), rgba(111, 215, 155,0.05)); border:1px solid rgba(111, 215, 155,0.4); border-radius:10px; padding:16px; margin-top:16px; text-align:center;">
                     <div style="font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Cada día que reportes vale</div>
-                    <div style="font-size:38px; font-weight:900; color:#6ee7b7; line-height:1;">${val}</div>
+                    <div style="font-size:38px; font-weight:900; color:#6FD79B; line-height:1;">${val}</div>
                     <div style="font-size:11px; color:var(--slate); margin-top:2px;">totopos <svg class="totopo-icon"><use href="#totopo"/></svg></div>
                 </div>
 
@@ -4894,7 +4992,7 @@
 
             foot.style.display = 'block';
             foot.innerHTML = `
-                <div style="margin-top:12px; padding:13px 15px; background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.22); border-radius:8px;">
+                <div style="margin-top:12px; padding:13px 15px; background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.22); border-radius:8px;">
                     <div style="font-size:10.5px; color:var(--slate); text-transform:uppercase; letter-spacing:1px; font-weight:700; margin-bottom:7px;">${titulo}</div>
                     <div class="cov-bar" style="margin:0 0 6px;">
                         <div class="cov-fill" style="width:${Math.min(100, pct)}%; background:${colorBarra};"></div>
@@ -4945,7 +5043,7 @@
                     </div>
                     <div class="cov-legend">
                         <span><b style="color:var(--white); font-size:13px;">${bd.reportados}</b> reportados</span>
-                        ${bd.perdidos > 0 ? `<span style="color:#f87171;">${bd.perdidos} ${bd.perdidos === 1 ? 'perdido' : 'perdidos'}</span>` : ''}
+                        ${bd.perdidos > 0 ? `<span style="color:#F08A80;">${bd.perdidos} ${bd.perdidos === 1 ? 'perdido' : 'perdidos'}</span>` : ''}
                         ${bd.porVenir > 0 ? `<span>${bd.porVenir} por reportar</span>` : ''}
                     </div>
                     <button class="cov-invite-btn" id="cov-invite-btn" type="button">Ver cómo funciona</button>
@@ -5096,15 +5194,15 @@
                     `<span style="font-size:${size}px; font-weight:${weight}; color:${color}; font-variant-numeric:tabular-nums;">${v}</span>`;
                 return `<tr style="${off ? 'opacity:0.55;' : ''}">
                     <td style="padding:8px 0; font-size:12.5px; ${bdr}">
-                        ${rango}${off ? '' : `<br><span style="font-size:11px; color:var(--gold-l,#e5c76b); font-weight:700;">hasta +${t.pct}%</span>`}
+                        ${rango}${off ? '' : `<br><span style="font-size:11px; color:var(--gold-l,#7999C2); font-weight:700;">hasta +${t.pct}%</span>`}
                     </td>
                     <td style="padding:8px 4px; text-align:right; ${bdr}">${num(completo, 17, off ? 'var(--slate)' : 'var(--gold)', 800)}</td>
-                    <td style="padding:8px 0 8px 12px; text-align:right; ${bdr}">${num(mitad, 14, off ? 'var(--slate)' : 'rgba(248,113,113,0.85)', 700)}</td>
+                    <td style="padding:8px 0 8px 12px; text-align:right; ${bdr}">${num(mitad, 14, off ? 'var(--slate)' : 'rgba(240, 138, 128,0.85)', 700)}</td>
                 </tr>`;
             }).join('');
 
             el.innerHTML = `
-                <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin:0 0 4px; font-size:20px;">Tu Multiplicador</h2>
+                <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin:0 0 4px; font-size:20px;">Tu Multiplicador</h2>
                 <div style="font-size:12.5px; color:var(--slate); margin-bottom:6px; line-height:1.55;">
                     Tus días pueden valer hasta <b style="color:var(--white);">${_cuantoMas()}</b> en
                     <b style="color:var(--gold); text-transform:capitalize;">${mesSig}</b>.
@@ -5136,7 +5234,7 @@
                     <b style="color:var(--gold); text-transform:capitalize;">${mesSig}</b>.
                 </div>
 
-                <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.25); border-radius:8px; padding:14px; margin:12px 0 16px;">
+                <div style="background:rgba(32, 85, 154,0.08); border:1px solid rgba(32, 85, 154,0.25); border-radius:8px; padding:14px; margin:12px 0 16px;">
                     <div style="font-size:12px; color:var(--slate); margin-bottom:6px;">Llevas</div>
                     <div style="font-size:26px; font-weight:900; color:var(--white); line-height:1;">${bd.reportados} <span style="font-size:15px; font-weight:600; color:var(--slate);">de ${total} días</span></div>
                     <div class="cov-split">
@@ -5145,8 +5243,8 @@
                         <div class="cov-seg cov-seg-open" style="width:${(bd.porVenir   / total) * 100}%;"></div>
                     </div>
                     <div class="cov-legend">
-                        <span><i class="cov-dot" style="background:linear-gradient(90deg,var(--gold),#f0d67a);"></i><b style="color:var(--white);">${bd.reportados}</b> reportados</span>
-                        ${bd.perdidos > 0 ? `<span><i class="cov-dot" style="background:rgba(239,68,68,0.45);"></i><b style="color:#f87171;">${bd.perdidos}</b> ${bd.perdidos === 1 ? 'perdido' : 'perdidos'}</span>` : ''}
+                        <span><i class="cov-dot" style="background:linear-gradient(90deg,var(--gold),#7999C2);"></i><b style="color:var(--white);">${bd.reportados}</b> reportados</span>
+                        ${bd.perdidos > 0 ? `<span><i class="cov-dot" style="background:rgba(240, 138, 128,0.45);"></i><b style="color:#F08A80;">${bd.perdidos}</b> ${bd.perdidos === 1 ? 'perdido' : 'perdidos'}</span>` : ''}
                         ${bd.porVenir > 0 ? `<span><i class="cov-dot" style="background:rgba(255,255,255,0.18);"></i><b style="color:var(--white);">${bd.porVenir}</b> por reportar</span>` : ''}
                     </div>
                     ${bd.perdidos > 0 ? `
@@ -5155,14 +5253,14 @@
                         ${bd.porVenir > 0 ? `Reportando los ${bd.porVenir} que faltan llegas a <b style="color:var(--white);">${bd.alcanzable} de ${total}</b>.` : ''}
                     </div>`
                     : (bd.porVenir > 0 ? `
-                    <div style="font-size:11.5px; color:#6ee7b7; margin-top:9px; line-height:1.5;">
+                    <div style="font-size:11.5px; color:#6FD79B; margin-top:9px; line-height:1.5;">
                         Vas al día — no has dejado pasar ningún día de ${mesAct}.
                         Si sigues así, tu multiplicador de ${mesSig} entra completo.
                     </div>` : '')}
                 </div>
 
                 <div style="display:flex; align-items:center; gap:8px; margin:16px 0 6px; flex-wrap:wrap;">
-                    <span style="background:rgba(255,255,255,0.10); color:var(--slate); font-size:9px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:4px;">Ejemplos</span>
+                    <span style="background:rgba(255,255,255,0.10); color:var(--slate); font-size:9px; font-weight: 900; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:4px;">Ejemplos</span>
                     <span style="font-size:11px; color:var(--gold); text-transform:uppercase; letter-spacing:1px; font-weight:700;">
                         Lo que valdría cada día de ${mesSig}
                     </span>
@@ -5171,8 +5269,8 @@
                 <table style="width:100%; border-collapse:collapse;">
                     <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.14);">
                         <th style="text-align:left; font-size:9.5px; color:var(--slate); text-transform:uppercase; letter-spacing:0.8px; font-weight:500; padding-bottom:7px;">Si cierras ${mesAct} con…</th>
-                        <th style="text-align:right; font-size:8.5px; color:var(--gold); text-transform:uppercase; letter-spacing:0.2px; font-weight:800; padding-bottom:7px; padding-left:8px; line-height:1.3;">Reportando<br>todos los días<br>del mes</th>
-                        <th style="text-align:right; font-size:8.5px; color:rgba(248,113,113,0.85); text-transform:uppercase; letter-spacing:0.2px; font-weight:700; padding-bottom:7px; padding-left:10px; line-height:1.3;">Habiendo<br>reportado la mitad<br>de los días</th>
+                        <th style="text-align:right; font-size:8.5px; color:var(--gold); text-transform:uppercase; letter-spacing:0.2px; font-weight: 900; padding-bottom:7px; padding-left:8px; line-height:1.3;">Reportando<br>todos los días<br>del mes</th>
+                        <th style="text-align:right; font-size:8.5px; color:rgba(240, 138, 128,0.85); text-transform:uppercase; letter-spacing:0.2px; font-weight:700; padding-bottom:7px; padding-left:10px; line-height:1.3;">Habiendo<br>reportado la mitad<br>de los días</th>
                     </tr></thead>
                     <tbody>${filas}</tbody>
                 </table>
@@ -5185,27 +5283,27 @@
                 </div>
 
                 ${faltan > 0 ? `
-                <div style="background:rgba(16,185,129,0.10); border:1px solid rgba(16,185,129,0.35); border-radius:8px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:var(--slate); line-height:1.6;">
-                    Te quedan <b style="color:#6ee7b7;">${faltan} ${faltan === 1 ? 'día' : 'días'}</b> por reportar en ${mesAct}.
+                <div style="background:rgba(111, 215, 155,0.10); border:1px solid rgba(111, 215, 155,0.35); border-radius:8px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:var(--slate); line-height:1.6;">
+                    Te quedan <b style="color:#6FD79B;">${faltan} ${faltan === 1 ? 'día' : 'días'}</b> por reportar en ${mesAct}.
                     Si reportas todos, llegas a esos números. Cada uno que falte los baja.
                 </div>` : `
-                <div style="background:rgba(16,185,129,0.10); border:1px solid rgba(16,185,129,0.35); border-radius:8px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:#6ee7b7; line-height:1.6; text-align:center;">
+                <div style="background:rgba(111, 215, 155,0.10); border:1px solid rgba(111, 215, 155,0.35); border-radius:8px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:#6FD79B; line-height:1.6; text-align:center;">
                     ${bd.perdidos > 0
                         ? `Ya no quedan días por reportar en ${mesAct}. Cerraste con ${bd.reportados} de ${total}.`
                         : 'Reportaste el mes completo. Tu multiplicador va a entrar al 100%.'}
                 </div>`}
 
                 <div style="margin-top:18px; border-top:1px solid rgba(255,255,255,0.10); padding-top:14px; display:flex; flex-direction:column; gap:10px;">
-                    <div style="background:rgba(16,185,129,0.08); border-left:3px solid var(--green); border-radius:0 6px 6px 0; padding:10px 12px;">
-                        <div style="font-size:10.5px; color:#6ee7b7; text-transform:uppercase; letter-spacing:1px; font-weight:800; margin-bottom:6px;">✓ Días que sí cuentan</div>
+                    <div style="background:rgba(111, 215, 155,0.08); border-left:3px solid var(--green); border-radius:0 6px 6px 0; padding:10px 12px;">
+                        <div style="font-size:10.5px; color:#6FD79B; text-transform:uppercase; letter-spacing:1px; font-weight: 900; margin-bottom:6px;">✓ Días que sí cuentan</div>
                         <div style="font-size:12px; color:var(--slate); line-height:1.85;">
                             💪 &nbsp;Actividad con cierre<br>
                             🌱 &nbsp;Actividad sin cierre<br>
                             🌙 &nbsp;Sin intento de venta
                         </div>
                     </div>
-                    <div style="background:rgba(239,68,68,0.07); border-left:3px solid var(--red); border-radius:0 6px 6px 0; padding:10px 12px;">
-                        <div style="font-size:10.5px; color:#f87171; text-transform:uppercase; letter-spacing:1px; font-weight:800; margin-bottom:6px;">✗ Días que no cuentan</div>
+                    <div style="background:rgba(240, 138, 128,0.07); border-left:3px solid var(--red); border-radius:0 6px 6px 0; padding:10px 12px;">
+                        <div style="font-size:10.5px; color:#F08A80; text-transform:uppercase; letter-spacing:1px; font-weight: 900; margin-bottom:6px;">✗ Días que no cuentan</div>
                         <div style="font-size:12px; color:var(--slate); line-height:1.85;">
                             ⚪ &nbsp;No reportó<br>
                             🔴 &nbsp;Con errores en el embudo
@@ -5238,14 +5336,14 @@
                     <td style="padding:6px 0; text-align:right; font-size:11.5px; color:var(--slate); border-bottom:1px solid rgba(255,255,255,0.05); font-variant-numeric:tabular-nums; white-space:nowrap;">hasta +${t.pct}%</td>
                     <td style="padding:6px 0 6px 12px; text-align:right; border-bottom:1px solid rgba(255,255,255,0.05); white-space:nowrap;">
                         <span style="font-size:10px; color:var(--slate);">hasta</span>
-                        <span style="font-size:15px; font-weight:800; color:var(--gold); font-variant-numeric:tabular-nums;">${Math.round(base * (1 + t.pct / 100))}</span>
+                        <span style="font-size:15px; font-weight: 900; color:var(--gold); font-variant-numeric:tabular-nums;">${Math.round(base * (1 + t.pct / 100))}</span>
                     </td>
                 </tr>`;
             }).join('');
 
             el.innerHTML = `
-                <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.32); border-radius:10px; padding:14px 16px; margin-top:16px;">
-                    <div style="font-size:12px; color:#6ee7b7; text-transform:uppercase; letter-spacing:1.2px; font-weight:800; margin-bottom:8px;">
+                <div style="background:rgba(111, 215, 155,0.08); border:1px solid rgba(111, 215, 155,0.32); border-radius:10px; padding:14px 16px; margin-top:16px;">
+                    <div style="font-size:12px; color:#6FD79B; text-transform:uppercase; letter-spacing:1.2px; font-weight: 900; margin-bottom:8px;">
                         <i class="fa fa-bolt"></i> El multiplicador
                     </div>
                     <p style="margin:0 0 10px; font-size:12.5px; line-height:1.6;">
@@ -5266,7 +5364,7 @@
                             <tr style="opacity:0.55;">
                                 <td style="padding:6px 0; font-size:12px; border-bottom:1px solid rgba(255,255,255,0.05);">menos de ${_money(piso.min)}</td>
                                 <td style="padding:6px 0; text-align:right; font-size:11.5px; color:var(--slate); border-bottom:1px solid rgba(255,255,255,0.05);">—</td>
-                                <td style="padding:6px 0 6px 12px; text-align:right; font-size:15px; font-weight:800; color:var(--slate); border-bottom:1px solid rgba(255,255,255,0.05); font-variant-numeric:tabular-nums;">${base}</td>
+                                <td style="padding:6px 0 6px 12px; text-align:right; font-size:15px; font-weight: 900; color:var(--slate); border-bottom:1px solid rgba(255,255,255,0.05); font-variant-numeric:tabular-nums;">${base}</td>
                             </tr>
                             ${filas}
                         </tbody>
@@ -5375,18 +5473,18 @@
                     const eCatalog = escapeHtml(catalogId);
                     const eImgUrl = item.imageUrl ? escapeHtml(item.imageUrl) : '';
                     const visualHtml = eImgUrl
-                        ? `<img src="${eImgUrl}" alt="${eNombre}" loading="lazy" onclick="openImagePreview('${eImgUrl}')" style="width:100px;height:100px;object-fit:cover;border-radius:10px;cursor:zoom-in;margin:0 auto;display:block;border:1px solid rgba(212,175,55,0.2);">`
+                        ? `<img src="${eImgUrl}" alt="${eNombre}" loading="lazy" onclick="openImagePreview('${eImgUrl}')" style="width:100px;height:100px;object-fit:cover;border-radius:10px;cursor:zoom-in;margin:0 auto;display:block;border:1px solid rgba(32, 85, 154,0.2);">`
                         : `<div style="font-size:36px;text-align:center;">${eEmoji}</div>`;
                     const disabled = !puedo || sinStock;
                     let btnLabel;
                     if (sinStock)     btnLabel = 'Sin stock';
                     else if (!puedo)  btnLabel = 'Totopos insuficientes';
                     else              btnLabel = '🛒 Solicitar canje';
-                    return `<div style="background:var(--panel2);border-radius:12px;padding:16px;border:1px solid rgba(212,175,55,0.15);display:flex;flex-direction:column;gap:8px;">
+                    return `<div style="background:var(--panel2);border-radius:12px;padding:16px;border:1px solid rgba(32, 85, 154,0.15);display:flex;flex-direction:column;gap:8px;">
                         ${visualHtml}
                         <div style="font-weight:700;font-size:14px;text-align:center;">${eNombre}</div>
                         <div style="font-size:12px;color:var(--slate);text-align:center;">${eDesc}</div>
-                        <div style="text-align:center;font-weight:800;color:var(--gold);"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoNum} totopos</div>
+                        <div style="text-align:center;font-weight: 900;color:var(--gold);"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoNum} totopos</div>
                         ${item.stock >= 0 ? `<div style="text-align:center;font-size:11px;color:var(--slate);">Stock: ${Number(item.stock)||0}</div>` : ''}
                         <button class="btn btn-sm ${(!disabled)?'btn-green':''}" ${disabled?'disabled':''} onclick="solicitarCanje('${eId}','${eNombre}',${costoNum},'${eEmoji}','${eCatalog}',${item.stock >= 0 ? Number(item.stock) : -1})" style="${sinStock?'opacity:0.5':''}">
                             ${btnLabel}
@@ -5423,7 +5521,7 @@
                     const rightSide = isPending
                         ? `<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
                                <span style="color:${color};font-size:11px;font-weight:700;white-space:nowrap;">${label}</span>
-                               <button class="btn btn-sm" onclick="cancelarMiSolicitud('${eReqId}','${eName.replace(/'/g, "\\'")}')" style="padding:4px 10px;font-size:11px;border-color:rgba(239,68,68,0.5) !important;color:#fca5a5 !important;">
+                               <button class="btn btn-sm" onclick="cancelarMiSolicitud('${eReqId}','${eName.replace(/'/g, "\\'")}')" style="padding:4px 10px;font-size:11px;border-color:rgba(240, 138, 128,0.5) !important;color:#F08A80 !important;">
                                    <i class="fa fa-times"></i> Cancelar
                                </button>
                            </div>`
@@ -5465,8 +5563,8 @@
                 if (view) view.style.display = isActive ? '' : 'none';
                 if (btn) {
                     if (isActive) {
-                        btn.style.background = 'rgba(212,175,55,0.15)';
-                        btn.style.borderColor = 'rgba(212,175,55,0.4)';
+                        btn.style.background = 'rgba(32, 85, 154,0.15)';
+                        btn.style.borderColor = 'rgba(32, 85, 154,0.4)';
                         btn.style.color = 'var(--gold-l)';
                         btn.style.fontWeight = '700';
                     } else {
@@ -5511,7 +5609,7 @@
             if (monthBtn && yearBtn) {
                 const active = period === 'month' ? monthBtn : yearBtn;
                 const inactive = period === 'month' ? yearBtn : monthBtn;
-                active.style.background = 'rgba(212,175,55,0.18)';
+                active.style.background = 'rgba(32, 85, 154,0.18)';
                 active.style.color = 'var(--gold-l)';
                 active.style.fontWeight = '700';
                 inactive.style.background = 'transparent';
@@ -5560,7 +5658,7 @@
                             const cantStr = cantidad > 1 ? ` ×${cantidad}` : '';
                             const dt = _relativeTimeEs(r.fechaResolucion || r.fechaSolicitud);
                             const isMine = r.emailSolicitante === user.email;
-                            return `<div style="padding:10px 12px; background:${isMine ? 'rgba(212,175,55,0.10)' : 'var(--panel)'}; border-radius:8px; ${isMine ? 'border:1px solid rgba(212,175,55,0.35);' : ''}">
+                            return `<div style="padding:10px 12px; background:${isMine ? 'rgba(32, 85, 154,0.10)' : 'var(--panel)'}; border-radius:8px; ${isMine ? 'border:1px solid rgba(32, 85, 154,0.35);' : ''}">
                                 <div style="font-weight:700; font-size:13px; color:${isMine ? 'var(--gold-l)' : '#fff'};">👤 ${eName}${isMine ? ' (tú)' : ''}</div>
                                 <div style="font-size:12px; color:rgba(255,255,255,0.75); margin-top:3px;">${eEmoji} ${eItem}${cantStr} · <span style="color:var(--gold); font-weight:700;"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoTotal}</span> · <span style="color:var(--slate);">${dt}</span></div>
                             </div>`;
@@ -5610,7 +5708,7 @@
                     const sepGap = r._separator ? 'margin-top:10px; position:relative;' : '';
                     const sepLine = r._separator
                         ? `<div style="position:absolute; top:-7px; left:0; right:0; border-top:1px dashed rgba(255,255,255,0.2);"></div>` : '';
-                    return `<div style="padding:8px 12px; background:${isMe ? 'rgba(212,175,55,0.15)' : 'var(--panel)'}; border-radius:8px; ${isMe ? 'border:1px solid rgba(212,175,55,0.4);' : ''} display:flex; justify-content:space-between; align-items:center; ${sepGap}">
+                    return `<div style="padding:8px 12px; background:${isMe ? 'rgba(32, 85, 154,0.15)' : 'var(--panel)'}; border-radius:8px; ${isMe ? 'border:1px solid rgba(32, 85, 154,0.4);' : ''} display:flex; justify-content:space-between; align-items:center; ${sepGap}">
                         ${sepLine}
                         <span style="font-size:13px; ${isMe ? 'font-weight:700; color:var(--gold-l);' : ''}">${medal} ${escapeHtml(r.name)}${isMe ? ' (tú)' : ''}</span>
                         <span style="color:var(--gold); font-weight:700; font-size:13px;"><svg class="totopo-icon"><use href="#totopo"/></svg> ${r.total}</span>
@@ -6612,6 +6710,7 @@
             }
 
             destroyChart('kpiEfe');
+            _chartDefaults();
             charts['kpiEfe'] = new Chart(document.getElementById('kpiEfectividad'), {
                 type: 'doughnut',
                 data: { labels: ['Cierres (V)', 'Contactos (P)'], datasets: [{ data: [kTotals.V, Math.max(0, kTotals.P - kTotals.V)], backgroundColor: [CHART_COLORS.V, CHART_COLORS.P], borderWidth: 0 }] },
@@ -6625,12 +6724,14 @@
                 }
             });
             destroyChart('kpiVol');
+            _chartDefaults();
             charts['kpiVol'] = new Chart(document.getElementById('kpiVolumeFull'), {
                 type: 'bar',
                 data: { labels: ['P', 'E', 'C', 'V', 'S'], datasets: [{ label: 'Volumen', data: [kTotals.P, kTotals.E, kTotals.C, kTotals.V, kTotals.S], backgroundColor: [CHART_COLORS.P, CHART_COLORS.E, CHART_COLORS.C, CHART_COLORS.V, CHART_COLORS.S] }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
             destroyChart('kpiRat');
+            _chartDefaults();
             charts['kpiRat'] = new Chart(document.getElementById('kpiRatios'), {
                 type: 'radar',
                 data: {
@@ -6642,11 +6743,11 @@
                             kTotals.E > 0 ? kTotals.C / kTotals.E : 0,
                             kTotals.C > 0 ? kTotals.V / kTotals.C : 0
                         ],
-                        borderColor: '#fef08a',
-                        backgroundColor: 'rgba(212,175,55,.4)',
+                        borderColor: '#FFC72C',
+                        backgroundColor: 'rgba(32, 85, 154,.4)',
                         borderWidth: 4,
-                        pointBackgroundColor: '#d4af37',
-                        pointBorderColor: '#fff',
+                        pointBackgroundColor: '#FFC72C',
+                        pointBorderColor: '#071D49',
                         pointBorderWidth: 2,
                         pointRadius: 7,
                         pointHoverRadius: 10,
@@ -6664,7 +6765,7 @@
                         r: {
                             grid: { color: 'rgba(255,255,255,0.1)' },
                             angleLines: { color: 'rgba(255,255,255,0.1)' },
-                            pointLabels: { color: '#94a3b8', font: { size: 11, weight: 'bold' } },
+                            pointLabels: { color: '#A9BFD9', font: { size: 11, weight: 'bold' } },
                             ticks: { display: false },
                             suggestedMin: 0,
                             suggestedMax: 1
@@ -6681,6 +6782,7 @@
                 }
             });
             destroyChart('kpiPri');
+            _chartDefaults();
             charts['kpiPri'] = new Chart(document.getElementById('kpiPrimaAvg'), {
                 type: 'bar',
                 data: { labels: ['$/V', '$/S'], datasets: [{ data: [kTotals.V > 0 ? kTotals.prima / kTotals.V : 0, kTotals.S > 0 ? kTotals.prima / kTotals.S : 0], backgroundColor: [CHART_COLORS.V, CHART_COLORS.S] }] },
@@ -6756,21 +6858,24 @@
             const labels = entries.map(e => `S${e.semana} ${e.mes.split(' ')[0].substring(0, 3)}`);
 
             destroyChart('lineV');
+            _chartDefaults();
             charts['lineV'] = new Chart(document.getElementById('chartVolume'), {
                 type: 'line',
                 data: { labels, datasets: COLS.map(c => ({ label: c, data: entries.map(e => e.totales[c]), borderColor: CHART_COLORS[c], tension: 0.3, pointRadius: 4 })) },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#A9BFD9' } }, y: { ticks: { color: '#A9BFD9' } } } }
             });
 
             destroyChart('lineP');
+            _chartDefaults();
             charts['lineP'] = new Chart(document.getElementById('chartPrima'), {
                 type: 'line',
-                data: { labels, datasets: [{ label: 'Prima Bruta', data: entries.map(e => e.totales.prima), borderColor: 'rgba(212,175,55,.8)', backgroundColor: 'rgba(212,175,55,.2)', fill: true, tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+                data: { labels, datasets: [{ label: 'Prima Bruta', data: entries.map(e => e.totales.prima), borderColor: '#FFC72C', backgroundColor: 'rgba(255, 199, 44, .16)', borderWidth: 3, pointBackgroundColor: '#FFC72C', pointBorderColor: '#071D49', pointBorderWidth: 2, pointRadius: 4, fill: true, tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#A9BFD9' } }, y: { ticks: { color: '#A9BFD9' } } } }
             });
 
             // TENDENCIA EFICIENCIA
             destroyChart('effT');
+            _chartDefaults();
             charts['effT'] = new Chart(document.getElementById('chartEffTrend'), {
                 type: 'line',
                 data: {
@@ -6781,11 +6886,12 @@
                         { label: 'C ➔ V', data: entries.map(e => e.totales.C > 0 ? (e.totales.V / e.totales.C * 100).toFixed(1) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8', callback: v => v + '%' } }, x: { ticks: { color: '#94a3b8' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#A9BFD9', callback: v => v + '%' } }, x: { ticks: { color: '#A9BFD9' } } } }
             });
 
             // TENDENCIA PRIMA PROMEDIO
             destroyChart('priT');
+            _chartDefaults();
             charts['priT'] = new Chart(document.getElementById('chartPrimaTrend'), {
                 type: 'line',
                 data: {
@@ -6794,11 +6900,12 @@
                         { label: '$/Vta', data: entries.map(e => e.totales.V > 0 ? (e.totales.prima / e.totales.V).toFixed(0) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#A9BFD9' } }, x: { ticks: { color: '#A9BFD9' } } } }
             });
 
             // TENDENCIA EFICIENCIA TOTAL
             destroyChart('ratT');
+            _chartDefaults();
             charts['ratT'] = new Chart(document.getElementById('chartRatioTrend'), {
                 type: 'line',
                 data: {
@@ -6807,7 +6914,7 @@
                         { label: '% P ➔ V (Cierre)', data: entries.map(e => e.totales.P > 0 ? (e.totales.V / e.totales.P * 100).toFixed(1) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8', callback: v => v + '%' } }, x: { ticks: { color: '#94a3b8' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { beginAtZero: true, ticks: { color: '#A9BFD9', callback: v => v + '%' } }, x: { ticks: { color: '#A9BFD9' } } } }
             });
         }
 
