@@ -1032,6 +1032,21 @@
             font-size: 12.5px;
         }
 
+        /* Barra de cierre FIJA arriba del modal. Antes la X era position:absolute
+           dentro de la caja que scrollea, asi que al bajar se iba de pantalla y
+           el modal parecia no tener salida. */
+        .modal-x-bar {
+            position: sticky; top: 0; z-index: 3;
+            display: flex; justify-content: flex-end;
+            margin: -24px -24px 4px; padding: 8px 10px 4px;
+            background: var(--panel);
+        }
+        .modal-x-bar button {
+            background: none; border: none; color: var(--slate);
+            font-size: 26px; line-height: 1; cursor: pointer; padding: 0 6px;
+        }
+        .modal-x-bar button:hover { color: var(--white); }
+
         .modal-box {
             /* Sin esto, al llegar al final del modal el gesto se propaga a la
                pagina de atras y el modal se siente trabado. */
@@ -1078,6 +1093,154 @@
             0%,100% { box-shadow: 0 0 8px rgba(212,175,55,0.3); }
             50%      { box-shadow: 0 0 20px rgba(212,175,55,0.8), 0 0 40px rgba(212,175,55,0.3); }
         }
+        /* ── MULTIPLICADOR: badge junto al contador ────────────────────────── */
+        #mult-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border-radius: 24px;
+            padding: 5px 14px;
+            margin-top: 6px;
+            margin-left: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s;
+            white-space: nowrap;
+        }
+        #mult-badge b { font-size: 15px; font-weight: 900; }
+        #mult-badge:hover { transform: translateY(-1px); }
+        #mult-badge:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        #mult-badge.mult-on {
+            background: linear-gradient(135deg, rgba(16,185,129,0.22), rgba(16,185,129,0.08));
+            border: 1.5px solid rgba(16,185,129,0.55);
+            color: #6ee7b7;
+        }
+        #mult-badge.mult-off {
+            background: rgba(255,255,255,0.05);
+            border: 1.5px solid rgba(255,255,255,0.15);
+            color: var(--slate);
+        }
+        /* Réplica del badge para las explicaciones. Mismos valores visuales que
+           #mult-badge.mult-on — si se cambia uno hay que cambiar el otro. */
+        .mult-chip-demo {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border-radius: 24px;
+            padding: 5px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            background: linear-gradient(135deg, rgba(16,185,129,0.22), rgba(16,185,129,0.08));
+            border: 1.5px solid rgba(16,185,129,0.55);
+            color: #6ee7b7;
+        }
+        .mult-chip-demo b { font-size: 15px; font-weight: 900; }
+        /* Contador de totopos falso, solo para ubicar el badge en la pantalla */
+        .karma-chip-demo {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border-radius: 24px;
+            padding: 5px 13px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.06));
+            border: 1.5px solid rgba(212,175,55,0.5);
+            color: var(--gold-l, #e5c76b);
+        }
+        .karma-chip-demo b { font-size: 14px; font-weight: 900; color: var(--white); }
+        .mult-demo-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 14px 10px;
+            margin: 10px 0 8px;
+            border-radius: 10px;
+            background: rgba(15,23,42,0.55);
+            border: 1px dashed rgba(255,255,255,0.14);
+        }
+
+        /* Filas del recibo */
+        .mrec-row {
+            display: grid;
+            grid-template-columns: 22px 1fr auto;
+            gap: 10px;
+            align-items: start;
+            padding: 11px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .mrec-row:last-of-type { border-bottom: none; }
+        .mrec-ico { font-size: 15px; line-height: 1.3; }
+        .mrec-k { font-size: 12px; font-weight: 700; color: var(--white); }
+        .mrec-v { font-size: 11.5px; color: var(--slate); margin-top: 2px; line-height: 1.45; }
+        .mrec-n { font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        /* ── Tarjeta invitación del multiplicador (solo hasta el primer tap) ──
+           Verde a propósito: es el mismo color del badge que van a ver cuando
+           lo ganen, así asocian las dos cosas sin que nadie se lo explique. */
+        .cov-invite {
+            border: 1.5px solid rgba(16,185,129,0.5);
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(16,185,129,0.14), rgba(16,185,129,0.03));
+            padding: 14px;
+            cursor: pointer;
+        }
+        .cov-invite .cov-fill { background: linear-gradient(90deg, var(--green), #6ee7b7); }
+        .cov-invite-head {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 11px; flex-wrap: wrap;
+        }
+        .cov-chip-nuevo {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: #6ee7b7; color: #04231a;
+            font-size: 9.5px; font-weight: 900; letter-spacing: 0.09em;
+            padding: 3px 8px; border-radius: 20px;
+            text-transform: uppercase; white-space: nowrap;
+        }
+        .cov-invite-claim { font-size: 12.5px; font-weight: 800; color: #6ee7b7; }
+        .cov-invite-btn {
+            display: block; width: 100%; margin-top: 12px;
+            background: rgba(16,185,129,0.9); color: #04231a;
+            border: none; border-radius: 8px; padding: 11px;
+            font-size: 12.5px; font-weight: 800; cursor: pointer;
+            font-family: inherit;
+        }
+        .cov-invite-btn:active { transform: scale(0.98); }
+        .cov-invite-btn:focus-visible { outline: 2px solid #6ee7b7; outline-offset: 2px; }
+
+        /* Barra de cobertura */
+        .cov-bar {
+            height: 9px;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.09);
+            overflow: hidden;
+            margin: 8px 0 6px;
+        }
+        .cov-fill {
+            height: 100%;
+            border-radius: 5px;
+            background: linear-gradient(90deg, var(--gold), #f0d67a);
+            transition: width .4s ease;
+        }
+        /* Barra de 3 tramos: lo ganado, lo perdido y lo que todavía se puede.
+           Mostrar "22 de 31" a secas hacía parecer alcanzables los 9 faltantes,
+           cuando los días pasados sin reportar ya no se recuperan. */
+        .cov-split { display: flex; height: 9px; border-radius: 5px; overflow: hidden;
+                     background: rgba(255,255,255,0.09); margin: 8px 0 7px; }
+        .cov-seg { height: 100%; transition: width .4s ease; }
+        .cov-seg-ok    { background: linear-gradient(90deg, var(--gold), #f0d67a); }
+        .cov-seg-lost  { background: repeating-linear-gradient(45deg,
+                            rgba(239,68,68,0.38) 0 4px, rgba(239,68,68,0.16) 4px 8px); }
+        .cov-seg-open  { background: rgba(255,255,255,0.07); }
+        .cov-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--slate); }
+        .cov-legend i { font-style: normal; }
+        .cov-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px;
+                   margin-right: 5px; vertical-align: middle; }
+
         #karma-badge {
             display: inline-flex;
             align-items: center;
@@ -1576,6 +1739,10 @@
                     <span class="karma-info-i"><i class="fa fa-info"></i></span>
                 </div>
             </div>
+                <!-- Badge del multiplicador: muestra lo que vale el día, no el % -->
+                <div id="mult-badge" onclick="openMultReceipt()" role="button" tabindex="0"
+                     aria-label="Ver de dónde sale tu multiplicador" title="Toca para ver de dónde sale"
+                     style="display:none;"></div>
 
             <!-- Row 3: user menu (Mi Perfil + Salir) -->
             <div class="row-menu">
@@ -2002,6 +2169,23 @@
     </div>
 
     <!-- RULES MODAL — reglas de totopos (se abre al tocar el balance) -->
+    <!-- RECIBO DEL MULTIPLICADOR — de dónde salió el número -->
+    <div class="modal-overlay" id="mult-receipt-modal" onclick="if(event.target===this)closeMultReceipt()">
+        <div class="modal-box" style="max-width:420px;">
+            <div class="modal-x-bar"><button onclick="closeMultReceipt()" aria-label="Cerrar">&times;</button></div>
+            <div id="mult-receipt-body"></div>
+        </div>
+    </div>
+
+    <!-- CÓMO SE CONSTRUYE EL MULTIPLICADOR DEL MES SIGUIENTE -->
+    <div class="modal-overlay" id="cov-info-modal" onclick="if(event.target===this)closeCoverageInfo()">
+        <div class="modal-box" style="max-width:430px;">
+            <div class="modal-x-bar"><button onclick="closeCoverageInfo()" aria-label="Cerrar">&times;</button></div>
+            <div id="cov-info-body"></div>
+        </div>
+    </div>
+
+
     <div class="modal-overlay" id="rules-modal" onclick="if(event.target===this)closeRulesModal()">
         <div class="rules-modal-box">
             <div class="rules-modal-header">
@@ -2019,7 +2203,8 @@
                     <li>🌙 <strong>"Sin intento de venta hoy"</strong> — declaraste honestamente que no hubo actividad. Cuenta igual. La opción aparece cuando todos los valores están en 0.</li>
                 </ul>
                 <p style="color:var(--slate); font-size:12.5px;">Si el semáforo queda en 🔴 (datos rotos / embudo inválido) ese día <strong>no</strong> genera totopos. El corte se hace a las <strong>12:00 AM</strong> — durante el día puedes corregir las veces que quieras.</p>
-                <div class="nota">⚠️ <strong style="color:#f59e0b;">Auditoría:</strong> Se revisará al final del mes si lo reportado coincide con lo ingresado.</div>
+                <div class="nota">⚠️ <strong style="color:#f59e0b;">Auditoría:</strong> Se revisará al final del mes si lo reportado coincide con lo ingresado.                <div id="rules-mult-block"></div>
+            </div>
                 <p style="margin-top:14px;"><strong>¿Para qué sirven?</strong> Los canjéas en la pestaña <strong>Tienda</strong> por premios que el director pone disponibles.</p>
                 <p style="color:var(--slate); font-size:12.5px; margin-top:6px;"><em>Tu compromiso y consistencia con el reporte diario.</em></p>
             </div>
@@ -2230,6 +2415,7 @@
                 <button class="cal-nav-btn" onclick="navMyCalendar(-1)" aria-label="Mes anterior">‹</button>
                 <div class="cal-nav-mes" id="my-cal-current-mes">—</div>
                 <button class="cal-nav-btn" onclick="navMyCalendar(1)" aria-label="Mes siguiente">›</button>
+            try { _renderCalMultFoot(); } catch (e) { console.warn('[mult] foot:', e); }
             </div>
             <div class="cal-grid-head">
                 <div class="cal-cell-head">Lu</div>
@@ -2376,7 +2562,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v1.19.0';
+        window.APP_HTML_VERSION = 'v1.20.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -3945,6 +4131,9 @@
 
             serverNow = await getServerTime();
             await loadPointsConfig();
+                        // El badge muestra "tu día vale X", y ese X sale de
+                        // agentDailyPoints: refrescar recién cargada la config.
+                        try { updateMultBadge(); } catch (e) { console.warn('[mult] badge:', e); }
             lockToCurrentWeek();
             updateWeekTable();
             // Cargar valores reales del cloud en los inputs renderizados.
@@ -4267,6 +4456,7 @@
         function updateKarmaDisplay() {
             const el = document.getElementById('karma-value');
             if (el) el.textContent = (state.karma || 0).toLocaleString();
+            try { updateMultBadge(); } catch (e) { console.warn('[mult] badge:', e); }
         }
 
         function playCashSound() {
@@ -4405,8 +4595,14 @@
                 const hasData = (d.P + d.E + d.C + d.V + d.S) > 0 || parseFloat(d.prima) > 0;
                 const isValid = d.sinActividad === true || (hasData && validateDay(d).ok);
                 if (!isValid) return;
-                state.karma += pts;
-                state.karmaLog.push({ date: dateKey, points: pts });
+                // El multiplicador se resuelve POR FECHA, no por mes en curso:
+                // un dia de julio vale lo de julio aunque se cierre en agosto.
+                const mult = 1 + _multBonusFor(dateKey);
+                const total = Math.round(pts * mult);
+                state.karma += total;
+                // Se guarda base y mult ademas del total para poder auditar de
+                // donde salio cada totopo cuando alguien reclame.
+                state.karmaLog.push({ date: dateKey, points: total, base: pts, mult: Number(mult.toFixed(4)) });
                 changed = true;
             });
 
@@ -4418,6 +4614,669 @@
 
         // Otorga karma por TODOS los días pasados (estrictamente antes de hoy) que aún no tienen karma.
         // Se llama al abrir la app y cuando se detecta cambio de día o de semana.
+        function _multBonusFor(dateKey) {
+            const mx = state.multiplier;
+            if (!mx || mx.earned !== true) return 0;
+            if (typeof mx.month !== 'string' || typeof dateKey !== 'string') return 0;
+            return dateKey.startsWith(mx.month) ? (Number(mx.bonusPct) || 0) / 100 : 0;
+        }
+
+        // Cuanto vale un dia reportado en esa fecha, ya multiplicado.
+        function _dayValue(dateKey) {
+            const base = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+            return Math.round(base * (1 + _multBonusFor(dateKey)));
+        }
+
+        // Dias del mes que GANARON totopos — misma regla que usa el karma.
+        // 🌙 cuenta (declaro honestamente que no intento), 🔴 y ⚪ no.
+        // Set sobre el dia del mes para que un dia repetido en dos semanas no
+        // se cuente dos veces.
+        // Devuelve el Set de días del mes que ganaron totopos. Se necesita el Set
+        // y no solo el conteo para poder separar los días ya PERDIDOS (pasados sin
+        // reportar, irrecuperables porque la bitácora cierra el mismo día) de los
+        // que todavía están POR VENIR.
+        function _reportedDatesInMonth(y, m) {
+            const mesStr = MONTHS_ES[m - 1] + ' ' + y;
+            const cal = getMonthCalendar(y, m);
+            const seen = new Set();
+            (state.entries || []).forEach(entry => {
+                if ((entry.mes || '').trim() !== mesStr) return;
+                const weekDays = cal[parseInt(entry.semana) - 1] || [];
+                (entry.dias || []).forEach(d => {
+                    const info = weekDays.find(w => w.dayName === d.dia);
+                    if (!info) return;
+                    const sum = (Number(d.P)||0)+(Number(d.E)||0)+(Number(d.C)||0)+(Number(d.V)||0)+(Number(d.S)||0);
+                    const hasData = sum > 0 || (parseFloat(d.prima) || 0) > 0;
+                    const ok = d.sinActividad === true || (hasData && validateDay(d).ok);
+                    if (ok) seen.add(info.date);
+                });
+            });
+            return seen;
+        }
+
+        function _reportedDaysInMonth(y, m) { return _reportedDatesInMonth(y, m).size; }
+
+        function _daysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
+
+        // Desglose de cobertura del mes en curso, separando lo irrecuperable de lo
+        // que todavía está en juego. La bitácora solo permite editar HOY, así que un
+        // día pasado sin reportar está perdido y no tiene sentido mostrarlo como si
+        // se pudiera alcanzar.
+        //   reportados : días con reporte válido
+        //   perdidos   : días ya cerrados (anteriores a hoy) sin reportar
+        //   porVenir   : hoy + los que faltan del mes — todavía se pueden ganar
+        //   alcanzable : reportados + porVenir  (el techo real, no `total`)
+        function _coverageBreakdown(y, m) {
+            const total = _daysInMonth(y, m);
+            const hoy   = (serverNow && serverNow.getFullYear() === y && (serverNow.getMonth() + 1) === m)
+                ? serverNow.getDate() : total;   // mes cerrado: todo cuenta como pasado
+            const set = _reportedDatesInMonth(y, m);
+            let reportados = 0, perdidos = 0, porVenir = 0;
+            for (let d = 1; d <= total; d++) {
+                if (set.has(d))      reportados++;   // ya lo tiene
+                else if (d < hoy)    perdidos++;     // cerrado sin reportar: irrecuperable
+                else                 porVenir++;     // hoy o después: todavía se puede
+            }
+            return { total, hoy, reportados, perdidos, porVenir, alcanzable: reportados + porVenir };
+        }
+
+        // Badge junto al contador: muestra lo que vale el dia, no el porcentaje.
+        // "+130%" obliga a hacer una cuenta; "tu dia vale 23" no.
+
+        function updateMultBadge() {
+            const badge = document.getElementById('mult-badge');
+            if (!badge) return;
+            const mx = state.multiplier;
+            if (!mx) { badge.style.display = 'none'; return; }
+            badge.style.display = 'inline-flex';
+            if (mx.earned === true) {
+                const base = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+                const val = Math.round(base * (1 + (Number(mx.bonusPct) || 0) / 100));
+                badge.className = 'mult-on';
+                badge.innerHTML = `<i class="fa fa-bolt"></i> tu día vale <b>${val}</b>`;
+            } else {
+                badge.className = 'mult-off';
+                badge.innerHTML = `<i class="fa fa-bolt"></i> sin multiplicador`;
+            }
+        }
+
+        function _mesLargo(ym) {           // '2026-07' -> 'julio'
+            if (typeof ym !== 'string') return '';
+            const m = parseInt(ym.split('-')[1]);
+            return (MONTHS_ES[m - 1] || '').toLowerCase();
+        }
+        const _money = n => '$' + Math.round(Number(n) || 0).toLocaleString('es-MX');
+
+        // Muestra cómo se va a ver el badge cuando esté activo, para que el agente
+        // sepa qué buscar. Si ya lo tiene, usa su número real en vez de un ejemplo.
+        function _multChipDemo() {
+            const base  = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+            const tiers = _tiersFromConfig();
+            // El ejemplo usa el escalón alineado al primer bono de Promessa (el 2º),
+            // no el techo: mostrar el máximo a quien va a sacar la mitad se lee
+            // como carnada la primera vez que cobra menos.
+            const ejemplo = tiers[1] || tiers[tiers.length - 1] || { pct: 100 };
+            const val = Math.round(base * (1 + ejemplo.pct / 100));
+            // El badge real solo existe si hay un multiplicador otorgado (ver
+            // updateMultBadge). Sin eso, mandarlo a presionar un botón que no está
+            // en pantalla es peor que no decir nada.
+            const tieneBadge = !!state.multiplier;
+            return `
+                <div class="mult-demo-wrap">
+                    <span class="karma-chip-demo"><svg class="totopo-icon"><use href="#totopo"/></svg> <b>1,240</b> totopos</span>
+                    <span class="mult-chip-demo"><i class="fa fa-bolt"></i> tu día vale <b>${val}</b></span>
+                </div>
+                <div style="font-size:11.5px; color:var(--slate); text-align:center; line-height:1.5; margin-bottom:4px;">
+                    Así se verá justo al lado de tu balance de totopos cuando tengas
+                    el multiplicador ya pagándote los días del mes en curso.
+                    ${tieneBadge ? `<br><b style="color:var(--gold);">Presiona el botón del multiplicador para más detalles.</b>` : ''}
+                </div>`;
+        }
+
+        window.openMultReceipt = function () {
+            if (!state.multiplier) return;
+            _renderMultReceipt();
+            document.getElementById('mult-receipt-modal').classList.add('open');
+        };
+        window.closeMultReceipt = function () {
+            document.getElementById('mult-receipt-modal').classList.remove('open');
+        };
+
+        // El recibo es el único lugar donde conviene mostrar la mecánica completa,
+        // porque es el momento en que la van a leer. En el resto de la app el
+        // multiplicador se expresa solo como "tu día vale X".
+        function _renderMultReceipt() {
+            const el = document.getElementById('mult-receipt-body');
+            const mx = state.multiplier;
+            if (!el || !mx) return;
+            const base = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+            const mes  = _mesLargo(mx.month);
+            const head = `<h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin:0 0 4px; font-size:20px;">Tu multiplicador</h2>
+                <div style="font-size:12px; color:var(--slate); margin-bottom:16px; text-transform:capitalize;">${mes} ${String(mx.month || '').split('-')[0]}</div>`;
+
+            // ── No lo ganó ──────────────────────────────────────────────────
+            // Son dos fallas distintas con dos acciones distintas. Al que reportó
+            // perfecto pero no alcanzó el escalón NO se le puede decir que su
+            // reporte no coincidió: reportó bien, le faltó vender.
+            if (mx.earned !== true) {
+                let titulo, detalle, accion;
+                if (mx.reason === 'escalon') {
+                    titulo  = 'No alcanzaste el escalón';
+                    detalle = `Ingresaste <b>${_money(mx.ingresado)}</b> en ${mx.basedOn || 'el mes evaluado'}.<br>El primer escalón empieza en <b>${_money(mx.tierMin || _pisoMin())}</b>.`;
+                    accion  = `Te faltaron <b>${_money(Math.max(0, (mx.tierMin || _pisoMin()) - (mx.ingresado || 0)))}</b>.`;
+                } else {
+                    const margen = (pointsConfig && pointsConfig.multMargin) || 10;
+                    titulo  = 'No coincidió tu reporte';
+                    detalle = `Reportaste <b>${_money(mx.reportado)}</b> y en Promessa se ingresó <b>${_money(mx.ingresado)}</b>.<br>Diferencia del <b>${Math.round((mx.desvio || 0) * 100)}%</b> — se acepta hasta <b>${margen}%</b>.`;
+                    accion  = 'Registra tus ventas el mismo día en que las cierras.';
+                }
+                el.innerHTML = head + `
+                    <div class="mrec-row">
+                        <div class="mrec-ico">✗</div>
+                        <div><div class="mrec-k">${titulo}</div><div class="mrec-v">${detalle}</div></div>
+                        <div></div>
+                    </div>
+                    <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.22); border-radius:8px; padding:12px 14px; margin-top:14px; font-size:12px; color:var(--slate); line-height:1.55;">
+                        ${accion}
+                    </div>
+                    <div style="text-align:center; margin-top:16px; font-size:12px; color:var(--slate);">
+                        Cada día que reportes vale <b style="color:var(--white); font-size:15px;">${base}</b> totopos.
+                    </div>`;
+                return;
+            }
+
+            // ── Lo ganó ─────────────────────────────────────────────────────
+            const val     = Math.round(base * (1 + (Number(mx.bonusPct) || 0) / 100));
+            const valPleno= Math.round(base * (1 + (Number(mx.tierPct)  || 0) / 100));
+            const covPct  = Math.round((Number(mx.coverage) || 0) * 100);
+            const covFull = covPct >= 100;
+            const faltaron= Math.max(0, (mx.daysInMonth || 0) - (mx.daysReported || 0));
+
+            el.innerHTML = head + `
+                <div class="mrec-row">
+                    <div class="mrec-ico">✓</div>
+                    <div>
+                        <div class="mrec-k">Coincidencia</div>
+                        <div class="mrec-v">Reportaste ${_money(mx.reportado)}<br>Se ingresó en Promessa ${_money(mx.ingresado)}</div>
+                    </div>
+                    <div class="mrec-n" style="color:var(--green);">${Math.round((mx.desvio || 0) * 100)}%</div>
+                </div>
+                <div class="mrec-row">
+                    <div class="mrec-ico">✓</div>
+                    <div>
+                        <div class="mrec-k">Escalón</div>
+                        <div class="mrec-v">${_money(mx.ingresado)} ingresados en ${mx.basedOn || ''}</div>
+                    </div>
+                    <div class="mrec-n" style="color:var(--green);">+${mx.tierPct}%</div>
+                </div>
+                <div class="mrec-row">
+                    <div class="mrec-ico">${covFull ? '✓' : '⚠'}</div>
+                    <div>
+                        <div class="mrec-k">Cobertura</div>
+                        <div class="mrec-v">${mx.daysReported} de ${mx.daysInMonth} días de ${(mx.basedOn || '').split(' ')[0].toLowerCase()}</div>
+                    </div>
+                    <div class="mrec-n" style="color:${covFull ? 'var(--green)' : 'var(--gold)'};">${covPct}%</div>
+                </div>
+
+                <div style="background:linear-gradient(135deg, rgba(16,185,129,0.18), rgba(16,185,129,0.05)); border:1px solid rgba(16,185,129,0.4); border-radius:10px; padding:16px; margin-top:16px; text-align:center;">
+                    <div style="font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Cada día que reportes vale</div>
+                    <div style="font-size:38px; font-weight:900; color:#6ee7b7; line-height:1;">${val}</div>
+                    <div style="font-size:11px; color:var(--slate); margin-top:2px;">totopos <svg class="totopo-icon"><use href="#totopo"/></svg></div>
+                </div>
+
+                ${covFull ? '' : `
+                <div style="margin-top:14px; font-size:12px; color:var(--slate); line-height:1.55; text-align:center;">
+                    Con los ${mx.daysInMonth} días de ${(mx.basedOn || '').split(' ')[0].toLowerCase()} habrían sido
+                    <b style="color:var(--white);">${valPleno}</b>.<br>
+                    <span style="font-size:11.5px;">Te faltaron ${faltaron} ${faltaron === 1 ? 'día' : 'días'}.</span>
+                </div>`}`;
+        }
+
+        // Pie del calendario: el agente ya está viendo los ⚪ en la grilla,
+        // solo hay que decirle qué le cuestan. Cambia de tiempo verbal según
+        // si el mes ya cerró (costo consumado) o está en curso (todavía puede).
+        function _renderCalMultFoot() {
+            const foot = document.getElementById('my-cal-mult-foot');
+            if (!foot || !_myCalYear || !_myCalMonth) return;
+            const hoy      = serverNow || new Date();
+            const esActual = (_myCalYear === hoy.getFullYear() && _myCalMonth === (hoy.getMonth() + 1));
+            const esFuturo = new Date(_myCalYear, _myCalMonth - 1, 1) > new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            if (esFuturo) { foot.style.display = 'none'; return; }
+
+            const base      = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+            const total     = _daysInMonth(_myCalYear, _myCalMonth);
+            const reportados= _reportedDaysInMonth(_myCalYear, _myCalMonth);
+            const pct       = total ? Math.round((reportados / total) * 100) : 0;
+            const mesSig    = MONTHS_ES[_myCalMonth % 12].toLowerCase();
+            const mesEste   = MONTHS_ES[_myCalMonth - 1].toLowerCase();
+
+            let titulo, detalle, colorBarra = 'var(--gold)';
+
+            if (esActual) {
+                // Mes en curso: los días que faltan se cuentan solo hasta hoy.
+                const faltan = Math.max(0, hoy.getDate() - reportados);
+                titulo  = `Construyendo tu multiplicador de ${mesSig}`;
+                detalle = faltan === 0
+                    ? `Vas al día. Si sigues así, tu multiplicador de ${mesSig} entra completo.`
+                    : `Te faltan <b style="color:var(--gold);">${faltan} ${faltan === 1 ? 'día' : 'días'}</b> de ${mesEste}. Cada día que reportes lo sube.`;
+            } else {
+                const mx = state.multiplier;
+                const esElMesEvaluado = mx && mx.basedOn &&
+                    mx.basedOn.trim() === (MONTHS_ES[_myCalMonth - 1] + ' ' + _myCalYear);
+
+                if (esElMesEvaluado && mx.earned === true) {
+                    // Acá está el "por qué no me dieron el hasta": mostramos el techo
+                    // del escalón, la cobertura, y el resultado, en ese orden.
+                    const val   = Math.round(base * (1 + (Number(mx.bonusPct) || 0) / 100));
+                    const pleno = Math.round(base * (1 + (Number(mx.tierPct)  || 0) / 100));
+                    const mesQueCobra = _mesLargo(mx.month);
+                    titulo = `Así quedó tu multiplicador de ${mesQueCobra}`;
+                    detalle = val >= pleno
+                        ? `Reportaste el mes completo, así que cobras el escalón entero: <b style="color:var(--green);">+${mx.tierPct}%</b>. Cada día de ${mesQueCobra} vale <b style="color:var(--green);">${val}</b>.`
+                        : `Tu escalón daba <b>hasta +${mx.tierPct}%</b>, pero con <b>${pct}%</b> de los días quedó en <b style="color:var(--gold);">+${mx.bonusPct}%</b>.<br>Por eso cada día de ${mesQueCobra} vale <b style="color:var(--gold);">${val}</b> y no ${pleno}.`;
+                    colorBarra = val >= pleno ? 'var(--green)' : 'var(--gold)';
+                } else if (esElMesEvaluado) {
+                    titulo  = `${MONTHS_ES[_myCalMonth - 1]} no te dio multiplicador`;
+                    detalle = mx.reason === 'escalon'
+                        ? `No alcanzaste el escalón mínimo de ${_money(mx.tierMin || _pisoMin())} de prima ingresada.`
+                        : `Lo que reportaste no coincidió con lo que se ingresó en Promessa.`;
+                    colorBarra = 'var(--slate)';
+                } else {
+                    titulo  = `Lo que reportaste en ${mesEste}`;
+                    detalle = `${reportados} de ${total} días.`;
+                    colorBarra = 'var(--slate)';
+                }
+            }
+
+            foot.style.display = 'block';
+            foot.innerHTML = `
+                <div style="margin-top:12px; padding:13px 15px; background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.22); border-radius:8px;">
+                    <div style="font-size:10.5px; color:var(--slate); text-transform:uppercase; letter-spacing:1px; font-weight:700; margin-bottom:7px;">${titulo}</div>
+                    <div class="cov-bar" style="margin:0 0 6px;">
+                        <div class="cov-fill" style="width:${Math.min(100, pct)}%; background:${colorBarra};"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--slate); margin-bottom:8px;">
+                        <span><b style="color:var(--white); font-size:13px;">${reportados}</b> de ${total} días</span>
+                        <span style="font-variant-numeric:tabular-nums;">${pct}%</span>
+                    </div>
+                    <div style="font-size:12px; color:var(--slate); line-height:1.55;">${detalle}</div>
+                </div>`;
+        }
+
+        // Barra en la bitácora: el OTRO reloj. El badge dice lo que cobra hoy,
+        // esto dice lo que está construyendo. Nunca deben ir juntos.
+        // La tarjeta del multiplicador es PERMANENTE, con el pulso siempre activo.
+        // Decisión de producto: es la pieza central del sistema de incentivos y se
+        // quiere que no deje de llamar la atención, a diferencia de los glows de
+        // notif/anuncios/buzón que se apagan al primer tap vía seenFeatures.
+        function renderCoverageBar() {
+            const el = document.getElementById('cov-block');
+            if (!el || !serverNow) return;
+            const y = serverNow.getFullYear(), m = serverNow.getMonth() + 1;
+            const bd    = _coverageBreakdown(y, m);
+            const total = bd.total;
+            const mesSig= MONTHS_ES[m % 12].toLowerCase();
+            const cuanto = _cuantoMas();
+
+            // El contenedor no lleva handlers: el clic vive en la tarjeta de adentro.
+            el.onclick = null; el.onkeydown = null;
+            el.removeAttribute('role'); el.removeAttribute('tabindex');
+            el.removeAttribute('aria-label'); el.style.cursor = '';
+
+            el.innerHTML = `
+                <div class="novedad-glow" style="border-radius:10px;">
+                  <div class="cov-invite" id="cov-invite-card" role="button" tabindex="0"
+                       aria-label="Ver cómo funciona el multiplicador de totopos">
+                    <div class="cov-invite-head">
+                        <span class="cov-chip-nuevo"><i class="fa fa-bolt"></i> Nuevo</span>
+                        <span class="cov-invite-claim">Tus totopos pueden valer ${cuanto}</span>
+                    </div>
+                    <div style="font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:1px;">
+                        Construyendo tu multiplicador de ${mesSig}
+                    </div>
+                    <div class="cov-split">
+                        <div class="cov-seg cov-seg-ok"   style="width:${(bd.reportados / total) * 100}%;"></div>
+                        <div class="cov-seg cov-seg-lost" style="width:${(bd.perdidos   / total) * 100}%;"></div>
+                        <div class="cov-seg cov-seg-open" style="width:${(bd.porVenir   / total) * 100}%;"></div>
+                    </div>
+                    <div class="cov-legend">
+                        <span><b style="color:var(--white); font-size:13px;">${bd.reportados}</b> reportados</span>
+                        ${bd.perdidos > 0 ? `<span style="color:#f87171;">${bd.perdidos} ${bd.perdidos === 1 ? 'perdido' : 'perdidos'}</span>` : ''}
+                        ${bd.porVenir > 0 ? `<span>${bd.porVenir} por reportar</span>` : ''}
+                    </div>
+                    <button class="cov-invite-btn" id="cov-invite-btn" type="button">Ver cómo funciona</button>
+                  </div>
+                </div>`;
+
+            const abrir = (ev) => {
+                if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+                openCoverageInfo();
+            };
+            const btn  = document.getElementById('cov-invite-btn');
+            const card = document.getElementById('cov-invite-card');
+            if (btn)  btn.onclick = abrir;
+            if (card) {
+                card.onclick = abrir;
+                card.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') abrir(ev); };
+            }
+        }
+
+        // Escalones tal como los dejó el director (pointsConfig es multi-tenant).
+        function _tiersFromConfig() {
+            const c = pointsConfig || {};
+            // Defaults = los 3 escalones vigentes. El 4º slot existe en la config
+            // pero viene apagado (0/0); el director puede prenderlo sin tocar código.
+            const t = [
+                { min: Number(c.multTier1Min) || 0, pct: Number(c.multTier1Pct) || 0 },
+                { min: Number(c.multTier2Min) || 0, pct: Number(c.multTier2Pct) || 0 },
+                { min: Number(c.multTier3Min) || 0, pct: Number(c.multTier3Pct) || 0 },
+                { min: Number(c.multTier4Min) || 0, pct: Number(c.multTier4Pct) || 0 }
+            ].filter(x => x.min > 0 && x.pct > 0);
+            if (!t.length) {
+                // Sin config legible: los 3 vigentes, para no mostrar una tabla vacía.
+                return [{ min: 5000, pct: 50 }, { min: 8000, pct: 100 }, { min: 10000, pct: 200 }];
+            }
+            return t.sort((a, b) => a.min - b.min);
+        }
+
+        // Piso del primer escalón, leído de la config. Se usa como fallback cuando
+        // el multiplicador guardado no trae tierMin (multiplicadores viejos).
+        // Antes era un 2500 fijo, que quedaba mintiendo cada vez que el director
+        // movía el piso.
+        function _pisoMin() {
+            const t = _tiersFromConfig();
+            return t.length ? t[0].min : 5000;
+        }
+
+        // "el triple" / "el doble" / "mucho más" según el escalón máximo real.
+        // Se calcula para que nunca prometa algo que la config ya no da.
+        function _cuantoMas() {
+            const base = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+            const tiers = _tiersFromConfig();
+            const techo = tiers.length ? tiers[tiers.length - 1].pct : 200;
+            const veces = Math.round(base * (1 + techo / 100)) / base;
+            return veces >= 3 ? 'el triple' : (veces >= 2 ? 'el doble' : 'mucho más');
+        }
+
+        window.openCoverageInfo = function () {
+            _renderCoverageInfo();
+            document.getElementById('cov-info-modal').classList.add('open');
+        };
+        window.closeCoverageInfo = function () {
+            document.getElementById('cov-info-modal').classList.remove('open');
+        };
+
+        // La explicación no describe la fórmula: le muestra al agente qué está
+        // en juego HOY con los días que lleva, y cuánto cambia si completa el mes.
+        // Esa comparación es lo único que puede hacerlo cambiar de conducta
+        // mientras el mes sigue abierto.
+        function _renderCoverageInfo() {
+            const el = document.getElementById('cov-info-body');
+            if (!el || !serverNow) return;
+            const base   = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+            const y      = serverNow.getFullYear(), m = serverNow.getMonth() + 1;
+            const bd     = _coverageBreakdown(y, m);
+            const total  = bd.total;
+            const rep    = bd.reportados;
+            const cov    = total ? rep / total : 0;
+            // Techo REAL: los días ya perdidos no se recuperan, así que la columna
+            // de máximo se calcula sobre lo alcanzable, no sobre el mes completo.
+            const covMax = total ? bd.alcanzable / total : 0;
+            const mesAct = MONTHS_ES[m - 1].toLowerCase();
+            const mesSig = MONTHS_ES[m % 12].toLowerCase();
+            const faltan = bd.porVenir;
+            const tiers  = _tiersFromConfig();
+            const piso   = tiers[0];
+            const margen = (pointsConfig && pointsConfig.multMargin) || 10;
+
+            // Filas con RANGOS, no umbrales sueltos: el agente tiene que poder
+            // ubicarse ("vendí $6,200, entonces caigo acá"). Y arranca con la fila
+            // de abajo del piso, mostrando 10 y 10 — sin eso no hay forma de
+            // deducir que 10 es el valor sin multiplicador.
+            const escala = [{ min: 0, max: tiers[0].min - 1, pct: 0 }].concat(
+                tiers.map((t, i) => ({
+                    min: t.min,
+                    max: tiers[i + 1] ? tiers[i + 1].min - 1 : null,
+                    pct: t.pct
+                }))
+            );
+            // Se eliminó la columna "Con tus X días" (base × cobertura actual).
+            // Contestaba una pregunta que nadie hace —"¿y si el mes se congelara
+            // ahora mismo?"— y el día 1 daba 10 en TODOS los escalones, haciendo
+            // parecer que el multiplicador no sirve. Lo que el agente necesita
+            // saber es a dónde puede llegar, no dónde estaría si el tiempo paró.
+            //
+            // Queda `alcanzable` (base × covMax): lo que todavía puede lograr
+            // reportando los días que le faltan. Al arrancar el mes, sin nada
+            // perdido, muestra el valor pleno — que es la verdad.
+            //
+            // `ideal` (el mes completo) solo se muestra cuando ya hay días
+            // perdidos. Sin pérdidas es idéntico a `alcanzable` y sobraría.
+            // Tres números por fila, para que la aritmética se vea en vez de
+            // pedirle al agente que compare dos columnas y deduzca:
+            //   HASTA    = valor si reportara los `total` días (el techo teórico)
+            //   TE RESTA = lo que le quitan los días ya perdidos
+            //   TE QUEDA = lo que de verdad puede alcanzar (el número real)
+            //
+            // Sin días perdidos las tres serían iguales, así que en ese caso queda
+            // una sola columna: "Puedes llegar hasta". Ahí sí es cierto.
+            // `queda` (lo alcanzable) es la columna PRINCIPAL y lleva el rótulo
+            // "Puedes llegar hasta", porque es el único número que de verdad puede
+            // lograr. `techo` (el mes completo) va al lado solo cuando difiere.
+            //
+            // La resta va DENTRO de la celda del techo y solo donde existe. Tenerla
+            // en columna propia con encabezado "te resta por N días" se contradecía
+            // solo: con 1 día perdido de 31, el redondeo deja la resta en 0 para los
+            // escalones bajos, así que el encabezado afirmaba una pérdida que la
+            // fila mostraba como "—".
+            // La tabla es un EJEMPLO FIJO, no el estado del agente: mes completo vs
+            // medio mes. Su situación real ya está arriba en la barra, así que acá
+            // conviene enseñar la regla — "reportar la mitad te da la mitad".
+            //
+            // Antes esta tabla calculaba su cobertura real y mostraba la resta por
+            // escalón. Se contradecía sola: con 1 día perdido de 31 el redondeo deja
+            // la resta en 0 para los escalones bajos, así que el encabezado afirmaba
+            // una pérdida que la fila mostraba como "—". Un ejemplo fijo no tiene
+            // ese problema y además no cambia de significado cada día del mes.
+            const filas = escala.map(t => {
+                const completo = Math.round(base * (1 + t.pct / 100));
+                const mitad    = Math.round(base * (1 + (t.pct * 0.5) / 100));
+                const rango = t.pct === 0
+                    ? `menos de ${_money(tiers[0].min)}`
+                    : (t.max === null ? `${_money(t.min)} o más` : `${_money(t.min)} — ${_money(t.max)}`);
+                const off = t.pct === 0;
+                // `bdr`, no `bd`: el desglose de cobertura ya usa `bd` en el scope
+                // de arriba y un shadow acá sería una trampa para el próximo cambio.
+                const bdr = 'border-bottom:1px solid rgba(255,255,255,0.05);';
+                const num = (v, size, color, weight) =>
+                    `<span style="font-size:${size}px; font-weight:${weight}; color:${color}; font-variant-numeric:tabular-nums;">${v}</span>`;
+                return `<tr style="${off ? 'opacity:0.55;' : ''}">
+                    <td style="padding:8px 0; font-size:12.5px; ${bdr}">
+                        ${rango}${off ? '' : `<br><span style="font-size:11px; color:var(--gold-l,#e5c76b); font-weight:700;">hasta +${t.pct}%</span>`}
+                    </td>
+                    <td style="padding:8px 4px; text-align:right; ${bdr}">${num(completo, 17, off ? 'var(--slate)' : 'var(--gold)', 800)}</td>
+                    <td style="padding:8px 0 8px 12px; text-align:right; ${bdr}">${num(mitad, 14, off ? 'var(--slate)' : 'rgba(248,113,113,0.85)', 700)}</td>
+                </tr>`;
+            }).join('');
+
+            el.innerHTML = `
+                <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin:0 0 4px; font-size:20px;">Tu Multiplicador</h2>
+                <div style="font-size:12.5px; color:var(--slate); margin-bottom:6px; line-height:1.55;">
+                    Tus días pueden valer hasta <b style="color:var(--white);">${_cuantoMas()}</b> en
+                    <b style="color:var(--gold); text-transform:capitalize;">${mesSig}</b>.
+                </div>
+
+                ${_multChipDemo()}
+
+                <div style="font-size:12.5px; color:var(--slate); line-height:1.6; margin:18px 0 14px;">
+                    Para obtener el multiplicador necesitas <b style="color:var(--white);">estas dos condiciones</b>:
+                </div>
+                <div class="mrec-row">
+                    <div class="mrec-ico">1</div>
+                    <div>
+                        <div class="mrec-k">Que tus números cuadren</div>
+                        <div class="mrec-v">Al cerrar el mes comparamos lo que reportaste aquí contra lo que se ingresó en Promessa. Se acepta una diferencia de hasta <b style="color:var(--white);">${margen}% de margen de error</b>.</div>
+                    </div><div></div>
+                </div>
+                <div class="mrec-row">
+                    <div class="mrec-ico">2</div>
+                    <div>
+                        <div class="mrec-k">Vender al menos ${_money(piso.min)} en el mes</div>
+                        <div class="mrec-v">Entre más vendas, más vale tu día.</div>
+                    </div><div></div>
+                </div>
+
+                <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.10); font-size:12.5px; color:var(--slate); line-height:1.6;">
+                    Y los días que reportes en <b style="color:var(--white); text-transform:capitalize;">${mesAct}</b>
+                    deciden <b style="color:var(--white);">cuánto de ese multiplicador cobras</b> en
+                    <b style="color:var(--gold); text-transform:capitalize;">${mesSig}</b>.
+                </div>
+
+                <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.25); border-radius:8px; padding:14px; margin:12px 0 16px;">
+                    <div style="font-size:12px; color:var(--slate); margin-bottom:6px;">Llevas</div>
+                    <div style="font-size:26px; font-weight:900; color:var(--white); line-height:1;">${bd.reportados} <span style="font-size:15px; font-weight:600; color:var(--slate);">de ${total} días</span></div>
+                    <div class="cov-split">
+                        <div class="cov-seg cov-seg-ok"   style="width:${(bd.reportados / total) * 100}%;"></div>
+                        <div class="cov-seg cov-seg-lost" style="width:${(bd.perdidos   / total) * 100}%;"></div>
+                        <div class="cov-seg cov-seg-open" style="width:${(bd.porVenir   / total) * 100}%;"></div>
+                    </div>
+                    <div class="cov-legend">
+                        <span><i class="cov-dot" style="background:linear-gradient(90deg,var(--gold),#f0d67a);"></i><b style="color:var(--white);">${bd.reportados}</b> reportados</span>
+                        ${bd.perdidos > 0 ? `<span><i class="cov-dot" style="background:rgba(239,68,68,0.45);"></i><b style="color:#f87171;">${bd.perdidos}</b> ${bd.perdidos === 1 ? 'perdido' : 'perdidos'}</span>` : ''}
+                        ${bd.porVenir > 0 ? `<span><i class="cov-dot" style="background:rgba(255,255,255,0.18);"></i><b style="color:var(--white);">${bd.porVenir}</b> por reportar</span>` : ''}
+                    </div>
+                    ${bd.perdidos > 0 ? `
+                    <div style="font-size:11.5px; color:var(--slate); margin-top:9px; line-height:1.5;">
+                        Los ${bd.perdidos} perdidos ya no se recuperan — la bitácora se cierra el mismo día.
+                        ${bd.porVenir > 0 ? `Reportando los ${bd.porVenir} que faltan llegas a <b style="color:var(--white);">${bd.alcanzable} de ${total}</b>.` : ''}
+                    </div>`
+                    : (bd.porVenir > 0 ? `
+                    <div style="font-size:11.5px; color:#6ee7b7; margin-top:9px; line-height:1.5;">
+                        Vas al día — no has dejado pasar ningún día de ${mesAct}.
+                        Si sigues así, tu multiplicador de ${mesSig} entra completo.
+                    </div>` : '')}
+                </div>
+
+                <div style="display:flex; align-items:center; gap:8px; margin:16px 0 6px; flex-wrap:wrap;">
+                    <span style="background:rgba(255,255,255,0.10); color:var(--slate); font-size:9px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:4px;">Ejemplos</span>
+                    <span style="font-size:11px; color:var(--gold); text-transform:uppercase; letter-spacing:1px; font-weight:700;">
+                        Lo que valdría cada día de ${mesSig}
+                    </span>
+                </div>
+                <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.14);">
+                        <th style="text-align:left; font-size:9.5px; color:var(--slate); text-transform:uppercase; letter-spacing:0.8px; font-weight:500; padding-bottom:7px;">Si cierras ${mesAct} con…</th>
+                        <th style="text-align:right; font-size:8.5px; color:var(--gold); text-transform:uppercase; letter-spacing:0.2px; font-weight:800; padding-bottom:7px; padding-left:8px; line-height:1.3;">Reportando<br>todos los días<br>del mes</th>
+                        <th style="text-align:right; font-size:8.5px; color:rgba(248,113,113,0.85); text-transform:uppercase; letter-spacing:0.2px; font-weight:700; padding-bottom:7px; padding-left:10px; line-height:1.3;">Habiendo<br>reportado la mitad<br>de los días</th>
+                    </tr></thead>
+                    <tbody>${filas}</tbody>
+                </table>
+                </div>
+                <div style="font-size:11.5px; color:var(--slate); margin-top:9px; line-height:1.55;">
+                    <b style="color:var(--white);">Los dos casos son ejemplos</b> para que veas cómo
+                    funciona: reportar la mitad del mes te da la mitad del multiplicador, y así con
+                    cualquier proporción.
+                    <b style="color:var(--white);">Vas ${bd.reportados} de ${total} días en ${mesAct}.</b>
+                </div>
+
+                ${faltan > 0 ? `
+                <div style="background:rgba(16,185,129,0.10); border:1px solid rgba(16,185,129,0.35); border-radius:8px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:var(--slate); line-height:1.6;">
+                    Te quedan <b style="color:#6ee7b7;">${faltan} ${faltan === 1 ? 'día' : 'días'}</b> por reportar en ${mesAct}.
+                    Si reportas todos, llegas a esos números. Cada uno que falte los baja.
+                </div>` : `
+                <div style="background:rgba(16,185,129,0.10); border:1px solid rgba(16,185,129,0.35); border-radius:8px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:#6ee7b7; line-height:1.6; text-align:center;">
+                    ${bd.perdidos > 0
+                        ? `Ya no quedan días por reportar en ${mesAct}. Cerraste con ${bd.reportados} de ${total}.`
+                        : 'Reportaste el mes completo. Tu multiplicador va a entrar al 100%.'}
+                </div>`}
+
+                <div style="margin-top:18px; border-top:1px solid rgba(255,255,255,0.10); padding-top:14px; display:flex; flex-direction:column; gap:10px;">
+                    <div style="background:rgba(16,185,129,0.08); border-left:3px solid var(--green); border-radius:0 6px 6px 0; padding:10px 12px;">
+                        <div style="font-size:10.5px; color:#6ee7b7; text-transform:uppercase; letter-spacing:1px; font-weight:800; margin-bottom:6px;">✓ Días que sí cuentan</div>
+                        <div style="font-size:12px; color:var(--slate); line-height:1.85;">
+                            💪 &nbsp;Actividad con cierre<br>
+                            🌱 &nbsp;Actividad sin cierre<br>
+                            🌙 &nbsp;Sin intento de venta
+                        </div>
+                    </div>
+                    <div style="background:rgba(239,68,68,0.07); border-left:3px solid var(--red); border-radius:0 6px 6px 0; padding:10px 12px;">
+                        <div style="font-size:10.5px; color:#f87171; text-transform:uppercase; letter-spacing:1px; font-weight:800; margin-bottom:6px;">✗ Días que no cuentan</div>
+                        <div style="font-size:12px; color:var(--slate); line-height:1.85;">
+                            ⚪ &nbsp;No reportó<br>
+                            🔴 &nbsp;Con errores en el embudo
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+
+        function _renderRulesMultBlock() {
+            const el = document.getElementById('rules-mult-block');
+            if (!el) return;
+            const base   = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
+            const margen = (pointsConfig && pointsConfig.multMargin) || 10;
+            const tiers  = _tiersFromConfig();
+            const piso   = tiers[0];
+
+            const bp = document.getElementById('rules-base-pts');
+            if (bp) bp.textContent = base;
+
+            // "hasta" en cada fila: el escalón es el techo, no una garantía.
+            // Lo que cobra de verdad depende de los días que reporte. La fila
+            // base no lleva "hasta" porque esa sí es fija.
+            const filas = tiers.map((t, i) => {
+                const rango = tiers[i + 1]
+                    ? `${_money(t.min)} — ${_money(tiers[i + 1].min - 1)}`
+                    : `${_money(t.min)} o más`;
+                return `<tr>
+                    <td style="padding:6px 0; font-size:12px; border-bottom:1px solid rgba(255,255,255,0.05);">${rango}</td>
+                    <td style="padding:6px 0; text-align:right; font-size:11.5px; color:var(--slate); border-bottom:1px solid rgba(255,255,255,0.05); font-variant-numeric:tabular-nums; white-space:nowrap;">hasta +${t.pct}%</td>
+                    <td style="padding:6px 0 6px 12px; text-align:right; border-bottom:1px solid rgba(255,255,255,0.05); white-space:nowrap;">
+                        <span style="font-size:10px; color:var(--slate);">hasta</span>
+                        <span style="font-size:15px; font-weight:800; color:var(--gold); font-variant-numeric:tabular-nums;">${Math.round(base * (1 + t.pct / 100))}</span>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            el.innerHTML = `
+                <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.32); border-radius:10px; padding:14px 16px; margin-top:16px;">
+                    <div style="font-size:12px; color:#6ee7b7; text-transform:uppercase; letter-spacing:1.2px; font-weight:800; margin-bottom:8px;">
+                        <i class="fa fa-bolt"></i> El multiplicador
+                    </div>
+                    <p style="margin:0 0 10px; font-size:12.5px; line-height:1.6;">
+                        Tus días pueden valer <strong>hasta ${_cuantoMas()}</strong>. Al cerrar el mes comparamos
+                        lo que reportaste aquí contra lo que se ingresó en Promessa. Si cuadran
+                        —se acepta hasta <strong>${margen}% de margen de error</strong>— y vendiste al menos
+                        <strong>${_money(piso.min)}</strong>, entonces <strong>el mes siguiente</strong> cada día
+                        que reportes vale más:
+                    </p>
+                    <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.14); color:var(--slate);">
+                            <th style="text-align:left; font-size:9.5px; text-transform:uppercase; letter-spacing:1px; font-weight:500; padding-bottom:6px;">Prima ingresada en el mes</th>
+                            <th style="text-align:right; font-size:9.5px; text-transform:uppercase; letter-spacing:1px; font-weight:500; padding-bottom:6px;">Bonus</th>
+                            <th style="text-align:right; font-size:9.5px; text-transform:uppercase; letter-spacing:1px; font-weight:500; padding-bottom:6px; padding-left:12px;">Vale el día</th>
+                        </tr></thead>
+                        <tbody>
+                            <tr style="opacity:0.55;">
+                                <td style="padding:6px 0; font-size:12px; border-bottom:1px solid rgba(255,255,255,0.05);">menos de ${_money(piso.min)}</td>
+                                <td style="padding:6px 0; text-align:right; font-size:11.5px; color:var(--slate); border-bottom:1px solid rgba(255,255,255,0.05);">—</td>
+                                <td style="padding:6px 0 6px 12px; text-align:right; font-size:15px; font-weight:800; color:var(--slate); border-bottom:1px solid rgba(255,255,255,0.05); font-variant-numeric:tabular-nums;">${base}</td>
+                            </tr>
+                            ${filas}
+                        </tbody>
+                    </table>
+                    </div>
+                    <p style="margin:10px 0 0; font-size:12px; color:var(--slate); line-height:1.6;">
+                        <strong style="color:var(--white);">Dice «hasta» porque depende de los días que reportes.</strong>
+                        Si reportas el mes completo lo cobras entero; si reportas medio mes,
+                        te llevas la mitad. Míralo en tu calendario de reportes.
+                    </p>
+                    ${_multChipDemo()}
+                </div>`;
+        }
+
         async function awardKarmaForPastDays() {
             if (!serverNow) return;
             const today = new Date(serverNow.getFullYear(), serverNow.getMonth(), serverNow.getDate());
@@ -4452,8 +5311,10 @@
                     const hasData = (d.P + d.E + d.C + d.V + d.S) > 0 || parseFloat(d.prima) > 0;
                     const isValid = d.sinActividad === true || (hasData && validateDay(d).ok);
                     if (!isValid) return;
-                    state.karma += pts;
-                    state.karmaLog.push({ date: dateKey, points: pts });
+                    const mult = 1 + _multBonusFor(dateKey);
+                    const total = Math.round(pts * mult);
+                    state.karma += total;
+                    state.karmaLog.push({ date: dateKey, points: total, base: pts, mult: Number(mult.toFixed(4)) });
                     changed = true;
                 });
             }
@@ -5191,6 +6052,7 @@
         }
 
         window.updateWeekTable = function () {
+            try { renderCoverageBar(); } catch (e) { console.warn('[mult] cov:', e); }
             const semIdx = parseInt(document.getElementById('sel-semana').value) - 1;
             const weekDays = currentWeeks[semIdx] || [];
 
@@ -5584,6 +6446,7 @@
         const LS_KARMA_TOOLTIP_KEY = 'pecvs.karmaTooltipSeen';
 
         window.openRulesModal = function () {
+            try { _renderRulesMultBlock(); } catch (e) { console.warn('[rules] mult:', e); }
             document.getElementById('rules-modal').classList.add('open');
             // Si el usuario tocó el badge, ya cumplió el propósito del tooltip — lo marcamos visto
             _markKarmaTooltipSeen();
