@@ -937,7 +937,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(7, 29, 73, .95);
+            background: rgba(7, 29, 73, 0.55);
             z-index: 9999;
             justify-content: center;
             align-items: center;
@@ -976,7 +976,7 @@
         .cal-cell.none { background: rgba(255, 255, 255, 0.04); color: var(--slate); }
         .cal-cell.ok { background: rgba(46, 125, 79,0.18); color: #2E7D4F; border-color: rgba(46, 125, 79,0.35); }
         /* Verde igual que .ok — la plantita hace la diferencia semántica */
-        .cal-cell.ok-no-close { background: rgba(111, 215, 155,0.18); color: #6FD79B; border-color: rgba(111, 215, 155,0.35); }
+        .cal-cell.ok-no-close { background: rgba(46, 125, 79,0.18); color: #2E7D4F; border-color: rgba(46, 125, 79,0.35); }
         .cal-cell.red { background: rgba(192, 57, 43,0.18); color: #C0392B; border-color: rgba(192, 57, 43,0.35); }
         .cal-cell.sin-actividad { background: rgba(138, 91, 0,0.18); color: #8A5B00; border-color: rgba(138, 91, 0,0.35); }
         .cal-cell.future { opacity: 0.22; cursor: not-allowed; background: rgba(255, 255, 255, 0.015); color: var(--slate); pointer-events: none; }
@@ -1091,10 +1091,21 @@
            dentro de la caja que scrollea, asi que al bajar se iba de pantalla y
            el modal parecia no tener salida. */
         .modal-x-bar {
-            position: sticky; top: 0; z-index: 3;
-            display: flex; justify-content: flex-end;
-            margin: -24px -24px 4px; padding: 8px 10px 4px;
+            /* top: -24px, no 0. La barra sangra 24px hacia arriba con margen
+               negativo para tapar el padding del modal; con top:0 se pegaba
+               24px MAS ABAJO del borde y dejaba una franja transparente por
+               la que se veia pasar el contenido — la banda horizontal que
+               tapaba al hacer scroll. z-index 3 tampoco alcanzaba: el
+               contenido del modal le pasaba por encima. */
+            position: sticky;
+            top: -24px;
+            z-index: 20;
+            display: flex;
+            justify-content: flex-end;
+            margin: -24px -24px 2px -24px;
+            padding: 10px 14px 4px;
             background: var(--panel);
+            border-radius: 8px 12px 0 0;
         }
         .modal-x-bar > button {
             background: none;
@@ -1106,6 +1117,22 @@
             padding: 0 4px;
         }
         .modal-x-bar > button:hover { color: var(--white); }
+
+        /* Sin `contain`, al llegar al final del scroll del modal el gesto se
+           propaga a la pagina de atras: sigue moviendose algo, pero ya no es
+           el modal, y al soltar no regresa — se siente trabado. */
+        .modal-box, .rules-modal-box, .cal-modal-box {
+            overscroll-behavior: contain;
+        }
+
+        /* El encabezado del calendario y el de reglas se iban hacia arriba al
+           scrollear y se perdia de vista de que mes o de que regla se trataba. */
+        .rules-modal-header, .cal-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: var(--panel);
+        }
 
         .modal-box {
             background: var(--panel);
@@ -1185,9 +1212,9 @@
             font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
-            background: linear-gradient(135deg, rgba(111, 215, 155,0.22), rgba(111, 215, 155,0.08));
-            border: 1.5px solid rgba(111, 215, 155,0.55);
-            color: #6FD79B;
+            background: linear-gradient(135deg, rgba(46, 125, 79,0.22), rgba(46, 125, 79,0.08));
+            border: 1.5px solid rgba(46, 125, 79,0.55);
+            color: #2E7D4F;
         }
         .mult-chip-demo b { font-size: 15px; font-weight: 900; }
         /* Contador de totopos falso, solo para ubicar el badge en la pantalla */
@@ -1236,11 +1263,12 @@
            Verde a propósito: es el mismo color del badge que van a ver cuando
            lo ganen, así asocian las dos cosas sin que nadie se lo explique. */
         .cov-invite {
-            border: 1.5px solid rgba(111, 215, 155,0.5);
+            border: 1.5px solid var(--border);
             border-radius: 8px;
-            background: linear-gradient(135deg, rgba(111, 215, 155,0.14), rgba(111, 215, 155,0.03));
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
             padding: 14px;
             cursor: pointer;
+            color: var(--slate);
         }
         .cov-invite .cov-fill { background: linear-gradient(90deg, var(--green), #2E7D4F); }
         .cov-invite-head {
@@ -2416,7 +2444,7 @@
                     </div>
                 </div>
 
-                <div id="notif-prefs-saved" style="display:none; font-size:11px; color:#6FD79B; margin-top:6px; text-align:right;">✓ Guardado</div>
+                <div id="notif-prefs-saved" style="display:none; font-size:11px; color:#2E7D4F; margin-top:6px; text-align:right;">✓ Guardado</div>
             </div>
 
             <button class="btn btn-sm" style="margin-top:18px; width:100%;"
@@ -2489,8 +2517,8 @@
             </div>
             <div class="cal-grid-body" id="my-cal-grid-body"></div>
             <div class="cal-legend">
-                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(111, 215, 155,0.5)"></span> 💪 Actividad con cierre</div>
-                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(111, 215, 155,0.5)"></span> 🌱 Actividad sin cierre</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(46, 125, 79,0.5)"></span> 💪 Actividad con cierre</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(46, 125, 79,0.5)"></span> 🌱 Actividad sin cierre</div>
                 <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(255, 199, 44,0.5)"></span> 🌙 Sin intento</div>
                 <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(240, 138, 128,0.5)"></span> 🔴 Con errores</div>
                 <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(255,255,255,0.1)"></span> ⚪ Sin reporte</div>
@@ -2959,7 +2987,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.5.0';
+        window.APP_HTML_VERSION = 'v2.6.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -3304,7 +3332,7 @@
         function _setLastPushResult(msg, isError) {
             const el = document.getElementById('notif-last-result');
             if (!el) return;
-            el.style.color = isError ? '#F08A80' : '#6FD79B';
+            el.style.color = isError ? '#C0392B' : '#2E7D4F';
             el.textContent = msg;
             el.style.display = '';
         }
@@ -3920,7 +3948,7 @@
             if (masterToggle) masterToggle.checked = isOn;
             if (masterSub) {
                 masterSub.textContent = 'Activá o desactivá las notificaciones.';
-                masterSub.style.color = isOn ? '#6FD79B' : 'var(--slate)';
+                masterSub.style.color = isOn ? '#2E7D4F' : 'var(--slate)';
             }
             if (isOn) { showPrefs(true); loadNotifPrefsIntoUI(); }
             else { showPrefs(false); }
@@ -5128,9 +5156,9 @@
                     <div class="mrec-n" style="color:${covFull ? 'var(--green)' : 'var(--gold)'};">${covPct}%</div>
                 </div>
 
-                <div style="background:linear-gradient(135deg, rgba(111, 215, 155,0.18), rgba(111, 215, 155,0.05)); border:1px solid rgba(111, 215, 155,0.4); border-radius:8px; padding:16px; margin-top:16px; text-align:center;">
+                <div style="background:linear-gradient(135deg, rgba(46, 125, 79,0.18), rgba(46, 125, 79,0.05)); border:1px solid rgba(46, 125, 79,0.4); border-radius:8px; padding:16px; margin-top:16px; text-align:center;">
                     <div style="font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Cada día que reportes vale</div>
-                    <div style="font-size:38px; font-weight:900; color:#6FD79B; line-height:1;">${val}</div>
+                    <div style="font-size:38px; font-weight:900; color:#2E7D4F; line-height:1;">${val}</div>
                     <div style="font-size:11px; color:var(--slate); margin-top:2px;">totopos <svg class="totopo-icon"><use href="#totopo"/></svg></div>
                 </div>
 
@@ -5461,7 +5489,7 @@
                         ${bd.porVenir > 0 ? `Reportando los ${bd.porVenir} que faltan llegas a <b style="color:var(--white);">${bd.alcanzable} de ${total}</b>.` : ''}
                     </div>`
                     : (bd.porVenir > 0 ? `
-                    <div style="font-size:11.5px; color:#6FD79B; margin-top:9px; line-height:1.5;">
+                    <div style="font-size:11.5px; color:#2E7D4F; margin-top:9px; line-height:1.5;">
                         Vas al día — no has dejado pasar ningún día de ${mesAct}.
                         Si sigues así, tu multiplicador de ${mesSig} entra completo.
                     </div>` : '')}
@@ -5491,19 +5519,19 @@
                 </div>
 
                 ${faltan > 0 ? `
-                <div style="background:rgba(111, 215, 155,0.10); border:1px solid rgba(111, 215, 155,0.35); border-radius:8px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:var(--slate); line-height:1.6;">
-                    Te quedan <b style="color:#6FD79B;">${faltan} ${faltan === 1 ? 'día' : 'días'}</b> por reportar en ${mesAct}.
+                <div style="background:rgba(46, 125, 79,0.10); border:1px solid rgba(46, 125, 79,0.35); border-radius:8px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:var(--slate); line-height:1.6;">
+                    Te quedan <b style="color:#2E7D4F;">${faltan} ${faltan === 1 ? 'día' : 'días'}</b> por reportar en ${mesAct}.
                     Si reportas todos, llegas a esos números. Cada uno que falte los baja.
                 </div>` : `
-                <div style="background:rgba(111, 215, 155,0.10); border:1px solid rgba(111, 215, 155,0.35); border-radius:8px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:#6FD79B; line-height:1.6; text-align:center;">
+                <div style="background:rgba(46, 125, 79,0.10); border:1px solid rgba(46, 125, 79,0.35); border-radius:8px; padding:13px 15px; margin-top:16px; font-size:12.5px; color:#2E7D4F; line-height:1.6; text-align:center;">
                     ${bd.perdidos > 0
                         ? `Ya no quedan días por reportar en ${mesAct}. Cerraste con ${bd.reportados} de ${total}.`
                         : 'Reportaste el mes completo. Tu multiplicador va a entrar al 100%.'}
                 </div>`}
 
                 <div style="margin-top:18px; border-top:1px solid rgba(255,255,255,0.10); padding-top:14px; display:flex; flex-direction:column; gap:10px;">
-                    <div style="background:rgba(111, 215, 155,0.08); border-left:3px solid var(--green); border-radius:0 6px 6px 0; padding:10px 12px;">
-                        <div style="font-size:10.5px; color:#6FD79B; text-transform:uppercase; letter-spacing:1px; font-weight: 900; margin-bottom:6px;">✓ Días que sí cuentan</div>
+                    <div style="background:rgba(46, 125, 79,0.08); border-left:3px solid var(--green); border-radius:0 6px 6px 0; padding:10px 12px;">
+                        <div style="font-size:10.5px; color:#2E7D4F; text-transform:uppercase; letter-spacing:1px; font-weight: 900; margin-bottom:6px;">✓ Días que sí cuentan</div>
                         <div style="font-size:12px; color:var(--slate); line-height:1.85;">
                             💪 &nbsp;Actividad con cierre<br>
                             🌱 &nbsp;Actividad sin cierre<br>
@@ -5550,8 +5578,8 @@
             }).join('');
 
             el.innerHTML = `
-                <div style="background:rgba(111, 215, 155,0.08); border:1px solid rgba(111, 215, 155,0.32); border-radius:8px; padding:14px 16px; margin-top:16px;">
-                    <div style="font-size:12px; color:#6FD79B; text-transform:uppercase; letter-spacing:1.2px; font-weight: 900; margin-bottom:8px;">
+                <div style="background:rgba(46, 125, 79,0.08); border:1px solid rgba(46, 125, 79,0.32); border-radius:8px; padding:14px 16px; margin-top:16px;">
+                    <div style="font-size:12px; color:#2E7D4F; text-transform:uppercase; letter-spacing:1.2px; font-weight: 900; margin-bottom:8px;">
                         <i class="fa fa-bolt"></i> El multiplicador
                     </div>
                     <p style="margin:0 0 10px; font-size:12.5px; line-height:1.6;">
