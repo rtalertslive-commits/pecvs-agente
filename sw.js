@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pecvs-agent-mainnet-v2.11.0';
+const CACHE_NAME = 'pecvs-agent-mainnet-v2.12.0';
 const assets = [
     './',
     './index.html',
@@ -6,7 +6,11 @@ const assets = [
     './icon-192.png',
     './icon-512.png',
     './apple-touch-icon.png',
-    './favicon-32.png'
+    './favicon-32.png',
+    // El logo del login. Va precacheado porque es lo primero que se ve al
+    // abrir la app, y sin red la etiqueta trae onerror que esconde el hueco:
+    // se veria la pantalla sin marca en vez de rota, pero sin marca.
+    './promessa-logo.png'
 ];
 
 // ─── FIREBASE CLOUD MESSAGING ─────────────────────────────────────────────────
