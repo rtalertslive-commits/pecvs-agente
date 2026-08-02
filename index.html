@@ -1189,6 +1189,7 @@
             white-space: nowrap;
         }
         #mult-badge b { font-size: 15px; font-weight: 900; }
+        #mult-badge { border-color: var(--green); }
         #mult-badge:hover { transform: translateY(-1px); }
         #mult-badge:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
         #mult-badge.mult-on {
@@ -1229,7 +1230,7 @@
             white-space: nowrap;
             background: linear-gradient(135deg, rgba(32, 85, 154,0.18), rgba(32, 85, 154,0.06));
             border: 1.5px solid rgba(32, 85, 154,0.5);
-            color: var(--gold-l, #7999C2);
+            color: var(--gold-l, #20559A);
         }
         .karma-chip-demo b { font-size: 14px; font-weight: 900; color: var(--white); }
         .mult-demo-wrap {
@@ -1323,6 +1324,20 @@
                    margin-right: 5px; vertical-align: middle; }
 
         #karma-badge { border-color: var(--amarillo) !important; }
+        #karma-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(32, 85, 154, 0.18), rgba(32, 85, 154, 0.06));
+            border: 1.5px solid rgba(32, 85, 154, 0.5);
+            border-radius: 24px;
+            padding: 5px 16px 5px 10px;
+            margin-top: 6px;
+            cursor: pointer;
+            animation: karmaPulse 3s ease-in-out infinite;
+            transition: transform .15s, border-color .15s, box-shadow .15s;
+            position: relative;
+        }
         #karma-badge:hover {
             transform: scale(1.04);
             border-color: var(--gold);
@@ -2322,16 +2337,19 @@
                 <button class="rules-modal-close" onclick="closeRulesModal()" aria-label="Cerrar">&times;</button>
             </div>
             <div class="rules-modal-body">
-                <p><strong>¿Qué son?</strong> Moneda virtual que ganás por reportar tu día. Premian la disciplina y la honestidad — no importa si el día estuvo bueno o flojo, lo que cuenta es que reportes.</p>
-                <p style="margin-top:14px;"><strong>¿Cómo ganártelos?</strong> Ganas <strong><span id="rules-base-pts">10</span> totopos por cada día reportado</strong> en cualquiera de estos dos casos:</p>
+                <p><strong>¿Qué son?</strong> Moneda virtual que ganas por reportar tu día. Premian la disciplina y la honestidad — no importa si el día estuvo bueno o flojo, lo que cuenta es que reportes.</p>
+                <p style="margin-top:14px;"><strong>¿Cómo ganarlos?</strong> Ganas <strong id="rules-base-pts">10</strong> <strong>totopos por cada día reportado</strong>, en cualquiera de estos tres casos:</p>
                 <ul>
-                    <li>🟢 <strong>Semáforo en verde</strong> — el embudo cumple las reglas.</li>
+                    <li>💪 <strong>Actividad con cierre</strong> — el embudo cumple las reglas y cerraste venta.</li>
+                    <li>🌱 <strong>Actividad sin cierre</strong> — trabajaste el día aunque no hayas cerrado.</li>
                     <li>🌙 <strong>"Sin intento de venta hoy"</strong> — declaraste honestamente que no hubo actividad. Cuenta igual. La opción aparece cuando todos los valores están en 0.</li>
                 </ul>
                 <p style="color:var(--slate); font-size:12.5px;">Si el semáforo queda en 🔴 (datos rotos / embudo inválido) ese día <strong>no</strong> genera totopos. El corte se hace a las <strong>12:00 AM</strong> — durante el día puedes corregir las veces que quieras.</p>
-                <div class="nota">⚠️ <strong style="color:#FFC72C;">Auditoría:</strong> Se revisará al final del mes si lo reportado coincide con lo ingresado.                <div id="rules-mult-block"></div>
-            </div>
-                <p style="margin-top:14px;"><strong>¿Para qué sirven?</strong> Los canjéas en la pestaña <strong>Tienda</strong> por premios que el director pone disponibles.</p>
+
+                <!-- Se arma desde la config del director (escalones y margen). -->
+                <div id="rules-mult-block"></div>
+
+                <p style="margin-top:14px;"><strong>¿Para qué sirven?</strong> Los canjeas en la pestaña <strong>Tienda</strong> por premios que el director pone disponibles.</p>
                 <p style="color:var(--slate); font-size:12.5px; margin-top:6px;"><em>Tu compromiso y consistencia con el reporte diario.</em></p>
             </div>
         </div>
@@ -2986,7 +3004,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.7.0';
+        window.APP_HTML_VERSION = 'v2.8.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
