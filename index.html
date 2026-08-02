@@ -39,6 +39,7 @@
             --amarillo:     #FFC72C;
             --azul-medio:   #7999C2;
             --azul-claro:   #D2DDEB;
+            --azul-palido:  #E9EEF5;
 
             /* Roles (nombres heredados) */
             --bg: #071D49;          /* pagina: azul Oxford */
@@ -160,7 +161,7 @@
             background: rgba(32, 85, 154, 0.10);
             border: 1px solid rgba(32, 85, 154, 0.30);
             padding: 2px 7px;
-            border-radius: 5px;
+            border-radius: 8px;
             letter-spacing: 0.5px;
             flex-shrink: 0;
             line-height: 1.2;
@@ -178,7 +179,7 @@
         .header #karma-badge {
             padding: 4px 10px 4px 8px;
             margin-top: 0;
-            border-radius: 18px;
+            border-radius: 8px;
         }
         .header #karma-badge .star { font-size: 14px; }
         .header #karma-badge .karma-num { font-size: 14px; letter-spacing: 0.5px; }
@@ -196,7 +197,7 @@
         .brand-mono {
             width: 36px;
             height: 36px;
-            border-radius: 9px;
+            border-radius: 8px;
             background: linear-gradient(135deg, var(--gold-l) 0%, var(--gold) 50%, #20559A 100%);
             display: flex;
             align-items: center;
@@ -301,7 +302,7 @@
             padding: 0 5px;
             background: #F08A80;
             color: #fff;
-            border-radius: 9px;
+            border-radius: 8px;
             font-size: 10px;
             font-weight: 900;
             display: none;
@@ -422,7 +423,7 @@
                 bottom: 0;
                 left: 0;
                 right: 0;
-                background: rgba(7, 29, 73, 0.92);
+                background: #22487C;
                 border-top: 1px solid var(--border);
                 padding: 8px 4px calc(10px + env(safe-area-inset-bottom, 0px));
                 backdrop-filter: blur(10px);
@@ -462,7 +463,7 @@
         .card {
             background: var(--panel);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 15px;
         }
 
@@ -607,10 +608,23 @@
         .m-day-compact input { display: none; }
 
         /* HOY: card grande, prominente */
+        /* Sobre la tarjeta elevada los campos se definen aclarándose, que es
+           como funciona la jerarquía en superficie oscura. El borde solo los
+           delimita. */
+        .m-day-today input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1.5px solid rgba(255, 255, 255, 0.24);
+            color: #FFFFFF;
+        }
+        .m-day-today input:focus {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: var(--amarillo);
+            outline: none;
+        }
         .m-day-today {
-            background: linear-gradient(135deg, rgba(32, 85, 154, 0.12), rgba(32, 85, 154, 0.04));
-            border: 2px solid var(--gold);
-            border-radius: 12px;
+            background: var(--panel2);
+            border: 2px solid var(--amarillo);
+            border-radius: 8px;
             padding: 16px;
             margin: 10px 0;
             box-shadow: 0 4px 20px rgba(32, 85, 154, 0.15);
@@ -847,7 +861,7 @@
         .m-total-card {
             background: rgba(0, 0, 0, 0.25);
             padding: 10px 8px;
-            border-radius: 6px;
+            border-radius: 8px;
             text-align: center;
         }
         .m-total-card .m-total-label {
@@ -881,7 +895,7 @@
         .chart-card {
             background: var(--panel2);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 15px;
         }
 
@@ -931,7 +945,7 @@
         .cal-modal-box {
             background: var(--panel);
             border: 1.5px solid var(--gold);
-            border-radius: 14px;
+            border-radius: 8px;
             padding: 20px;
             max-width: 92vw;
             width: 380px;
@@ -964,7 +978,7 @@
         .cal-cell .cal-icon { font-size: 11px; line-height: 1; }
         .cal-legend { font-size: 11px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-bottom: 12px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px; }
         .cal-legend-item { display: flex; align-items: center; gap: 6px; color: var(--white); }
-        .cal-legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+        .cal-legend-dot { width: 12px; height: 12px; border-radius: 8px; flex-shrink: 0; }
         .cal-day-detail { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 12px; font-size: 12px; min-height: 44px; color: var(--white); }
         .cal-day-detail .cal-detail-empty { color: var(--slate); }
 
@@ -996,7 +1010,7 @@
         .kpi-info-box {
             background: var(--panel);
             border: 1.5px solid var(--gold);
-            border-radius: 14px;
+            border-radius: 8px;
             padding: 22px;
             width: 100%;
             max-width: 460px;
@@ -1052,7 +1066,7 @@
             background: rgba(32, 85, 154,0.12);
             color: var(--gold);
             padding: 2px 6px;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 12px;
             font-family: 'Courier New', monospace;
         }
@@ -1060,7 +1074,7 @@
             background: rgba(111, 215, 155,0.08);
             border-left: 3px solid var(--green, #6FD79B);
             padding: 8px 12px;
-            border-radius: 6px;
+            border-radius: 8px;
             margin-top: 12px;
             font-size: 12.5px;
         }
@@ -1086,7 +1100,7 @@
             overscroll-behavior: contain;
             background: var(--panel);
             border: 1px solid var(--gold);
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 24px;
             width: 100%;
             max-width: 450px;
@@ -1189,7 +1203,7 @@
             flex-wrap: wrap;
             padding: 14px 10px;
             margin: 10px 0 8px;
-            border-radius: 10px;
+            border-radius: 8px;
             background: rgba(14, 42, 92,0.55);
             border: 1px dashed rgba(255,255,255,0.14);
         }
@@ -1213,7 +1227,7 @@
            lo ganen, así asocian las dos cosas sin que nadie se lo explique. */
         .cov-invite {
             border: 1.5px solid rgba(111, 215, 155,0.5);
-            border-radius: 10px;
+            border-radius: 8px;
             background: linear-gradient(135deg, rgba(111, 215, 155,0.14), rgba(111, 215, 155,0.03));
             padding: 14px;
             cursor: pointer;
@@ -1244,21 +1258,21 @@
         /* Barra de cobertura */
         .cov-bar {
             height: 9px;
-            border-radius: 5px;
+            border-radius: 8px;
             background: rgba(255,255,255,0.09);
             overflow: hidden;
             margin: 8px 0 6px;
         }
         .cov-fill {
             height: 100%;
-            border-radius: 5px;
+            border-radius: 8px;
             background: linear-gradient(90deg, var(--gold), #7999C2);
             transition: width .4s ease;
         }
         /* Barra de 3 tramos: lo ganado, lo perdido y lo que todavía se puede.
            Mostrar "22 de 31" a secas hacía parecer alcanzables los 9 faltantes,
            cuando los días pasados sin reportar ya no se recuperan. */
-        .cov-split { display: flex; height: 9px; border-radius: 5px; overflow: hidden;
+        .cov-split { display: flex; height: 9px; border-radius: 8px; overflow: hidden;
                      background: rgba(255,255,255,0.09); margin: 8px 0 7px; }
         .cov-seg { height: 100%; transition: width .4s ease; }
         .cov-seg-ok    { background: linear-gradient(90deg, var(--gold), #7999C2); }
@@ -1267,7 +1281,7 @@
         .cov-seg-open  { background: rgba(255,255,255,0.07); }
         .cov-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--slate); }
         .cov-legend i { font-style: normal; }
-        .cov-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px;
+        .cov-dot { display: inline-block; width: 8px; height: 8px; border-radius: 8px;
                    margin-right: 5px; vertical-align: middle; }
 
         #karma-badge {
@@ -1313,7 +1327,7 @@
             background: rgba(32, 85, 154,0.97);
             color: #0E2A5C;
             padding: 9px 14px;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 12px;
             font-weight: 700;
             box-shadow: 0 6px 18px rgba(0,0,0,0.5);
@@ -1342,7 +1356,7 @@
         .rules-modal-box {
             background: var(--panel);
             border: 1.5px solid var(--gold);
-            border-radius: 14px;
+            border-radius: 8px;
             padding: 22px;
             width: 100%;
             max-width: 480px;
@@ -1394,7 +1408,7 @@
             padding: 8px 12px;
             background: rgba(255, 199, 44,0.08);
             border-left: 3px solid #FFC72C;
-            border-radius: 6px;
+            border-radius: 8px;
         }
         #karma-badge .star { font-size: 20px; }
         #karma-badge .karma-num {
@@ -1568,7 +1582,7 @@
         .login-brand .brand-mono {
             width: 76px;
             height: 76px;
-            border-radius: 18px;
+            border-radius: 8px;
             font-size: 42px;
             box-shadow: 0 8px 28px rgba(32, 85, 154, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
         }
@@ -1585,7 +1599,7 @@
             color: #1f2937;
             width: 100%;
             padding: 14px;
-            border-radius: 12px;
+            border-radius: 8px;
             font-weight: 700;
             display: flex;
             align-items: center;
@@ -1613,7 +1627,7 @@
             width: 100%;
             margin-top: 12px;
             padding: 12px;
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1.5px solid var(--gold);
             background: rgba(32, 85, 154, 0.08);
             color: var(--gold-l);
@@ -1647,7 +1661,7 @@
         #ios-install-modal .ios-card {
             background: var(--panel);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 8px;
             padding: 24px 22px;
             max-width: 360px;
             width: 100%;
@@ -1684,7 +1698,7 @@
             width: 20px;
             height: 26px;
             border: 2px solid var(--gold);
-            border-radius: 4px;
+            border-radius: 8px;
             position: relative;
             vertical-align: middle;
             margin: 0 3px;
@@ -1953,7 +1967,7 @@
                     style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <h2 style="margin:0;"><i class="fa fa-chart-pie"></i> Mis KPIs</h2>
-                        <span id="kpi-week-indicator" style="font-size:11px; color:var(--teal); font-weight:600; padding:4px 8px; background:rgba(121, 153, 194,0.1); border-radius:4px; display:none;"></span>
+                        <span id="kpi-week-indicator" style="font-size:11px; color:var(--teal); font-weight:600; padding:4px 8px; background:rgba(121, 153, 194,0.1); border-radius:8px; display:none;"></span>
                     </div>
                     <select id="kpi-period-sel" class="num-input" style="width:auto; height:35px;"
                         onchange="renderKPIs()">
@@ -2075,7 +2089,7 @@
 
                     <!-- VISUAL EMBUDO — desktop: columna der sticky · mobile: order 1 -->
                     <div class="conceptos-visual"
-                        style="background: rgba(255,255,255,0.03); border-radius:15px; padding:25px; text-align:center; border: 1px solid rgba(255,255,255,0.05); height: fit-content; position: sticky; top: 20px;">
+                        style="background: rgba(255,255,255,0.03); border-radius:8px; padding:25px; text-align:center; border: 1px solid rgba(255,255,255,0.05); height: fit-content; position: sticky; top: 20px;">
                         <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--white); margin-top:0;">EMBUDO MATEMÁTICO</h2>
                         <div style="background:var(--azul-cobalto); color: var(--on-brand); padding:4px 15px; border-radius:20px; display:inline-block; font-weight:bold; font-size:12px; margin-bottom:30px;">
                             REGLA: P ≥ E ≥ C ≥ V
@@ -2124,9 +2138,9 @@
         <div id="tab-tienda" class="tab-panel">
             <!-- Sub-tabs -->
             <div id="tienda-subtabs" style="display:flex; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:2px;">
-                <button id="ts-btn-comprar" onclick="switchTiendaSubtab('comprar')" style="flex:1; padding:10px; background:rgba(32, 85, 154,0.15); border:1px solid rgba(32, 85, 154,0.4); border-radius:6px 6px 0 0; color:var(--gold-l); font-weight:700; font-size:13px; cursor:pointer;">🛒 Comprar</button>
-                <button id="ts-btn-solicitudes" onclick="switchTiendaSubtab('solicitudes')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.10); border-radius:6px 6px 0 0; color:rgba(255,255,255,0.7); font-weight:600; font-size:13px; cursor:pointer;">📜 Mis solicitudes</button>
-                <button id="ts-btn-actividad" onclick="switchTiendaSubtab('actividad')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.10); border-radius:6px 6px 0 0; color:rgba(255,255,255,0.7); font-weight:600; font-size:13px; cursor:pointer;">🔥 Actividad</button>
+                <button id="ts-btn-comprar" onclick="switchTiendaSubtab('comprar')" style="flex:1; padding:10px; background:rgba(32, 85, 154,0.15); border:1px solid rgba(32, 85, 154,0.4); border-radius:8px 6px 0 0; color:var(--gold-l); font-weight:700; font-size:13px; cursor:pointer;">🛒 Comprar</button>
+                <button id="ts-btn-solicitudes" onclick="switchTiendaSubtab('solicitudes')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.10); border-radius:8px 6px 0 0; color:rgba(255,255,255,0.7); font-weight:600; font-size:13px; cursor:pointer;">📜 Mis solicitudes</button>
+                <button id="ts-btn-actividad" onclick="switchTiendaSubtab('actividad')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.10); border-radius:8px 6px 0 0; color:rgba(255,255,255,0.7); font-weight:600; font-size:13px; cursor:pointer;">🔥 Actividad</button>
             </div>
 
             <!-- Sub-view: COMPRAR -->
@@ -2156,8 +2170,8 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
                         <p class="card-title" style="margin:0;">🏆 <span id="lb-period-label">Top del mes</span></p>
                         <div id="lb-period-toggle" style="display:flex; gap:4px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.10); border-radius:8px; padding:3px;">
-                            <button id="lb-btn-month" onclick="switchLeaderboardPeriod('month')" style="padding:5px 14px; background:rgba(32, 85, 154,0.18); border:none; border-radius:5px; color:var(--gold-l); font-weight:700; font-size:12px; cursor:pointer;">Mes</button>
-                            <button id="lb-btn-year" onclick="switchLeaderboardPeriod('year')" style="padding:5px 14px; background:transparent; border:none; border-radius:5px; color:rgba(255,255,255,0.6); font-weight:600; font-size:12px; cursor:pointer;">Año</button>
+                            <button id="lb-btn-month" onclick="switchLeaderboardPeriod('month')" style="padding:5px 14px; background:rgba(32, 85, 154,0.18); border:none; border-radius:8px; color:var(--gold-l); font-weight:700; font-size:12px; cursor:pointer;">Mes</button>
+                            <button id="lb-btn-year" onclick="switchLeaderboardPeriod('year')" style="padding:5px 14px; background:transparent; border:none; border-radius:8px; color:rgba(255,255,255,0.6); font-weight:600; font-size:12px; cursor:pointer;">Año</button>
                         </div>
                     </div>
                     <p style="font-size:11px;color:var(--slate);margin:0 0 12px;">Los agentes que más gastaron en tu región.</p>
@@ -2239,7 +2253,7 @@
     <div class="modal-overlay" id="image-preview-modal" onclick="if(event.target===this)closeImagePreview()">
         <div style="position:relative;max-width:92vw;max-height:90vh;">
             <button onclick="closeImagePreview()" style="position:absolute;top:-44px;right:0;background:none;border:none;color:var(--white);font-size:32px;cursor:pointer;z-index:2;line-height:1;">&times;</button>
-            <img id="image-preview-img" alt="" style="max-width:92vw;max-height:90vh;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.5);display:block;">
+            <img id="image-preview-img" alt="" style="max-width:92vw;max-height:90vh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);display:block;">
         </div>
     </div>
 
@@ -2333,19 +2347,19 @@
             <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin-top:0;">Mi Perfil</h2>
             <p style="font-size:11px; color:var(--slate); margin:0 0 15px;">Si algún dato está incorrecto, contacta al director para que lo corrija.</p>
             <div style="display:flex; flex-direction:column; gap:12px;">
-                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:10px; padding:12px 14px;">
+                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:8px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI NOMBRE COMPLETO</label>
                     <span id="disp-myname" style="font-size:16px; font-weight:700; color:#fff;">—</span>
                 </div>
-                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:10px; padding:12px 14px;">
+                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:8px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI CORREO</label>
                     <span id="disp-myemail" style="font-size:13px; font-weight:600; color:#fff; word-break:break-all;">—</span>
                 </div>
-                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:10px; padding:12px 14px;">
+                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:8px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI CLAVE DE AGENTE</label>
                     <span id="disp-mycode" style="font-size:22px; font-weight: 900; color:var(--gold); letter-spacing:6px;">—</span>
                 </div>
-                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:10px; padding:12px 14px;">
+                <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:8px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI REGIÓN</label>
                     <span id="disp-myregion" style="font-size:16px; font-weight:700; color:#fff;">—</span>
                 </div>
@@ -2362,7 +2376,7 @@
             <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin-top:0;"><i class="fa fa-bell" style="margin-right:8px;"></i>Notificaciones</h2>
             <p style="font-size:12px; color:var(--slate); margin:0 0 18px;">Recibí avisos importantes de la dirección directamente en tu dispositivo.</p>
 
-            <label id="notif-master-row" style="display:none; align-items:center; justify-content:space-between; padding:14px 16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; margin-bottom:12px; cursor:pointer; gap:12px;">
+            <label id="notif-master-row" style="display:none; align-items:center; justify-content:space-between; padding:14px 16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; margin-bottom:12px; cursor:pointer; gap:12px;">
                 <div style="flex:1; min-width:0;">
                     <div id="notif-master-title" style="font-size:15px; color:#fff; font-weight:700;">Notificaciones</div>
                     <div id="notif-master-sub" style="font-size:12px; color:var(--slate); margin-top:3px;">Cargando…</div>
@@ -2370,7 +2384,7 @@
                 <input type="checkbox" id="notif-master-toggle" onchange="onMasterToggle()" style="width:26px; height:26px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;">
             </label>
 
-            <div id="notif-status" style="display:none; font-size:13px; font-weight:600; color:#fff; margin-bottom:12px; line-height:1.4; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:10px;">Cargando…</div>
+            <div id="notif-status" style="display:none; font-size:13px; font-weight:600; color:#fff; margin-bottom:12px; line-height:1.4; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:8px;">Cargando…</div>
             <button id="notif-action-btn" class="btn btn-sm" style="display:none; width:100%; margin-bottom:10px;" onclick="onNotifActionClick()">Activar notificaciones</button>
 
             <div id="notif-prefs" style="display:none; margin-top:8px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
@@ -2392,13 +2406,13 @@
                         </div>
                         <input type="checkbox" id="notif-pref-recordatorio" onchange="onRecordatorioToggle()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;">
                     </label>
-                    <div id="notif-recordatorio-time-row" style="display:none; margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:6px; align-items:center; gap:10px;">
+                    <div id="notif-recordatorio-time-row" style="display:none; margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:8px; align-items:center; gap:10px;">
                         <span style="font-size:12px; color:rgba(255,255,255,0.7); font-weight:600;">Hora:</span>
-                        <select id="notif-pref-recordatorio-hour" onchange="saveNotifPrefs()" style="background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                        <select id="notif-pref-recordatorio-hour" onchange="saveNotifPrefs()" style="background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:6px 8px; font-size:14px; font-family:inherit;">
                             <option value="00">12 AM</option><option value="01">1 AM</option><option value="02">2 AM</option><option value="03">3 AM</option><option value="04">4 AM</option><option value="05">5 AM</option><option value="06">6 AM</option><option value="07">7 AM</option><option value="08">8 AM</option><option value="09">9 AM</option><option value="10">10 AM</option><option value="11">11 AM</option><option value="12">12 PM</option><option value="13">1 PM</option><option value="14">2 PM</option><option value="15">3 PM</option><option value="16">4 PM</option><option value="17">5 PM</option><option value="18">6 PM</option><option value="19" selected>7 PM</option><option value="20">8 PM</option><option value="21">9 PM</option><option value="22">10 PM</option><option value="23">11 PM</option>
                         </select>
                         <span style="font-size:16px; color:#fff; font-weight:600;">:</span>
-                        <select id="notif-pref-recordatorio-min" onchange="saveNotifPrefs()" style="background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                        <select id="notif-pref-recordatorio-min" onchange="saveNotifPrefs()" style="background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:6px 8px; font-size:14px; font-family:inherit;">
                             <option value="00" selected>00</option><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="40">40</option><option value="50">50</option>
                         </select>
                     </div>
@@ -2462,8 +2476,8 @@
             <p style="font-size:12px; color:var(--slate); margin:0 0 16px;">Tu voz cuenta. Mandale a tu director tus ideas, sugerencias o errores que veas — él las lee todas.</p>
 
             <div style="display:flex; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
-                <button id="buzon-tab-nuevo-btn" onclick="switchBuzonTab('nuevo')" style="flex:1; padding:8px; border-radius:6px; border:none; background:var(--azul-cobalto); color: var(--on-brand); font-weight:700; font-size:12px; cursor:pointer;">📝 Nuevo</button>
-                <button id="buzon-tab-mios-btn" onclick="switchBuzonTab('mios')" style="flex:1; padding:8px; border-radius:6px; border:none; background:rgba(255,255,255,0.06); color:var(--slate); font-weight:600; font-size:12px; cursor:pointer;">📬 Mis envíos</button>
+                <button id="buzon-tab-nuevo-btn" onclick="switchBuzonTab('nuevo')" style="flex:1; padding:8px; border-radius:8px; border:none; background:var(--azul-cobalto); color: var(--on-brand); font-weight:700; font-size:12px; cursor:pointer;">📝 Nuevo</button>
+                <button id="buzon-tab-mios-btn" onclick="switchBuzonTab('mios')" style="flex:1; padding:8px; border-radius:8px; border:none; background:rgba(255,255,255,0.06); color:var(--slate); font-weight:600; font-size:12px; cursor:pointer;">📬 Mis envíos</button>
             </div>
 
             <div id="buzon-tab-nuevo" style="display:block;">
@@ -2563,10 +2577,10 @@
             <div style="background:rgba(32, 85, 154,0.1); border:1px solid rgba(32, 85, 154,0.3); border-radius:8px; padding:12px; font-size:12px; color:var(--gold-l); margin-bottom:20px; text-align:left; line-height:1.6;">
                 <i class="fa fa-circle-info"></i> Tu solicitud será revisada por el director, quien te asignará tu rol y equipo.
             </div>
-            <button id="reg-submit-btn" onclick="submitRegistration()" style="width:100%; padding:13px; border-radius:10px; background:var(--green); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;">
+            <button id="reg-submit-btn" onclick="submitRegistration()" style="width:100%; padding:13px; border-radius:8px; background:var(--green); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;">
                 <i class="fa fa-paper-plane"></i> Enviar Solicitud de Acceso
             </button>
-            <button onclick="doSignOut()" style="width:100%; margin-top:10px; padding:10px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+            <button onclick="doSignOut()" style="width:100%; margin-top:10px; padding:10px; border-radius:8px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div>
 
@@ -2576,7 +2590,7 @@
             <div style="font-size:50px; margin-bottom:16px;">⏳</div>
             <h2 style="color:var(--orange); font-family:'Source Sans Pro',sans-serif; margin-bottom:8px;">Solicitud Pendiente</h2>
             <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu solicitud de acceso está pendiente de aprobación por el director. Por favor intenta más tarde.</p>
-            <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+            <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:8px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div>
 
@@ -2586,7 +2600,7 @@
             <div style="font-size:50px; margin-bottom:16px;">🚫</div>
             <h2 style="color:var(--red); font-family:'Source Sans Pro',sans-serif; margin-bottom:8px;">Acceso Revocado</h2>
             <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu acceso al sistema ha sido revocado. Contacta al director si crees que es un error.</p>
-            <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:10px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+            <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:8px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div><!-- /revoked-overlay -->
 
@@ -2605,7 +2619,7 @@
             min-width:280px; max-width:90vw;
             background:linear-gradient(135deg,#143566,#0E2A5C);
             border:1px solid rgba(32, 85, 154,0.4);
-            border-radius:12px; padding:14px 18px;
+            border-radius:8px; padding:14px 18px;
             box-shadow:0 8px 32px rgba(0,0,0,0.5);
             z-index:10005;
             transition:transform 0.3s ease-out;
@@ -2840,6 +2854,87 @@
         /* ── SCROLL DENTRO DE MODALES ──────────────────────────────────────────
            Sin overscroll-behavior, al llegar al final del scroll el gesto se
 
+
+/* ═══ AJUSTES DE DISEÑO ═══════════════════════════════════════════
+           Colores elegidos elemento por elemento con el pincel (?editar=1)
+           y pegados tal cual salieron de la herramienta, para que lo que se
+           aprobo en pantalla sea exactamente lo que quedo en el codigo.
+
+           Van al final de la hoja a proposito: asi ganan por cascada.
+           Los !important tampoco son descuido — la app tiene 491 estilos
+           escritos dentro del HTML (style="...") y un estilo inline le gana
+           a cualquier regla de hoja que no los lleve.
+
+           OJO con los selectores de posicion (div:nth-child(9),
+           tbody tr:nth-child(2) td:nth-child(3)...): apuntan al LUGAR, no al
+           elemento. Si se agrega una fila a una tabla o un bloque a un modal,
+           el color salta a otra cosa. Estan marcados abajo. */
+        #login-overlay div.login-card { color: #ffffff !important; background: #071D49 !important; }
+        #login-btn { color: #ffffff !important; background: #20559A !important; }
+        #login-overlay { color: #676b6f !important; background: #04122f !important; }
+        div.app div.header div.row-menu button.btn.btn-sm { color: #ffffff !important; background: #20559A !important; }
+        #logout-btn { color: #ffffff !important; background: #071d49 !important; border-color: #ffffff !important; }
+        #cov-invite-btn { color: #ffffff !important; background: #20559A !important; border-color: #ffffff !important; }
+        #karma-badge { background: #072f5f !important; }
+        #karma-value { color: #ffffff !important; }
+        #karma-badge span.karma-lbl { color: #FFC72C !important; }
+        #mult-badge { color: #ffffff !important; background: #072F5F !important; border-color: #FFC72C !important; }
+        div.row-brand div.brand-block div.brand-title span.version-tag { color: #FFC72C !important; background: #072F5F !important; }
+        #notif-bell-btn { color: #ffffff !important; background: #072F5F !important; }
+        #anuncios-btn { color: #ffffff !important; background: #072F5F !important; }
+        #anuncios-badge { background: #e01600 !important; }
+        #mult-badge b:nth-child(2) { color: #FFC72C !important; }
+        #cov-invite-card { border-color: #ffffff !important; }
+        #mobile-week div.m-day-today { border-color: #FFC72C !important; }
+        #mobile-week div.m-day-compact { background: #002a61 !important; border-color: #a8a8a8 !important; }
+        #mobile-week div.m-day-compact div.m-day-label { color: #ededed !important; }
+        #mobile-week div.m-day-compact div.m-day-label small:nth-child(1) { color: #ffffff !important; }
+        #tab-bitacora div.card div.m-totals div.m-total-card { border-color: #ffffff !important; }
+        nav.bottom-nav button.bn-btn.active i.fa.fa-book-open { color: #A9BFD9 !important; border-color: #7797c0 !important; }
+        #cov-info-body div.mult-demo-wrap { background: #071D49 !important; }
+        #cov-info-body div.mult-demo-wrap span.karma-chip-demo { background: #072F5F !important; border-color: #FFC72C !important; }
+        #cov-info-body div.mult-demo-wrap span.mult-chip-demo { color: #ffffff !important; background: #072F5F !important; border-color: #FFC72C !important; }
+        #cov-info-body div.mult-demo-wrap span.mult-chip-demo b:nth-child(2) { color: #FFC72C !important; border-color: #9bc5ac !important; }
+        #cov-info-body div:nth-child(13) { border-color: #ffffff !important; }
+        #cov-info-body { background: #0E2A5C !important; }
+        #cov-info-modal div.modal-box { background: #0E2A5C !important; }
+        #cov-info-body div:nth-child(9) { border-color: #ffffff !important; }
+        tbody:nth-child(2) tr:nth-child(2) td:nth-child(2) span:nth-child(1) { color: #ffffff !important; }
+        tbody:nth-child(2) tr:nth-child(3) td:nth-child(2) span:nth-child(1) { color: #ffffff !important; }
+        tbody:nth-child(2) tr:nth-child(4) td:nth-child(2) span:nth-child(1) { color: #ffffff !important; }
+        tbody:nth-child(2) tr:nth-child(1) td:nth-child(2) span:nth-child(1) { color: #eaedf0 !important; }
+        tbody:nth-child(2) tr:nth-child(1) td:nth-child(3) span:nth-child(1) { color: #ecf2f9 !important; }
+        tbody:nth-child(2) tr:nth-child(2) td:nth-child(3) span:nth-child(1) { color: #ffffff !important; }
+        tbody:nth-child(2) tr:nth-child(3) td:nth-child(3) span:nth-child(1) { color: #ffffff !important; }
+        tbody:nth-child(2) tr:nth-child(4) td:nth-child(3) span:nth-child(1) { color: #ffffff !important; }
+        table:nth-child(1) thead:nth-child(1) tr:nth-child(1) th:nth-child(3) { color: #FEC72C !important; }
+        #mult-receipt-body div.mrec-row div.mrec-n { color: #018917 !important; border-color: #192129 !important; }
+        #mult-receipt-body div:nth-child(6) div:nth-child(2) { color: #ffc72c !important; }
+        #mult-receipt-body div:nth-child(6) { border-color: #ffc72c !important; }
+        #rules-mult-block div:nth-child(1) div:nth-child(1) { color: #ffc72c !important; }
+        tbody:nth-child(2) tr:nth-child(2) td:nth-child(3) span:nth-child(2) { color: #FEC72C !important; }
+        tbody:nth-child(2) tr:nth-child(3) td:nth-child(3) span:nth-child(2) { color: #FEC72C !important; }
+        tbody:nth-child(2) tr:nth-child(4) td:nth-child(3) span:nth-child(2) { color: #FEC72C !important; }
+        #rules-mult-block div:nth-child(1) { border-color: #ffffff !important; }
+        #rules-mult-block div:nth-child(1) div.mult-demo-wrap { background: #071D49 !important; }
+        #rules-mult-block div:nth-child(1) div.mult-demo-wrap span.karma-chip-demo { background: #072F5F !important; border-color: #ffffff !important; }
+        #rules-mult-block div:nth-child(1) div.mult-demo-wrap span.mult-chip-demo { color: #f7f7f7 !important; background: #072F5F !important; border-color: #ffffff !important; }
+        div:nth-child(1) div.mult-demo-wrap span.mult-chip-demo b:nth-child(2) { color: #ffc72c !important; }
+        div.rules-modal-box div.rules-modal-body ul:nth-child(3) li:nth-child(1) { border-color: #ffffff !important; }
+        #rules-modal div.rules-modal-box div.rules-modal-body ul:nth-child(3) { border-color: #ffffff !important; }
+        #tab-conceptos div.card h2:nth-child(1) { color: #ffffff !important; }
+        div.conceptos-grid div.conceptos-visual div:nth-child(3) div:nth-child(3) { background: #071D49 !important; }
+        div.conceptos-grid div.conceptos-visual div:nth-child(3) div:nth-child(4) { color: #00050f !important; background: #ffc72c !important; }
+        #kpi-period-sel, #chart-period-sel { color: #8da7c8 !important; background: #071D49 !important; }
+        #kpiEfectividad { color: #FFFFFF !important; background: #143566 !important; }
+        #ts-btn-solicitudes { color: #ffffff !important; background: #0D2A63 !important; }
+        #ts-btn-actividad { color: #ffffff !important; background: #0D2A63 !important; }
+        #ts-btn-comprar { color: #ffffff !important; background: #0D2A63 !important; }
+        #tienda-items div:nth-child(1) div:nth-child(4) { color: #7999C2 !important; }
+        #tienda-items div:nth-child(2) div:nth-child(4) { color: #7999C2 !important; background: #143566 !important; border-color: #7999C2 !important; }
+        #foro-resp-txt { color: #ffffff !important; background: #071D49 !important; border-color: #ffffff !important; }
+        #foro-body button.foro-hilo-item div.foro-meta span.rol-badge { color: #ffffff !important; background: #071D49 !important; }
+        #cov-info-body div:nth-child(9) div:nth-child(5) { color: #ffffff !important; border-color: #4eca82 !important; }
     </style>
 
     <div class="modal-overlay" id="foro-modal" onclick="if(event.target===this)closeForo()">
@@ -2877,7 +2972,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.1.0';
+        window.APP_HTML_VERSION = 'v2.2.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -3465,14 +3560,14 @@
             if (which === 'mios') {
                 tabNuevo.style.display = 'none';
                 tabMios.style.display = 'block';
-                btnNuevo.style.cssText = 'flex:1; padding:8px; border-radius:6px; border:none; font-size:12px; cursor:pointer;' + inactiveStyle;
-                btnMios.style.cssText = 'flex:1; padding:8px; border-radius:6px; border:none; font-size:12px; cursor:pointer;' + activeStyle;
+                btnNuevo.style.cssText = 'flex:1; padding:8px; border-radius:8px; border:none; font-size:12px; cursor:pointer;' + inactiveStyle;
+                btnMios.style.cssText = 'flex:1; padding:8px; border-radius:8px; border:none; font-size:12px; cursor:pointer;' + activeStyle;
                 _loadMisFeedback();
             } else {
                 tabNuevo.style.display = 'block';
                 tabMios.style.display = 'none';
-                btnNuevo.style.cssText = 'flex:1; padding:8px; border-radius:6px; border:none; font-size:12px; cursor:pointer;' + activeStyle;
-                btnMios.style.cssText = 'flex:1; padding:8px; border-radius:6px; border:none; font-size:12px; cursor:pointer;' + inactiveStyle;
+                btnNuevo.style.cssText = 'flex:1; padding:8px; border-radius:8px; border:none; font-size:12px; cursor:pointer;' + activeStyle;
+                btnMios.style.cssText = 'flex:1; padding:8px; border-radius:8px; border:none; font-size:12px; cursor:pointer;' + inactiveStyle;
             }
         };
         window._updateBuzonCharCount = function () {
@@ -5156,7 +5251,7 @@
                     <div class="mrec-n" style="color:${covFull ? 'var(--green)' : 'var(--gold)'};">${covPct}%</div>
                 </div>
 
-                <div style="background:linear-gradient(135deg, rgba(111, 215, 155,0.18), rgba(111, 215, 155,0.05)); border:1px solid rgba(111, 215, 155,0.4); border-radius:10px; padding:16px; margin-top:16px; text-align:center;">
+                <div style="background:linear-gradient(135deg, rgba(111, 215, 155,0.18), rgba(111, 215, 155,0.05)); border:1px solid rgba(111, 215, 155,0.4); border-radius:8px; padding:16px; margin-top:16px; text-align:center;">
                     <div style="font-size:11px; color:var(--slate); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Cada día que reportes vale</div>
                     <div style="font-size:38px; font-weight:900; color:#6FD79B; line-height:1;">${val}</div>
                     <div style="font-size:11px; color:var(--slate); margin-top:2px;">totopos <svg class="totopo-icon"><use href="#totopo"/></svg></div>
@@ -5262,7 +5357,7 @@
             el.removeAttribute('aria-label'); el.style.cursor = '';
 
             el.innerHTML = `
-                <div class="novedad-glow" style="border-radius:10px;">
+                <div class="novedad-glow" style="border-radius:8px;">
                   <div class="cov-invite" id="cov-invite-card" role="button" tabindex="0"
                        aria-label="Ver cómo funciona el multiplicador de totopos">
                     <div class="cov-invite-head">
@@ -5496,7 +5591,7 @@
                 </div>
 
                 <div style="display:flex; align-items:center; gap:8px; margin:16px 0 6px; flex-wrap:wrap;">
-                    <span style="background:rgba(255,255,255,0.10); color:var(--slate); font-size:9px; font-weight: 900; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:4px;">Ejemplos</span>
+                    <span style="background:rgba(255,255,255,0.10); color:var(--slate); font-size:9px; font-weight: 900; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:8px;">Ejemplos</span>
                     <span style="font-size:11px; color:var(--gold); text-transform:uppercase; letter-spacing:1px; font-weight:700;">
                         Lo que valdría cada día de ${mesSig}
                     </span>
@@ -5578,7 +5673,7 @@
             }).join('');
 
             el.innerHTML = `
-                <div style="background:rgba(111, 215, 155,0.08); border:1px solid rgba(111, 215, 155,0.32); border-radius:10px; padding:14px 16px; margin-top:16px;">
+                <div style="background:rgba(111, 215, 155,0.08); border:1px solid rgba(111, 215, 155,0.32); border-radius:8px; padding:14px 16px; margin-top:16px;">
                     <div style="font-size:12px; color:#6FD79B; text-transform:uppercase; letter-spacing:1.2px; font-weight: 900; margin-bottom:8px;">
                         <i class="fa fa-bolt"></i> El multiplicador
                     </div>
@@ -6422,14 +6517,14 @@
                     const eCatalog = escapeHtml(catalogId);
                     const eImgUrl = item.imageUrl ? escapeHtml(item.imageUrl) : '';
                     const visualHtml = eImgUrl
-                        ? `<img src="${eImgUrl}" alt="${eNombre}" loading="lazy" onclick="openImagePreview('${eImgUrl}')" style="width:100px;height:100px;object-fit:cover;border-radius:10px;cursor:zoom-in;margin:0 auto;display:block;border:1px solid rgba(32, 85, 154,0.2);">`
+                        ? `<img src="${eImgUrl}" alt="${eNombre}" loading="lazy" onclick="openImagePreview('${eImgUrl}')" style="width:100px;height:100px;object-fit:cover;border-radius:8px;cursor:zoom-in;margin:0 auto;display:block;border:1px solid rgba(32, 85, 154,0.2);">`
                         : `<div style="font-size:36px;text-align:center;">${eEmoji}</div>`;
                     const disabled = !puedo || sinStock;
                     let btnLabel;
                     if (sinStock)     btnLabel = 'Sin stock';
                     else if (!puedo)  btnLabel = 'Totopos insuficientes';
                     else              btnLabel = '🛒 Solicitar canje';
-                    return `<div style="background:var(--panel2);border-radius:12px;padding:16px;border:1px solid rgba(32, 85, 154,0.15);display:flex;flex-direction:column;gap:8px;">
+                    return `<div style="background:var(--panel2);border-radius:8px;padding:16px;border:1px solid rgba(32, 85, 154,0.15);display:flex;flex-direction:column;gap:8px;">
                         ${visualHtml}
                         <div style="font-weight:700;font-size:14px;text-align:center;">${eNombre}</div>
                         <div style="font-size:12px;color:var(--slate);text-align:center;">${eDesc}</div>
