@@ -1799,6 +1799,8 @@
 
                 <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.25); border-radius:8px; padding:12px 14px; margin:14px 0; font-size:12px; color:var(--slate); line-height:1.5;">
                     ⏱️ <strong>Día en curso:</strong> edítalo libremente durante el día — agrega, cambia o corrige tus P-E-C-V-S-$ las veces que quieras (se guarda automáticamente). A las <strong>12:00 AM</strong> se hace el corte automático y se te dan los totopos <svg class="totopo-icon"><use href="#totopo"/></svg>
+                    <!-- El OTRO reloj: lo que está construyendo para el mes que viene -->
+                    <div id="cov-block" style="margin-top:12px; padding-top:12px; border-top:1px dashed rgba(212,175,55,0.35);"></div>
                     <div style="margin-top:12px; padding-top:12px; border-top:1px dashed rgba(212,175,55,0.35); display:flex; justify-content:center;">
                         <button onclick="openMyCalendar()" title="Ver todos tus días reportados del mes en un calendario"
                             style="background:var(--gold); border:none; color:#000; border-radius:8px; padding:10px 18px; font-size:12px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow:0 2px 8px rgba(212,175,55,0.25);">
@@ -2197,7 +2199,7 @@
             </div>
             <div class="rules-modal-body">
                 <p><strong>¿Qué son?</strong> Moneda virtual que ganás por reportar tu día. Premian la disciplina y la honestidad — no importa si el día estuvo bueno o flojo, lo que cuenta es que reportes.</p>
-                <p style="margin-top:14px;"><strong>¿Cómo ganártelos?</strong> Ganás <strong>10 totopos por cada día reportado</strong> en cualquiera de estos dos casos:</p>
+                <p style="margin-top:14px;"><strong>¿Cómo ganártelos?</strong> Ganas <strong><span id="rules-base-pts">10</span> totopos por cada día reportado</strong> en cualquiera de estos dos casos:</p>
                 <ul>
                     <li>🟢 <strong>Semáforo en verde</strong> — el embudo cumple las reglas.</li>
                     <li>🌙 <strong>"Sin intento de venta hoy"</strong> — declaraste honestamente que no hubo actividad. Cuenta igual. La opción aparece cuando todos los valores están en 0.</li>
@@ -2346,7 +2348,7 @@
                 <button id="anuncios-clear-read-btn" onclick="clearReadAnuncios()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px;" title="Limpiar (ocultar) los que ya leíste">
                     <i class="fa fa-broom"></i> Limpiar leídos
                 </button>
-                <button id="anuncios-clear-all-btn" onclick="clearAllAnuncios()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px; border-color:rgba(239,68,68,0.5); color:#f87171;" title="Ocultar todos los anuncios (siguen disponibles si querés volver a verlos manualmente)">
+                <button id="anuncios-clear-all-btn" onclick="clearAllAnuncios()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px; border-color:rgba(239,68,68,0.5); color:#f87171;" title="Ocultar todos los anuncios (siguen disponibles si quieres volver a verlos manualmente)">
                     <i class="fa fa-trash-can"></i> Limpiar todos
                 </button>
             </div>
@@ -2356,7 +2358,7 @@
                 <!-- Empty state placeholder — se reemplaza cuando hay datos -->
                 <div id="anuncios-empty" style="text-align:center; padding:40px 20px;">
                     <div style="font-size:48px; opacity:0.3; margin-bottom:12px;">📢</div>
-                    <div style="font-size:14px; color:var(--slate); font-weight:600; margin-bottom:6px;">No tenés anuncios</div>
+                    <div style="font-size:14px; color:var(--slate); font-weight:600; margin-bottom:6px;">No tienes anuncios</div>
                     <div style="font-size:12px; color:rgba(255,255,255,0.4); line-height:1.5;">Cuando el director, promotor o coach mande algo, aparece acá.</div>
                 </div>
             </div>
@@ -2435,6 +2437,8 @@
                 <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(255,255,255,0.1)"></span> ⚪ Sin reporte</div>
             </div>
             <div class="cal-day-detail" id="my-cal-day-detail"><span class="cal-detail-empty">Toca un día para ver detalles.</span></div>
+            <!-- Conecta los ⚪ que el agente está viendo con lo que le cuestan -->
+            <div id="my-cal-mult-foot" style="display:none;"></div>
         </div>
     </div>
 
@@ -2562,7 +2566,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v1.20.0';
+        window.APP_HTML_VERSION = 'v1.20.1';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -5619,7 +5623,7 @@
         window.solicitarCanje = function(itemId, itemNombre, costo, emoji, catalogDoc, stockDisponible) {
             const karmaDisponible = (state.karma || 0) - _karmaComprometido;
             if (karmaDisponible < costo) {
-                alert(`Totopos insuficientes. Te quedan ${karmaDisponible} totopos disponibles (ya tenés ${_karmaComprometido} comprometidos en otras solicitudes pendientes).`);
+                alert(`Totopos insuficientes. Te quedan ${karmaDisponible} totopos disponibles (ya tienes ${_karmaComprometido} comprometidos en otras solicitudes pendientes).`);
                 return;
             }
             openCanjeConfirm(itemId, itemNombre, costo, emoji, catalogDoc, stockDisponible);
@@ -5701,7 +5705,7 @@
                     const req = reqSnap.data();
                     if (req.status !== 'pending') throw new Error('Esta solicitud ya fue procesada.');
                     if (req.emailSolicitante !== user.email) {
-                        throw new Error('No podés cancelar una solicitud que no es tuya.');
+                        throw new Error('No puedes cancelar una solicitud que no es tuya.');
                     }
                     const qty = Math.max(1, Number(req.cantidad) || 1);
                     let catRef = null, catSnap = null;
