@@ -2648,6 +2648,17 @@
         #notif-bell-btn.bell-pulsing i { color: var(--gold,#20559A); }
         }
 
+        /* El foro NO es un cuadro de dialogo flotante: es una superficie de pantalla
+   completa. .modal-overlay deja pasar el fondo al 45% a proposito, para que
+   los modales chicos se sientan como dialogos encima de la app. Detras del
+   foro ese mismo velo se lee como si el foro se transparentara — donde la
+   caja no llega (los bordes, en pantallas de 768px o mas, donde se limita a
+   760px de ancho) la app de atras se ve entera. Aqui el velo va solido.
+
+   Va scopeado a #foro-modal, como el resto de los ajustes del foro: subirle
+   la opacidad a .modal-overlay afectaria a los otros 14 modales, que si
+   quieren dejar ver el fondo. */
+        #foro-modal { background: var(--bg); backdrop-filter: none; }
         /* ═══ FORO ═══════════════════════════════════════════════════════════ */
         .foro-box {
             background: var(--panel);
@@ -3004,7 +3015,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.8.0';
+        window.APP_HTML_VERSION = 'v2.9.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
