@@ -1125,14 +1125,14 @@
             overscroll-behavior: contain;
         }
 
-        /* El encabezado del calendario y el de reglas se iban hacia arriba al
-           scrollear y se perdia de vista de que mes o de que regla se trataba. */
-        .rules-modal-header, .cal-header {
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            background: var(--panel);
-        }
+        /* AQUI NO VA UN STICKY para .rules-modal-header / .cal-header.
+           Se intento fijarlos para no perder de vista el titulo al scrollear,
+           pero el modal tiene 22px de padding y el contenido que scrollea SI
+           se pinta sobre esa franja. El encabezado se quedaba colgado a media
+           altura con texto corriendo por encima de el. Fijarlo bien exige
+           sangrarlo con margenes negativos que igualen el padding de cada
+           caja — 22px en .rules-modal-box y 20px en .cal-modal-box, distintos —
+           asi que no alcanza con una sola regla. Se deja sin fijar. */
 
         .modal-box {
             background: var(--panel);
@@ -2504,7 +2504,6 @@
                 <button class="cal-nav-btn" onclick="navMyCalendar(-1)" aria-label="Mes anterior">‹</button>
                 <div class="cal-nav-mes" id="my-cal-current-mes">—</div>
                 <button class="cal-nav-btn" onclick="navMyCalendar(1)" aria-label="Mes siguiente">›</button>
-            try { _renderCalMultFoot(); } catch (e) { console.warn('[mult] foot:', e); }
             </div>
             <div class="cal-grid-head">
                 <div class="cal-cell-head">Lu</div>
@@ -2987,7 +2986,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.6.0';
+        window.APP_HTML_VERSION = 'v2.7.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -3611,6 +3610,8 @@
             const mesStr = MONTHS_ES[_myCalMonth - 1] + ' ' + _myCalYear;
             const mesEl = document.getElementById('my-cal-current-mes');
             if (mesEl) mesEl.textContent = mesStr;
+            // Solo depende de _myCalYear/_myCalMonth y del state, no de la grilla.
+            try { _renderCalMultFoot(); } catch (e) { console.warn('[mult] foot:', e); }
 
             const weeks = getMonthCalendar(_myCalYear, _myCalMonth);
             const firstDayName = weeks[0]?.[0]?.dayName || 'Lunes';
