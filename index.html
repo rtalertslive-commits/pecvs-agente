@@ -3037,7 +3037,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.13.0';
+        window.APP_HTML_VERSION = 'v2.14.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -5183,10 +5183,9 @@
                         });
                     }
                     if (!coincide) {
-                        const tope = Math.floor((mx.ingresado || 0) * (1 + margen / 100));
                         fallas.push({
                             k: 'Tu reporte no coincidió',
-                            v: `Reportaste <b>${_money(mx.reportado)}</b> y en Promessa se ingresó <b>${_money(mx.ingresado)}</b>. Se acepta hasta ${margen}% de diferencia, o sea ${_money(tope)}.`
+                            v: `Reportaste <b>${_money(mx.reportado)}</b> y en Promessa se ingresó <b>${_money(mx.ingresado)}</b>. Se salió del ${margen}% de margen de error permitido.`
                         });
                     }
                     // Las dos fallas piden acciones distintas, y cuando se dan
