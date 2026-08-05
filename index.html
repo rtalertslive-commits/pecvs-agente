@@ -15,6 +15,21 @@
     <!-- PWA / Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#071D49">
+    <script>
+        /* Tema, aplicado antes del primer pixel. El script de la app es
+           type="module" y por lo tanto diferido: aplicarlo alla haria que la
+           pantalla arrancara oscura y saltara a clara a la vista del agente.
+           Por eso va aqui, como script clasico, y sin depender de nada. */
+        (function () {
+            var t;
+            try { t = localStorage.getItem('pecvsTemaActivo'); } catch (e) {}
+            if (t === 'claro') {
+                document.documentElement.setAttribute('data-tema', 'claro');
+                var m = document.querySelector('meta[name="theme-color"]');
+                if (m) m.setAttribute('content', '#20559A');
+            }
+        })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Actividad">
@@ -37,9 +52,24 @@
             --azul-cobalto: #20559A;
             --azul-oxford:  #071D49;
             --amarillo:     #FFC72C;
+            /* Mismo amarillo en canal RGB, para los velos rgba(). Un hex no
+               sirve dentro de rgba(), y hay velos amarillos escritos a mano
+               en el JS que tienen que poder voltear con el tema. */
+            --amarillo-rgb: 255, 199, 44;
             --azul-medio:   #7999C2;
             --azul-claro:   #D2DDEB;
             --azul-palido:  #E9EEF5;
+
+            /* ── POLARIDAD ──────────────────────────────────────────────
+               Los velos (fondos sutiles, hairlines, texto atenuado) se
+               escriben rgba(var(--vk), a). En oscuro --vk es blanco: aclaran.
+               En claro es tinta Oxford: oscurecen. Un solo valor voltea los 97
+               casos conservando cada alfa, en vez de un token por opacidad.
+
+               Funciona porque en cada tema las superficies, los bordes y el
+               texto atenuado estan del MISMO lado del contraste: en oscuro
+               todo lo sutil aclara, en claro todo lo sutil oscurece. */
+            --vk: 255, 255, 255;
 
             /* Roles (nombres heredados) */
             --bg: #071D49;          /* pagina: azul Oxford */
@@ -49,14 +79,86 @@
             --gold-l: #FFC72C;      /* enfasis: el amarillo, micro-acento */
             --white: #FFFFFF;       /* texto principal */
             --slate: #A9BFD9;       /* texto secundario */
-            --border: rgba(255, 255, 255, 0.14);
+            --border: rgba(var(--vk), 0.14);
             --green: #6FD79B;
             --orange: #FFC72C;
             --red: #F08A80;
             --blue: #7999C2;
             --teal: #7999C2;
 
-            /* Texto sobre relleno de marca (cobalto solido). */
+            /* Cromo: encabezado y barra inferior. Estaban clavados en el CSS;
+               salen a token porque son lo unico que cambia de NATURALEZA entre
+               temas — en oscuro son un velo Oxford translucido, en claro son
+               cobalto solido, que es lo que enmarca la pantalla. */
+            --chrome: rgba(7, 29, 73, 0.92);
+            --chrome-ink: var(--white);
+            --nav: #22487C;
+
+            /* Texto sobre relleno de marca (cobalto solido).
+               NO voltea: el cobalto sigue siendo oscuro en los dos temas. */
+            --on-brand: #FFFFFF;
+        }
+
+        /* ── Interruptor de tema ─────────────────────────────────────── */
+        .tema-row {
+            display: flex; align-items: center; gap: 9px;
+            padding: 9px 13px; margin-bottom: 13px;
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: 24px;
+        }
+        .tema-ic { font-size: 13px; line-height: 1; }
+        .tema-lbl { font-size: 11.5px; font-weight: 700; color: var(--slate); margin-left: auto; }
+        .tema-sw {
+            width: 46px; height: 26px; border-radius: 26px; flex-shrink: 0;
+            background: var(--panel2); border: 1px solid var(--border);
+            padding: 0; cursor: pointer; position: relative;
+            transition: background .22s ease, border-color .22s ease;
+        }
+        .tema-sw:focus-visible { outline: 2px solid var(--gold-l); outline-offset: 2px; }
+        .tema-knob {
+            position: absolute; top: 2px; left: 2px;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: var(--amarillo);
+            transition: transform .22s cubic-bezier(.34,1.4,.64,1);
+        }
+        .tema-sw[aria-checked="true"] { background: var(--azul-cobalto); border-color: var(--azul-cobalto); }
+        .tema-sw[aria-checked="true"] .tema-knob { transform: translateX(20px); background: #FFFFFF; }
+        @media (prefers-reduced-motion: reduce) {
+            .tema-sw, .tema-knob { transition: none; }
+        }
+
+        /* ══ TEMA CLARO — "Grafito azul" ══════════════════════════════════
+           Papel al 72% del blanco puro. No es un capricho de gusto: el brillo
+           es lo que cansa la vista, y la tinta Oxford mantiene 12:1 de
+           contraste sobre este fondo, muy por encima del 4.5:1 que pide la
+           norma. Bajar el papel no cuesta legibilidad.
+
+           El cromo va en cobalto SOLIDO para que la marca enmarque la pantalla
+           arriba y abajo, que es lo que distingue a esta variante.
+
+           --amarillo NO cambia: sobre claro da 1.7:1, asi que sigue siendo
+           color de RELLENO. El enfasis de texto lo toma el ambar oscuro. */
+        :root[data-tema="claro"] {
+            --vk: 7, 29, 73;
+
+            --bg: #D4DEEA;
+            --panel: #E6ECF4;
+            --panel2: #DDE5EF;
+            --gold: #143A66;        /* acento de texto y bordes */
+            --gold-l: #6E4700;      /* enfasis: ambar oscuro, legible */
+            --white: #061837;       /* texto principal, ahora tinta */
+            --slate: #465C7B;       /* texto secundario */
+            --border: rgba(var(--vk), 0.16);
+            --green: #24603E;
+            --orange: #6E4700;
+            --red: #A63528;
+            --blue: #1B4880;
+            --teal: #1B4880;
+
+            --chrome: #20559A;
+            --chrome-ink: #FFFFFF;
+            --nav: #20559A;
+
             --on-brand: #FFFFFF;
         }
 
@@ -102,7 +204,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(7, 29, 73, 0.92);
+            background: var(--chrome);
             backdrop-filter: blur(14px) saturate(140%);
             -webkit-backdrop-filter: blur(14px) saturate(140%);
             border-bottom: 1px solid rgba(32, 85, 154, 0.18);
@@ -206,7 +308,7 @@
             font-weight: 900;
             font-size: 20px;
             color: var(--on-brand);
-            box-shadow: 0 3px 10px rgba(32, 85, 154, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 3px 10px rgba(32, 85, 154, 0.25), inset 0 1px 0 rgba(var(--vk), 0.2);
             flex-shrink: 0;
             line-height: 1;
         }
@@ -436,7 +538,7 @@
                 bottom: 0;
                 left: 0;
                 right: 0;
-                background: #22487C;
+                background: var(--nav);
                 border-top: 1px solid var(--border);
                 padding: 8px 4px calc(10px + env(safe-area-inset-bottom, 0px));
                 z-index: 100;
@@ -512,7 +614,7 @@
         input[type=number],
         select {
             background: rgba(7, 29, 73, .6);
-            border: 1px solid rgba(255, 255, 255, .1);
+            border: 1px solid rgba(var(--vk), .1);
             color: var(--white);
             padding: 12px;
             border-radius: 8px;
@@ -549,7 +651,7 @@
 
         .week-table td {
             padding: 10px 5px;
-            border-bottom: 1px solid rgba(255, 255, 255, .04);
+            border-bottom: 1px solid rgba(var(--vk), .04);
         }
 
         .num-input {
@@ -590,8 +692,8 @@
             border-radius: 8px;
             margin-bottom: 6px;
             opacity: 0.45;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(var(--vk), 0.02);
+            border: 1px solid rgba(var(--vk), 0.04);
             font-size: 12px;
         }
         .m-day-compact .m-day-label {
@@ -626,12 +728,12 @@
            como funciona la jerarquía en superficie oscura. El borde solo los
            delimita. */
         .m-day-today input {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1.5px solid rgba(255, 255, 255, 0.24);
+            background: rgba(var(--vk), 0.08);
+            border: 1.5px solid rgba(var(--vk), 0.24);
             color: #FFFFFF;
         }
         .m-day-today input:focus {
-            background: rgba(255, 255, 255, 0.16);
+            background: rgba(var(--vk), 0.16);
             border-color: var(--amarillo);
             outline: none;
         }
@@ -972,29 +1074,29 @@
         .cal-title { font-family: 'Source Sans Pro', sans-serif; font-size: 16px; color: var(--gold); font-weight: 700; flex: 1; line-height: 1.2; }
         .cal-close-btn { background: none; border: none; color: var(--white); font-size: 24px; cursor: pointer; line-height: 1; padding: 0 4px; }
         .cal-nav { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 14px; }
-        .cal-nav-btn { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--white); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-family: inherit; font-size: 14px; }
-        .cal-nav-btn:hover { background: rgba(255, 255, 255, 0.14); }
+        .cal-nav-btn { background: rgba(var(--vk), 0.08); border: 1px solid rgba(var(--vk), 0.1); color: var(--white); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-family: inherit; font-size: 14px; }
+        .cal-nav-btn:hover { background: rgba(var(--vk), 0.14); }
         .cal-nav-mes { font-weight: 700; font-size: 14px; min-width: 140px; text-align: center; color: var(--white); }
         .cal-grid-head { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
         .cal-grid-body { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 12px; }
         .cal-cell-head { text-align: center; font-size: 10px; font-weight: 700; color: var(--slate); padding: 6px 0; text-transform: uppercase; letter-spacing: 1px; }
         .cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform .1s, box-shadow .15s; position: relative; padding: 2px; border: 1px solid transparent; }
         .cal-cell.empty { visibility: hidden; }
-        .cal-cell.none { background: rgba(255, 255, 255, 0.04); color: var(--slate); }
+        .cal-cell.none { background: rgba(var(--vk), 0.04); color: var(--slate); }
         .cal-cell.ok { background: rgba(46, 125, 79,0.18); color: #2E7D4F; border-color: rgba(46, 125, 79,0.35); }
         /* Verde igual que .ok — la plantita hace la diferencia semántica */
         .cal-cell.ok-no-close { background: rgba(46, 125, 79,0.18); color: #2E7D4F; border-color: rgba(46, 125, 79,0.35); }
         .cal-cell.red { background: rgba(192, 57, 43,0.18); color: #C0392B; border-color: rgba(192, 57, 43,0.35); }
         .cal-cell.sin-actividad { background: rgba(138, 91, 0,0.18); color: #8A5B00; border-color: rgba(138, 91, 0,0.35); }
-        .cal-cell.future { opacity: 0.22; cursor: not-allowed; background: rgba(255, 255, 255, 0.015); color: var(--slate); pointer-events: none; }
+        .cal-cell.future { opacity: 0.22; cursor: not-allowed; background: rgba(var(--vk), 0.015); color: var(--slate); pointer-events: none; }
         .cal-cell:not(.empty):not(.future):hover { transform: scale(1.06); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .cal-cell.selected { box-shadow: 0 0 0 2px var(--gold); }
         .cal-cell .cal-num { font-size: 12px; line-height: 1.1; }
         .cal-cell .cal-icon { font-size: 11px; line-height: 1; }
-        .cal-legend { font-size: 11px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-bottom: 12px; padding: 8px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; }
+        .cal-legend { font-size: 11px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-bottom: 12px; padding: 8px; background: rgba(var(--vk), 0.03); border-radius: 8px; }
         .cal-legend-item { display: flex; align-items: center; gap: 6px; color: var(--white); }
         .cal-legend-dot { width: 12px; height: 12px; border-radius: 8px; flex-shrink: 0; }
-        .cal-day-detail { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 12px; min-height: 44px; color: var(--white); }
+        .cal-day-detail { background: rgba(var(--vk), 0.03); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 12px; min-height: 44px; color: var(--white); }
         .cal-day-detail .cal-detail-empty { color: var(--slate); }
 
         /* ═══ KPI INFO ICON + MODAL ═══ */
@@ -1205,7 +1307,7 @@
             color: var(--gold);
         }
         #mult-badge.mult-off {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(var(--vk), 0.05);
             border: 1.5px solid var(--border);
             color: var(--slate);
         }
@@ -1249,7 +1351,7 @@
             padding: 14px 10px;
             margin: 10px 0 8px;
             border-radius: 8px;
-            background: rgba(255, 255, 255,0.55);
+            background: rgba(var(--vk),0.55);
             border: 1px dashed var(--border);
         }
 
@@ -1260,7 +1362,7 @@
             gap: 10px;
             align-items: start;
             padding: 11px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            border-bottom: 1px solid rgba(var(--vk),0.07);
         }
         .mrec-row:last-of-type { border-bottom: none; }
         .mrec-ico { font-size: 15px; line-height: 1.3; }
@@ -1273,7 +1375,7 @@
         .cov-invite {
             border: 1.5px solid var(--border);
             border-radius: 8px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+            background: linear-gradient(135deg, rgba(var(--vk), 0.07), rgba(var(--vk), 0.02));
             padding: 14px;
             cursor: pointer;
             color: var(--slate);
@@ -1305,7 +1407,7 @@
         .cov-bar {
             height: 9px;
             border-radius: 8px;
-            background: rgba(255,255,255,0.09);
+            background: rgba(var(--vk),0.09);
             overflow: hidden;
             margin: 8px 0 6px;
         }
@@ -1319,12 +1421,12 @@
            Mostrar "22 de 31" a secas hacía parecer alcanzables los 9 faltantes,
            cuando los días pasados sin reportar ya no se recuperan. */
         .cov-split { display: flex; height: 9px; border-radius: 8px; overflow: hidden;
-                     background: rgba(255,255,255,0.09); margin: 8px 0 7px; }
+                     background: rgba(var(--vk),0.09); margin: 8px 0 7px; }
         .cov-seg { height: 100%; transition: width .4s ease; }
         .cov-seg-ok    { background: linear-gradient(90deg, #20559A, #071D49); }
         .cov-seg-lost  { background: repeating-linear-gradient(45deg,
                             rgba(192, 57, 43,0.38) 0 4px, rgba(192, 57, 43,0.16) 4px 8px); }
-        .cov-seg-open  { background: rgba(255, 255, 255, 0.07); }
+        .cov-seg-open  { background: rgba(var(--vk), 0.07); }
         .cov-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--slate); }
         .cov-legend i { font-style: normal; }
         .cov-dot { display: inline-block; width: 8px; height: 8px; border-radius: 8px;
@@ -1591,9 +1693,9 @@
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(var(--vk), 0.03);
             backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(var(--vk), 0.1);
             padding: 40px 30px;
             border-radius: 8px;
             text-align: center;
@@ -1631,7 +1733,7 @@
             height: 76px;
             border-radius: 8px;
             font-size: 42px;
-            box-shadow: 0 8px 28px rgba(32, 85, 154, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 28px rgba(32, 85, 154, 0.35), inset 0 1px 0 rgba(var(--vk), 0.25);
         }
         .login-brand .login-sub {
             font-size: 10px;
@@ -1805,8 +1907,15 @@
     <div id="login-overlay">
         <div class="login-card">
             <div class="login-logo">
-                <img src="./promessa-logo.png" alt="Promessa"
-                     onerror="this.parentElement.style.display='none'">
+                <!-- Dos archivos, no un filtro CSS: el manual prohibe agregarle
+                     efectos al logo, y un invert() le cambiaria tambien el amarillo
+                     del punto. Cada tema muestra el suyo.
+                     El onerror esconde LA IMAGEN y no el contenedor: con dos, ocultar
+                     el padre se llevaria tambien la que si cargo. -->
+                <img class="logo-oscuro" src="./promessa-logo.png" alt="Promessa"
+                     onerror="this.style.display='none'">
+                <img class="logo-claro" src="./promessa-logo-claro.png" alt="Promessa"
+                     onerror="this.style.display='none'">
             </div>
             <div class="login-brand">
                 <div class="brand-mono">A</div>
@@ -1910,6 +2019,18 @@
 
         <!-- TAB: BITACORA -->
         <div id="tab-bitacora" class="tab-panel active">
+            <!-- Interruptor de tema. Va aqui, en la primera pantalla, porque
+                 es donde el agente pasa el dia y donde va a querer cambiarlo
+                 segun la luz que tenga encima. -->
+            <div class="tema-row">
+                <span class="tema-ic">🌙</span>
+                <button id="tema-switch" class="tema-sw" role="switch" aria-checked="false"
+                        aria-label="Cambiar entre tema oscuro y claro" onclick="alternarTema()">
+                    <span class="tema-knob"></span>
+                </button>
+                <span class="tema-ic">☀️</span>
+                <span class="tema-lbl" id="tema-lbl">Tema oscuro</span>
+            </div>
             <div class="card">
                 <div class="bitacora-header">
                     <div>
@@ -2141,7 +2262,7 @@
 
                     <!-- VISUAL EMBUDO — desktop: columna der sticky · mobile: order 1 -->
                     <div class="conceptos-visual"
-                        style="background: rgba(255,255,255,0.03); border-radius:8px; padding:25px; text-align:center; border: 1px solid rgba(255,255,255,0.05); height: fit-content; position: sticky; top: 20px;">
+                        style="background: rgba(var(--vk),0.03); border-radius:8px; padding:25px; text-align:center; border: 1px solid rgba(var(--vk),0.05); height: fit-content; position: sticky; top: 20px;">
                         <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--white); margin-top:0;">EMBUDO MATEMÁTICO</h2>
                         <div style="background:var(--azul-cobalto); color: var(--on-brand); padding:4px 15px; border-radius:20px; display:inline-block; font-weight:bold; font-size:12px; margin-bottom:30px;">
                             REGLA: P ≥ E ≥ C ≥ V
@@ -2152,7 +2273,7 @@
                             <div style="width: 100%; height: 45px; background: #C8C8C8; clip-path: polygon(10% 0%, 90% 0%, 85% 100%, 15% 100%); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color:white;">C - Cotizaciones</div>
                             <div style="width: 100%; height: 50px; background: #001D4B; clip-path: polygon(15% 0%, 85% 0%, 80% 100%, 20% 100%); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; color:white;">V - Cierres</div>
                         </div>
-                        <p style="font-size:13px; color:var(--slate); margin-top:35px; line-height:1.6; text-align:justify; border-top: 1px solid rgba(255,255,255,0.1); padding-top:20px;">
+                        <p style="font-size:13px; color:var(--slate); margin-top:35px; line-height:1.6; text-align:justify; border-top: 1px solid rgba(var(--vk),0.1); padding-top:20px;">
                             En sentido estricto el número debe ir de mayor a menor (o como máximo igual) en cada etapa del proceso. Es decir: <strong>nunca puede haber más entrevistas que prospectos contactados</strong>, ni más cotizaciones que entrevistas realizadas, ni más ventas concretadas que cotizaciones.
                         </p>
                     </div>
@@ -2189,10 +2310,10 @@
         <!-- ═══════════════════ TAB: TIENDA ═══════════════════ -->
         <div id="tab-tienda" class="tab-panel">
             <!-- Sub-tabs -->
-            <div id="tienda-subtabs" style="display:flex; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:2px;">
+            <div id="tienda-subtabs" style="display:flex; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(var(--vk),0.08); padding-bottom:2px;">
                 <button id="ts-btn-comprar" onclick="switchTiendaSubtab('comprar')" style="flex:1; padding:10px; background:rgba(32, 85, 154,0.15); border:1px solid rgba(32, 85, 154,0.4); border-radius:8px 6px 0 0; color:var(--gold-l); font-weight:700; font-size:13px; cursor:pointer;">🛒 Comprar</button>
-                <button id="ts-btn-solicitudes" onclick="switchTiendaSubtab('solicitudes')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.10); border-radius:8px 6px 0 0; color:rgba(255,255,255,0.7); font-weight:600; font-size:13px; cursor:pointer;">📜 Mis solicitudes</button>
-                <button id="ts-btn-actividad" onclick="switchTiendaSubtab('actividad')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(255,255,255,0.10); border-radius:8px 6px 0 0; color:rgba(255,255,255,0.7); font-weight:600; font-size:13px; cursor:pointer;">🔥 Actividad</button>
+                <button id="ts-btn-solicitudes" onclick="switchTiendaSubtab('solicitudes')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(var(--vk),0.10); border-radius:8px 6px 0 0; color:rgba(var(--vk),0.7); font-weight:600; font-size:13px; cursor:pointer;">📜 Mis solicitudes</button>
+                <button id="ts-btn-actividad" onclick="switchTiendaSubtab('actividad')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(var(--vk),0.10); border-radius:8px 6px 0 0; color:rgba(var(--vk),0.7); font-weight:600; font-size:13px; cursor:pointer;">🔥 Actividad</button>
             </div>
 
             <!-- Sub-view: COMPRAR -->
@@ -2230,9 +2351,9 @@
                 <div class="card" style="margin-bottom:16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
                         <p class="card-title" style="margin:0;">🏆 <span id="lb-period-label">Top del mes</span></p>
-                        <div id="lb-period-toggle" style="display:flex; gap:4px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.10); border-radius:8px; padding:3px;">
+                        <div id="lb-period-toggle" style="display:flex; gap:4px; background:rgba(var(--vk),0.04); border:1px solid rgba(var(--vk),0.10); border-radius:8px; padding:3px;">
                             <button id="lb-btn-month" onclick="switchLeaderboardPeriod('month')" style="padding:5px 14px; background:rgba(32, 85, 154,0.18); border:none; border-radius:8px; color:var(--gold-l); font-weight:700; font-size:12px; cursor:pointer;">Mes</button>
-                            <button id="lb-btn-year" onclick="switchLeaderboardPeriod('year')" style="padding:5px 14px; background:transparent; border:none; border-radius:8px; color:rgba(255,255,255,0.6); font-weight:600; font-size:12px; cursor:pointer;">Año</button>
+                            <button id="lb-btn-year" onclick="switchLeaderboardPeriod('year')" style="padding:5px 14px; background:transparent; border:none; border-radius:8px; color:rgba(var(--vk),0.6); font-weight:600; font-size:12px; cursor:pointer;">Año</button>
                         </div>
                     </div>
                     <p style="font-size:11px;color:var(--slate);margin:0 0 12px;">Los agentes que más gastaron en tu región.</p>
@@ -2280,7 +2401,7 @@
              estás parado. -->
         <button class="bn-btn" onclick="openForo()" aria-label="Foro">
             <i class="fa fa-comments"></i>
-            <span id="foro-dot" style="display:none; position:absolute; top:2px; right:calc(50% - 16px); width:9px; height:9px; border-radius:50%; background:#E5484D; border:1.5px solid #22487C;"></span>
+            <span id="foro-dot" style="display:none; position:absolute; top:2px; right:calc(50% - 16px); width:9px; height:9px; border-radius:50%; background:#E5484D; border:1.5px solid var(--nav);"></span>
             <span>Foro</span>
         </button>
     </nav>
@@ -2441,7 +2562,7 @@
             <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin-top:0;"><i class="fa fa-bell" style="margin-right:8px;"></i>Notificaciones</h2>
             <p style="font-size:12px; color:var(--slate); margin:0 0 18px;">Recibí avisos importantes de la dirección directamente en tu dispositivo.</p>
 
-            <label id="notif-master-row" style="display:none; align-items:center; justify-content:space-between; padding:14px 16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; margin-bottom:12px; cursor:pointer; gap:12px;">
+            <label id="notif-master-row" style="display:none; align-items:center; justify-content:space-between; padding:14px 16px; background:rgba(var(--vk),0.04); border:1px solid rgba(var(--vk),0.1); border-radius:8px; margin-bottom:12px; cursor:pointer; gap:12px;">
                 <div style="flex:1; min-width:0;">
                     <div id="notif-master-title" style="font-size:15px; color:#fff; font-weight:700;">Notificaciones</div>
                     <div id="notif-master-sub" style="font-size:12px; color:var(--slate); margin-top:3px;">Cargando…</div>
@@ -2449,13 +2570,13 @@
                 <input type="checkbox" id="notif-master-toggle" onchange="onMasterToggle()" style="width:26px; height:26px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;">
             </label>
 
-            <div id="notif-status" style="display:none; font-size:13px; font-weight:600; color:#fff; margin-bottom:12px; line-height:1.4; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:8px;">Cargando…</div>
+            <div id="notif-status" style="display:none; font-size:13px; font-weight:600; color:#fff; margin-bottom:12px; line-height:1.4; padding:12px 14px; background:rgba(var(--vk),0.04); border-radius:8px;">Cargando…</div>
             <button id="notif-action-btn" class="btn btn-sm" style="display:none; width:100%; margin-bottom:10px;" onclick="onNotifActionClick()">Activar notificaciones</button>
 
-            <div id="notif-prefs" style="display:none; margin-top:8px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+            <div id="notif-prefs" style="display:none; margin-top:8px; padding-top:14px; border-top:1px solid rgba(var(--vk),0.08);">
                 <div style="font-size:11px; color:var(--slate); font-weight:700; margin-bottom:10px; letter-spacing:0.5px;">RECIBIR AVISOS DE:</div>
 
-                <label class="notif-toggle-row" style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer;">
+                <label class="notif-toggle-row" style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(var(--vk),0.05); cursor:pointer;">
                     <div style="flex:1; min-width:0;">
                         <div style="font-size:14px; color:#fff; font-weight:600;">📢 Anuncios de la dirección</div>
                         <div style="font-size:11px; color:var(--slate); margin-top:2px;">Broadcasts importantes del director, promotor y coach.</div>
@@ -2472,12 +2593,12 @@
                         <input type="checkbox" id="notif-pref-recordatorio" onchange="onRecordatorioToggle()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;">
                     </label>
                     <div id="notif-recordatorio-time-row" style="display:none; margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:8px; align-items:center; gap:10px;">
-                        <span style="font-size:12px; color:rgba(255,255,255,0.7); font-weight:600;">Hora:</span>
-                        <select id="notif-pref-recordatorio-hour" onchange="saveNotifPrefs()" style="background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                        <span style="font-size:12px; color:rgba(var(--vk),0.7); font-weight:600;">Hora:</span>
+                        <select id="notif-pref-recordatorio-hour" onchange="saveNotifPrefs()" style="background:rgba(var(--vk),0.08); color:#fff; border:1px solid rgba(var(--vk),0.15); border-radius:8px; padding:6px 8px; font-size:14px; font-family:inherit;">
                             <option value="00">12 AM</option><option value="01">1 AM</option><option value="02">2 AM</option><option value="03">3 AM</option><option value="04">4 AM</option><option value="05">5 AM</option><option value="06">6 AM</option><option value="07">7 AM</option><option value="08">8 AM</option><option value="09">9 AM</option><option value="10">10 AM</option><option value="11">11 AM</option><option value="12">12 PM</option><option value="13">1 PM</option><option value="14">2 PM</option><option value="15">3 PM</option><option value="16">4 PM</option><option value="17">5 PM</option><option value="18">6 PM</option><option value="19" selected>7 PM</option><option value="20">8 PM</option><option value="21">9 PM</option><option value="22">10 PM</option><option value="23">11 PM</option>
                         </select>
                         <span style="font-size:16px; color:#fff; font-weight:600;">:</span>
-                        <select id="notif-pref-recordatorio-min" onchange="saveNotifPrefs()" style="background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                        <select id="notif-pref-recordatorio-min" onchange="saveNotifPrefs()" style="background:rgba(var(--vk),0.08); color:#fff; border:1px solid rgba(var(--vk),0.15); border-radius:8px; padding:6px 8px; font-size:14px; font-family:inherit;">
                             <option value="00" selected>00</option><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="40">40</option><option value="50">50</option>
                         </select>
                     </div>
@@ -2496,7 +2617,7 @@
         <div class="modal-box" style="padding-top:48px;">
             <!-- × sticky en esquina superior derecha (siempre alcanzable aún con muchas notifs) -->
             <button onclick="closeAnunciosModal()" aria-label="Cerrar"
-                style="position:absolute; top:12px; right:12px; width:32px; height:32px; padding:0; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.12); border-radius:50%; font-size:18px; line-height:1; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center;">&times;</button>
+                style="position:absolute; top:12px; right:12px; width:32px; height:32px; padding:0; background:rgba(var(--vk),0.06); color:rgba(var(--vk),0.7); border:1px solid rgba(var(--vk),0.12); border-radius:50%; font-size:18px; line-height:1; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center;">&times;</button>
 
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px;">
                 <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin:0;"><i class="fa fa-bullhorn" style="margin-right:8px;"></i>Anuncios</h2>
@@ -2522,7 +2643,7 @@
                 <div id="anuncios-empty" style="text-align:center; padding:40px 20px;">
                     <div style="font-size:48px; opacity:0.3; margin-bottom:12px;">📢</div>
                     <div style="font-size:14px; color:var(--slate); font-weight:600; margin-bottom:6px;">No tienes anuncios</div>
-                    <div style="font-size:12px; color:rgba(255,255,255,0.4); line-height:1.5;">Cuando el director, promotor o coach mande algo, aparece acá.</div>
+                    <div style="font-size:12px; color:rgba(var(--vk),0.4); line-height:1.5;">Cuando el director, promotor o coach mande algo, aparece acá.</div>
                 </div>
             </div>
 
@@ -2559,7 +2680,7 @@
                 <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(46, 125, 79,0.5)"></span> 🌱 Actividad sin cierre</div>
                 <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(255, 199, 44,0.5)"></span> 🌙 Sin intento</div>
                 <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(240, 138, 128,0.5)"></span> 🔴 Con errores</div>
-                <div class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(255,255,255,0.1)"></span> ⚪ Sin reporte</div>
+                <div class="cal-legend-item"><span class="cal-legend-dot cal-dot-none" style="background:rgba(var(--vk),0.1)"></span> ⚪ Sin reporte</div>
             </div>
             <div class="cal-day-detail" id="my-cal-day-detail"><span class="cal-detail-empty">Toca un día para ver detalles.</span></div>
             <!-- Conecta los ⚪ que el agente está viendo con lo que le cuestan -->
@@ -2596,7 +2717,7 @@
                 </div>
                 <div>
                     <label style="font-size:11px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">TU REGIÓN</label>
-                    <select id="reg-region" style="width:100%; padding:10px; background:var(--panel); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-size:14px;">
+                    <select id="reg-region" style="width:100%; padding:10px; background:var(--panel); color:#fff; border:1px solid rgba(var(--vk),0.15); border-radius:8px; font-size:14px;">
                         <option value="">Cargando regiones...</option>
                     </select>
                 </div>
@@ -2607,7 +2728,7 @@
             <button id="reg-submit-btn" onclick="submitRegistration()" style="width:100%; padding:13px; border-radius:8px; background:var(--green); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;">
                 <i class="fa fa-paper-plane"></i> Enviar Solicitud de Acceso
             </button>
-            <button onclick="doSignOut()" style="width:100%; margin-top:10px; padding:10px; border-radius:8px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+            <button onclick="doSignOut()" style="width:100%; margin-top:10px; padding:10px; border-radius:8px; background:none; border:1px solid rgba(var(--vk),0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div>
 
@@ -2617,7 +2738,7 @@
             <div style="font-size:50px; margin-bottom:16px;">⏳</div>
             <h2 style="color:var(--orange); font-family:'Source Sans Pro',sans-serif; margin-bottom:8px;">Solicitud Pendiente</h2>
             <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu solicitud de acceso está pendiente de aprobación por el director. Por favor intenta más tarde.</p>
-            <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:8px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+            <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:8px; background:none; border:1px solid rgba(var(--vk),0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div>
 
@@ -2627,7 +2748,7 @@
             <div style="font-size:50px; margin-bottom:16px;">🚫</div>
             <h2 style="color:var(--red); font-family:'Source Sans Pro',sans-serif; margin-bottom:8px;">Acceso Revocado</h2>
             <p style="color:var(--slate); font-size:13px; margin-bottom:20px;">Tu acceso al sistema ha sido revocado. Contacta al director si crees que es un error.</p>
-            <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:8px; background:none; border:1px solid rgba(255,255,255,0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
+            <button onclick="doSignOut()" style="width:100%; padding:12px; border-radius:8px; background:none; border:1px solid rgba(var(--vk),0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
         </div>
     </div><!-- /revoked-overlay -->
 
@@ -2637,7 +2758,7 @@
         <div style="font-size:22px; flex-shrink:0;">🔔</div>
         <div style="flex:1; color:#fff; font-size:15px; font-weight:700;">¿Activar notificaciones?</div>
         <button onclick="requestPushPermission()" style="padding:8px 14px; background:var(--gold,#7999C2); color: var(--on-brand); border:none; border-radius:8px; font-weight: 900; font-size:13px; cursor:pointer; white-space:nowrap;">Aceptar</button>
-        <button onclick="dismissPushBanner()" style="padding:8px 12px; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.85); border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap;">Rechazar</button>
+        <button onclick="dismissPushBanner()" style="padding:8px 12px; background:rgba(var(--vk),0.08); color:rgba(var(--vk),0.85); border:1px solid rgba(var(--vk),0.15); border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap;">Rechazar</button>
     </div>
     <style>
         #push-banner.show { display:flex !important; }
@@ -2667,7 +2788,6 @@
             color: var(--gold,#20559A) !important;
         }
         #notif-bell-btn.bell-pulsing i { color: var(--gold,#20559A); }
-        }
 
         /* El foro NO es un cuadro de dialogo flotante: es una superficie de pantalla
    completa. .modal-overlay deja pasar el fondo al 45% a proposito, para que
@@ -2706,7 +2826,7 @@
         .foro-tabs { display: flex; gap: 6px; padding: 10px 12px; overflow-x: auto; flex: 0 0 auto;
                      border-bottom: 1px solid var(--border); }
         .foro-tab {
-            flex: 0 0 auto; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            flex: 0 0 auto; background: rgba(var(--vk), 0.05); border: 1px solid var(--border);
             color: var(--slate); border-radius: 20px; padding: 6px 13px; font-size: 12px;
             font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit;
         }
@@ -2769,7 +2889,7 @@
         /* ── Buscador ── */
         .foro-busq-caja {
             display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            background: rgba(var(--vk), 0.05); border: 1px solid var(--border);
             border-radius: 8px; padding: 4px 4px 4px 12px;
         }
         .foro-busq-caja > .fa-magnifying-glass { color: var(--slate); font-size: 13px; }
@@ -2794,7 +2914,7 @@
         /* ── Secciones de Mis hilos ── */
         .foro-subs { display: flex; gap: 8px; margin-bottom: 12px; }
         .foro-sub {
-            flex: 1; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border);
+            flex: 1; background: rgba(var(--vk), 0.04); border: 1px solid var(--border);
             color: var(--slate); border-radius: 8px; padding: 9px 6px;
             font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -2808,7 +2928,7 @@
             border-top: 1px solid var(--border);
         }
         .foro-pag-btn {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+            background: rgba(var(--vk), 0.05); border: 1px solid var(--border);
             color: var(--white); border-radius: 8px; padding: 8px 14px;
             font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer;
             display: flex; align-items: center; gap: 6px;
@@ -2820,7 +2940,7 @@
         .foro-chip-cat, .foro-chip-mio {
             border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 700;
         }
-        .foro-chip-cat { background: rgba(255, 255, 255, 0.07); color: var(--slate); }
+        .foro-chip-cat { background: rgba(var(--vk), 0.07); color: var(--slate); }
         .foro-chip-mio { background: rgba(32, 85, 154, 0.15); color: var(--gold); }
         .foro-nota {
             font-size: 12px; color: var(--slate); line-height: 1.5;
@@ -2835,14 +2955,24 @@
             vertical-align: middle; white-space: nowrap;
         }
 
+        /* Un color por rol, en CSS y no en el JS. Antes iban como estilo en
+           linea desde FORO_ROLES, y un estilo en linea no se puede voltear con
+           el tema sin pelearse a !important con cada regla. Con clase, el tema
+           claro los redefine abajo por especificidad y ya. */
+        .rol-badge.rol-agente        { background: rgba(126, 173, 247, 0.18); color: #7EADF7; }
+        .rol-badge.rol-coach         { background: rgba(111, 215, 155, 0.18); color: #6FD79B; }
+        .rol-badge.rol-promotor      { background: rgba(255, 199, 44, 0.18);  color: #FFC72C; }
+        .rol-badge.rol-director      { background: rgba(240, 138, 128, 0.18); color: #F08A80; }
+        .rol-badge.rol-superdirector { background: rgba(197, 160, 233, 0.18); color: #C5A0E9; }
+
         /* ── Lista de hilos ── */
         .foro-hilo-item {
-            width: 100%; text-align: left; background: rgba(255, 255, 255, 0.03);
+            width: 100%; text-align: left; background: rgba(var(--vk), 0.03);
             border: 1px solid var(--border); border-radius: 8px;
             padding: 12px 13px; margin-bottom: 9px; cursor: pointer; font-family: inherit;
             display: block;
         }
-        .foro-hilo-item:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(32, 85, 154, 0.35); }
+        .foro-hilo-item:hover { background: rgba(var(--vk), 0.06); border-color: rgba(32, 85, 154, 0.35); }
         .foro-hilo-titulo { font-size: 13.5px; font-weight: 700; color: var(--white); line-height: 1.35; margin-bottom: 5px; }
         .foro-meta { font-size: 11px; color: var(--slate); display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 
@@ -2857,13 +2987,13 @@
 
         /* ── Compositor ── */
         .foro-input, .foro-area {
-            width: 100%; background: rgba(255, 255, 255,0.6); border: 1px solid var(--border);
+            width: 100%; background: rgba(var(--vk),0.6); border: 1px solid var(--border);
             border-radius: 8px; color: var(--white); font-size: 13px; font-family: inherit;
             padding: 10px; margin-bottom: 10px;
         }
         .foro-area { resize: vertical; min-height: 110px; }
         .foro-priv {
-            display: flex; align-items: flex-start; gap: 9px; background: rgba(255, 255, 255, 0.04);
+            display: flex; align-items: flex-start; gap: 9px; background: rgba(var(--vk), 0.04);
             border: 1px solid var(--border); border-radius: 8px; padding: 11px 12px; margin-bottom: 12px;
             cursor: pointer;
         }
@@ -2971,9 +3101,9 @@
         #tienda-items div:nth-child(1) div:nth-child(4) { color: #7999C2 !important; }
         #tienda-items div:nth-child(2) div:nth-child(4) { color: #7999C2 !important; background: #143566 !important; border-color: #7999C2 !important; }
         #foro-resp-txt { color: #ffffff !important; background: #071D49 !important; border-color: #ffffff !important; }
-        #foro-body button.foro-hilo-item div.foro-meta span.rol-badge { color: #ffffff !important; background: #071D49 !important; }
+        #foro-body button.foro-hilo-item div.foro-meta span.rol-badge { color: var(--white) !important; background: var(--bg) !important; }
         #cov-info-body div:nth-child(9) div:nth-child(5) { color: #ffffff !important; border-color: #4eca82 !important; }
-        .m-day-today .m-field label { color: rgba(255,255,255,0.78); }
+        .m-day-today .m-field label { color: rgba(var(--vk),0.78); }
         .m-day-today .m-status-msg.ok { color: #6FD79B; }
         .novedad-glow {
             position: relative;
@@ -2982,14 +3112,21 @@
         }
         .m-day-today .m-today-date,
         .m-day-today .m-day-label,
-        .m-day-today .m-day-label small { color: rgba(255,255,255,0.72); }
+        .m-day-today .m-day-label small { color: rgba(var(--vk),0.72); }
         .login-logo {
             display: flex;
             justify-content: center;
             padding-bottom: 20px;
             margin-bottom: 22px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+            border-bottom: 1px solid rgba(var(--vk), 0.14);
         }
+        /* Solo uno de los dos se muestra. El blanco es para el fondo oscuro;
+           el de tinta Oxford, para el claro — sobre un papel al 72% del blanco
+           el logotipo blanco desaparece salvo por el punto amarillo. */
+        .login-logo .logo-claro { display: none; }
+        :root[data-tema="claro"] .login-logo .logo-oscuro { display: none; }
+        :root[data-tema="claro"] .login-logo .logo-claro { display: block; }
+
         .login-logo img {
             /* 34px se veia timido para ser lo primero que se ve al abrir. */
             height: 52px;
@@ -2999,6 +3136,345 @@
         }
 
         .modal-x-bar > button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+
+        /* ══════════════════════════════════════════════════════════════════
+           TEMA CLARO — portado desde testnet v4.44.0.
+
+           Todo lo de abajo esta acotado a :root[data-tema="claro"], asi que en
+           tema oscuro es CODIGO MUERTO: no hay una sola regla que pueda pisar
+           lo que se ve hoy. Lo que si cambio fuera de aqui son los velos, que
+           pasaron de rgba(255,255,255,a) a rgba(var(--vk),a) — con --vk en
+           blanco dan exactamente el mismo color de siempre.
+
+           NO se trajeron las 7 reglas de :root:not([data-tema="claro"]) que
+           tiene testnet: esas ajustan el tema OSCURO y traerlas cambiaria como
+           se ve mainnet hoy.
+           ══════════════════════════════════════════════════════════════════ */
+
+/* ═══ AJUSTES DEL TEMA CLARO ══════════════════════════════════════
+           Elegidos elemento por elemento con el pincel (?editar=1) y pegados
+           TAL CUAL salieron de la herramienta, sin retocar ni un valor: lo que
+           se aprobo en pantalla es exactamente lo que quedo aca.
+
+           Cada regla lleva su tema en el selector, asi que las de claro no
+           tocan el oscuro y viceversa. Las que empiezan con
+           :root:not([data-tema="claro"]) son ajustes al tema OSCURO.
+
+           Van al final de la hoja a proposito: asi ganan por cascada. Los
+           !important tampoco son descuido — la app tiene cientos de estilos
+           escritos dentro del HTML (style="...") y un estilo inline le gana a
+           cualquier regla de hoja que no los lleve. */
+        :root[data-tema="claro"] #update-available-modal div.modal-box { color: #e6ecf4 !important; background: #143a66 !important; }
+        :root[data-tema="claro"] #update-available-modal div.modal-box div:nth-child(4) button.btn.btn-sm { color: #143a66 !important; background: #d4deea !important; border-color: #143a66 !important; }
+        :root[data-tema="claro"] div.app div.header div.row-menu button.btn.btn-sm { color: #edf2f8 !important; background: #32518f !important; border-color: #d4deea !important; }
+        :root[data-tema="claro"] div.app div.header div.row-info { background: #D4DEEA !important; }
+        :root[data-tema="claro"] div.app div.header div.row-brand { background: #D4DEEA !important; }
+        :root[data-tema="claro"] div.app div.header { background: #D4DEEA !important; }
+        :root[data-tema="claro"] div.row-brand div.brand-block div.brand-title span.version-tag { color: #f4f7fb !important; background: #20559a !important; border-color: #d4deea !important; }
+        :root[data-tema="claro"] #notif-bell-btn { color: #dfe7f0 !important; background: #12366e !important; border-color: #d4deea !important; }
+        :root[data-tema="claro"] #anuncios-btn { color: #DFE7F0 !important; background: #12366E !important; border-color: #D4DEEA !important; }
+        :root[data-tema="claro"] #karma-badge { color: #31518f !important; background: #32518f !important; border-color: #32518f !important; }
+        :root[data-tema="claro"] #karma-value { color: #e6ecf4 !important; }
+        :root[data-tema="claro"] #karma-badge span.karma-lbl { color: #ffc72c !important; }
+        :root[data-tema="claro"] #mult-badge { color: #f4f7fb !important; background: #32518f !important; border-color: #d4deea !important; }
+        :root[data-tema="claro"] #mult-badge i.fa.fa-bolt { color: #ffc72c !important; }
+        :root[data-tema="claro"] #mult-badge b:nth-child(2) { color: #ffc72c !important; }
+        :root[data-tema="claro"] #karma-badge span.karma-info-i { color: #f4f7fb !important; border-color: #f4f7fb !important; }
+        :root[data-tema="claro"] #cov-invite-btn { color: #f4f7fb !important; }
+        :root[data-tema="claro"] #cov-invite-card div:nth-child(2) { color: #071d49 !important; }
+        :root[data-tema="claro"] #cov-invite-card div.cov-invite-head span.cov-invite-claim { color: #20559a !important; }
+        :root[data-tema="claro"] #cov-invite-card div.cov-invite-head span.cov-chip-nuevo { color: #f4f7fb !important; background: #071d49 !important; border-color: #20559a !important; }
+        :root[data-tema="claro"] #cov-invite-card div.cov-invite-head span.cov-chip-nuevo i.fa.fa-bolt { color: #ffc72c !important; border-color: #ffc72c !important; }
+        :root[data-tema="claro"] #mobile-week div.m-day-today { background: #d8e0e9 !important; border-color: #071d49 !important; }
+        :root[data-tema="claro"] #mobile-week div.m-day-today div.m-today-header div.m-today-day { color: #071d49 !important; background: #d8e0e9 !important; }
+        :root[data-tema="claro"] #status-msg-Domingo { color: #20559a !important; background: #d8e0e9 !important; }
+        :root[data-tema="claro"] #mobile-week div.m-day-today div.m-today-header div.m-today-badge { color: #f4f7fb !important; background: #20559a !important; }
+        :root[data-tema="claro"] #active-view-Domingo div.m-today-grid div.m-field input.m-prima-input { color: #061837 !important; }
+        :root[data-tema="claro"] #btn-noact-Domingo { color: #d8e0e9 !important; background: #071d49 !important; }
+        :root[data-tema="claro"] #mobile-week div.m-day-compact { color: #ffffff !important; background: #d8e0e9 !important; border-color: #071d49 !important; }
+        :root[data-tema="claro"] #m-summary-Sábado span:nth-child(1) { color: #071d49 !important; }
+        :root[data-tema="claro"] #m-summary-Sábado span:nth-child(2) { color: #071D49 !important; }
+        :root[data-tema="claro"] #m-summary-Sábado span:nth-child(4) { color: #071D49 !important; }
+        :root[data-tema="claro"] #m-summary-Sábado span:nth-child(5) { color: #071D49 !important; }
+        :root[data-tema="claro"] #m-summary-Sábado span.m-prima { color: #071D49 !important; }
+        :root[data-tema="claro"] #mobile-week div.m-day-compact div.m-day-label { color: #071D49 !important; }
+        :root[data-tema="claro"] #mobile-week div.m-day-compact div.m-day-label small:nth-child(1) { color: #071D49 !important; }
+        :root[data-tema="claro"] #tab-bitacora div.card div.m-totals div.m-total-card.m-total-month { color: #c4c4c4 !important; background: #8f98a3 !important; border-color: #8995a4 !important; }
+        :root[data-tema="claro"] div.card div.m-totals div.m-total-card.m-total-month div.m-total-label { color: #f4f7fb !important; }
+        :root[data-tema="claro"] .m-total-card.m-total-month .m-total-value { color: #f4f7fb !important; }
+        :root[data-tema="claro"] #tab-bitacora div.card div.m-totals div.m-total-card { background: #20559a !important; }
+        :root[data-tema="claro"] .m-total-card:not(.m-total-month) .m-total-value { color: #f4f7fb !important; border-color: #f4f7fb !important; }
+        :root[data-tema="claro"] div.card div.m-totals div.m-total-card div.m-total-label { color: #f4f7fb !important; }
+        :root[data-tema="claro"] nav.bottom-nav { background: #dde5ef !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn.active { color: #20559a !important; border-color: #20559a !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn.active i.fa.fa-book-open { color: #071d49 !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn i.fa.fa-lightbulb { color: #071D49 !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn span:nth-child(2) { color: #071D49 !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn i.fa.fa-chart-column { color: #071D49 !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn i.fa.fa-chart-area { color: #071D49 !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn i.fa.fa-store { color: #071D49 !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn i.fa.fa-comments { color: #071D49 !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn span:nth-child(3) { color: #071D49 !important; }
+        :root[data-tema="claro"] #tab-conceptos div.card { background: #dfe6ee !important; }
+        :root[data-tema="claro"] div.conceptos-grid div.conceptos-visual div:nth-child(3) div:nth-child(3) { background: #666f7a !important; }
+        :root[data-tema="claro"] div.conceptos-grid div.conceptos-visual div:nth-child(3) div:nth-child(2) { background: #7999c2 !important; }
+        :root[data-tema="claro"] #kpiEfectividad { background: #dde5ef !important; }
+        :root[data-tema="claro"] #ts-btn-comprar { color: #061837 !important; background: #dce4ee !important; }
+        :root[data-tema="claro"] #ts-view-comprar div.card { background: #dde5ef !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn i.fa.fa-book-open { color: #071d49 !important; }
+        :root[data-tema="claro"] #tab-charts div.card { background: #dde5ef !important; }
+        :root[data-tema="claro"] #foro-body { background: #dde5ef !important; }
+        :root[data-tema="claro"] #foro-tabs { background: #dde5ef !important; }
+        :root[data-tema="claro"] #foro-modal div.foro-box div.foro-head { background: #d6dfea !important; }
+        :root[data-tema="claro"] nav.bottom-nav button.bn-btn { color: #071D49 !important; }
+        :root[data-tema="claro"] div.card div.conceptos-grid div.conceptos-visual p:nth-child(4) { color: #143a66 !important; }
+        :root[data-tema="claro"] #update-available-modal div.modal-box h2:nth-child(2) { color: #e6ecf4 !important; }
+        :root[data-tema="claro"] #update-available-modal div.modal-box p:nth-child(3) { color: #e6ecf4 !important; }
+        :root[data-tema="claro"] #active-view-Domingo div.m-today-status { background: #d8e0e9 !important; }
+        :root[data-tema="claro"] #tab-bitacora div.card { background: #d8e0e9 !important; }
+        :root[data-tema="claro"] #cov-info-modal div.modal-box div.modal-x-bar { background: #103266 !important; }
+        :root[data-tema="claro"] #cov-info-modal div.modal-box { background: #d0d7e2 !important; }
+        :root[data-tema="claro"] #cov-info-body { background: #d0d7e2 !important; }
+        :root[data-tema="claro"] #cov-info-body div.mult-demo-wrap { color: #03245c !important; background: #103266 !important; }
+        :root[data-tema="claro"] #cov-info-body div.mult-demo-wrap span.karma-chip-demo b:nth-child(2) { color: #000000 !important; }
+        :root[data-tema="claro"] #cov-info-body div.mult-demo-wrap span.karma-chip-demo { color: #14376e !important; background: #dde5ef !important; border-color: #ffb62e !important; }
+        :root[data-tema="claro"] #cov-info-body div.mult-demo-wrap span.mult-chip-demo b:nth-child(2) { color: #ffa600 !important; }
+        :root[data-tema="claro"] #cov-info-body div.mult-demo-wrap span.mult-chip-demo i.fa.fa-bolt { color: #ffa600 !important; }
+        :root[data-tema="claro"] table:nth-child(1) thead:nth-child(1) tr:nth-child(1) th:nth-child(3) { color: #ff0000 !important; border-color: #484033 !important; }
+        :root[data-tema="claro"] tbody:nth-child(2) tr:nth-child(2) td:nth-child(3) span:nth-child(1) { color: #ff0000 !important; background: #d0d7e2 !important; }
+        :root[data-tema="claro"] tbody:nth-child(2) tr:nth-child(3) td:nth-child(3) span:nth-child(1) { color: #ff0000 !important; border-color: #ff0000 !important; }
+        :root[data-tema="claro"] tbody:nth-child(2) tr:nth-child(4) td:nth-child(3) span:nth-child(1) { color: #ff0000 !important; border-color: #ff0000 !important; }
+        :root[data-tema="claro"] #cov-info-modal div.modal-box div.modal-x-bar button:nth-child(1) { color: #ffffff !important; background: #103266 !important; border-color: #384d70 !important; }
+        :root[data-tema="claro"] tbody:nth-child(2) tr:nth-child(4) td:nth-child(1) span:nth-child(2) { color: #20559a !important; border-color: #20559a !important; }
+        :root[data-tema="claro"] tbody:nth-child(2) tr:nth-child(3) td:nth-child(1) span:nth-child(2) { color: #20559a !important; }
+        :root[data-tema="claro"] tbody:nth-child(2) tr:nth-child(2) td:nth-child(1) span:nth-child(2) { color: #20559a !important; }
+        :root[data-tema="claro"] #cov-info-body div:nth-child(10) { color: #98b7eb !important; background: #20559a !important; border-color: #e5efff !important; }
+        :root[data-tema="claro"] #cov-info-body div:nth-child(10) span:nth-child(2) { color: #d4deea !important; border-color: #d4deea !important; }
+        :root[data-tema="claro"] #cov-info-body div:nth-child(10) span:nth-child(1) { color: #d4deea !important; background: #7d8997 !important; border-color: #48cbcb !important; }
+        :root[data-tema="claro"] #rules-modal div.rules-modal-box { background: #d4deea !important; }
+        :root[data-tema="claro"] #rules-modal div.rules-modal-box div.rules-modal-header { color: #d4deea !important; background: #d4deea !important; }
+        :root[data-tema="claro"] #mult-receipt-body div:nth-child(6) div:nth-child(2) { color: #32518f !important; border-color: #12366e !important; }
+        :root[data-tema="claro"] #mult-receipt-modal div.modal-box { background: #d4deea !important; }
+        :root[data-tema="claro"] #mult-receipt-modal div.modal-box div.modal-x-bar { color: #d4deea !important; background: #d2dbe7 !important; }
+        :root[data-tema="claro"] #mult-receipt-body div:nth-child(6) { border-color: #071d49 !important; }
+        :root[data-tema="claro"] #mult-receipt-body div:nth-child(7) b:nth-child(1) { color: #ff0000 !important; background: #d4deea !important; }
+        :root[data-tema="claro"] #mult-receipt-body div.mrec-row div.mrec-n { color: #32518f !important; }
+        :root[data-tema="claro"] #tab-bitacora div.card div:nth-child(2):not(.m-total-value) { color: #32518f !important; }
+        /* El :not() se agrego despues. Este selector es POSICIONAL: alcanza a
+           cualquier div que sea el segundo hijo de su padre, a cualquier
+           profundidad dentro de una tarjeta de Bitacora. La cifra de prima es
+           justamente el segundo hijo de .m-total-card, asi que la pintaba de
+           #32518f — azul oscuro sobre azul— y con peso (1,4,2) le ganaba a
+           todo lo que se intentara despues, incluso al pincel. Se excluye solo
+           esa clase; el resto de lo que la regla hacia sigue igual. */
+        :root[data-tema="claro"] #tema-lbl { color: #32518f !important; }
+        :root[data-tema="claro"] #mobile-week div.m-section-divider { color: #071d49 !important; }
+
+            :root[data-tema="claro"] #login-overlay { background: #133971 !important; }
+        :root[data-tema="claro"] #login-btn { color: #f0f0f0 !important; }
+        :root[data-tema="claro"] #install-btn span:nth-child(2) { color: #9c8307 !important; border-color: #cccccc !important; }
+        :root[data-tema="claro"] #install-btn { color: #000000 !important; }
+        :root[data-tema="claro"] #login-overlay div.login-card { color: #ffc2c2 !important; }
+        /* Aqui habia una regla que ponia #m-tt-$ en #2f5291 — azul oscuro sobre
+           la tarjeta cobalto, 1.0:1. Se retira porque contradice lo pedido
+           despues: que la cifra vaya del mismo blanco que su etiqueta. Estaba
+           inerte de todos modos, sobrescrita mas abajo. */
+        :root[data-tema="claro"] #rules-mult-block div:nth-child(1) div.mult-demo-wrap { background: #32518f !important; }
+        :root[data-tema="claro"] div:nth-child(1) div.mult-demo-wrap span.mult-chip-demo i.fa.fa-bolt { color: #e0ae52 !important; }
+        :root[data-tema="claro"] div:nth-child(1) div.mult-demo-wrap span.mult-chip-demo b:nth-child(2) { color: #061837 !important; }
+
+        /* ── CONTRASTE DE PRIMA SEMANA / PRIMA MES ─────────────────────────
+           Lo unico de esta hoja que NO salio del pincel. Se pidio arreglar el
+           contraste de esas dos tarjetas y los numeros no daban:
+
+             prima mes   fondo #8F98A3 + texto #c4c4c4 -> 1.7:1
+                                       + etiqueta #f4f7fb -> 2.7:1
+             prima semana fondo #20559A + cifra #2f5291  -> 1.0:1 (invisible)
+
+           Oscurecer el gris hasta que aguantara texto claro lo acercaba al
+           cobalto de la otra tarjeta y se perdia la distincion entre las dos.
+           Se hace al reves: el gris se queda TAL CUAL y el texto se invierte a
+           Oxford. Asi las dos tarjetas se distinguen por inversion —una clara
+           con tinta oscura, otra oscura con tinta clara— en vez de por matiz,
+           y las dos pasan holgado:
+
+             prima mes    #071D49 sobre #8F98A3 -> 5.6:1
+             prima semana #F4F7FB sobre #20559A -> 6.9:1  */
+        :root[data-tema="claro"] #tab-bitacora div.card div.m-totals div.m-total-card.m-total-month { color: #071D49 !important; }
+        :root[data-tema="claro"] div.card div.m-totals div.m-total-card.m-total-month div.m-total-label { color: #071D49 !important; }
+        /* Por CLASE y no por id. Una regla de id con !important empata en peso
+           con lo que genera el pincel, y entonces gana la que quede despues —
+           que es la horneada. El resultado era que la herramienta no podia
+           editar justo estas dos cifras. Con selector de clase el pincel siempre
+           tiene mas peso y puede sobrescribirlas. */
+        :root[data-tema="claro"] .m-total-card.m-total-month .m-total-value { color: #071D49 !important; }
+        :root[data-tema="claro"] .m-total-card:not(.m-total-month) .m-total-value { color: #F4F7FB !important; }
+
+    
+        /* ── CONTRASTE: SEMANA COMPACTA, CALENDARIO Y GRAFICAS ─────────────
+           Correcciones pedidas. Se toca SOLO el color del texto; los fondos
+           elegidos con el pincel quedan intactos.
+
+           1. La semana compacta tenia `color: #ffffff` sobre `#d8e0e9`: 1.3:1,
+              practicamente invisible. El azul oscuro ya estaba elegido —las
+              reglas de #m-summary-Sábado usan #071D49— pero atadas al sabado,
+              asi que los otros seis dias se quedaban en blanco. Aqui se aplica
+              a todos: [id^="m-summary-"] vale para cualquier dia, y sigue
+              valiendo cuando cambie la fecha.
+              #071D49 sobre #d8e0e9 -> 12.3:1
+
+           2. Dos estados del calendario quedaban justo por debajo del minimo:
+              rojo 3.5:1 y sin-actividad 3.9:1. Se oscurecen un punto. Los
+              emojis no se tocan. */
+        :root[data-tema="claro"] #mobile-week div.m-day-compact { color: #071D49 !important; }
+        :root[data-tema="claro"] #mobile-week div.m-day-compact [id^="m-summary-"] span { color: #071D49 !important; }
+        :root[data-tema="claro"] #mobile-week div.m-day-compact [id^="m-summary-"] span.m-prima { color: #071D49 !important; }
+        :root[data-tema="claro"] #mobile-week div.m-day-compact div.m-day-label,
+        :root[data-tema="claro"] #mobile-week div.m-day-compact div.m-day-label small { color: #071D49 !important; }
+
+        :root[data-tema="claro"] .cal-cell.red { color: #96271B !important; }
+        :root[data-tema="claro"] .cal-cell.sin-actividad { color: #6B4700 !important; }
+
+    
+        /* ── DIAS SIN REPORTE EN TEMA CLARO ────────────────────────────────
+           El ⚪ es un emoji: su color no se puede cambiar desde CSS. Sobre el
+           papel claro quedaba blanco sobre gris claro, casi invisible.
+
+           Los dos primeros intentos fueron por el mismo camino equivocado:
+           oscurecer LA CELDA ENTERA. Y ahi hay una contradiccion que no se
+           puede resolver — sobre fondo claro un navy translucido se lava y se
+           ve gris; para que se vea Oxford hay que subirlo tanto que la celda
+           queda como un bloque solido, mucho mas pesada que sus vecinas, que
+           son tintes suaves.
+
+           La salida es la celda: lleva el MISMO tinte suave de Oxford que sus
+           vecinas —translucida de verdad, 16%— que se mezcla con el papel pero
+           queda bastante mas oscura que el, y contra ese tinte la pelotita
+           blanca se lee sola. Al emoji no se le toca nada (ver abajo).
+
+           El numero del dia vuelve a ser oscuro, porque la celda vuelve a ser
+           clara. */
+        :root[data-tema="claro"] .cal-cell.none {
+            background: rgba(7, 29, 73, 0.16) !important;
+            border-color: rgba(7, 29, 73, 0.30) !important;
+        }
+        :root[data-tema="claro"] .cal-cell.none .cal-num { color: #071D49 !important; }
+
+        /* SIN CONTORNO. Aqui hubo tres intentos y los tres eran el mismo
+           error con distinta forma: darle al ⚪ algo oscuro pegado al borde
+           para que se recortara. Primero un disco detras, luego un
+           drop-shadow apilado tres veces. Da igual como se dibuje — cualquier
+           oscurecimiento ceñido al contorno de un circulo SE VE COMO UN ARO,
+           porque un aro es exactamente eso. No es que estuviera mal calibrado;
+           no habia calibracion posible.
+
+           Lo que hacia falta ya estaba resuelto en la regla de arriba: la
+           celda lleva su tinte de Oxford al 16%, bastante mas oscura que el
+           papel, y contra ese tinte la pelotita blanca se lee sola. El
+           drop-shadow venia de cuando la celda todavia era clara y sobraba
+           desde entonces. Se quita y no se reemplaza por nada.
+
+           Si algun dia la pelotita se ve floja, lo que se sube es el tinte de
+           la CELDA, nunca un halo alrededor del emoji. */
+
+        /* El punto de la leyenda muestra el tinte de la celda, no el del
+           disco. Clase propia y no :last-child, para que no se rompa si se
+           agrega o se mueve un estado. */
+        :root[data-tema="claro"] .cal-legend-dot.cal-dot-none {
+            background: rgba(7, 29, 73, 0.16) !important;
+        }
+
+    
+        /* ── Tanda del pincel: modales de cobertura, recibo, escalones y
+           anuncios. Van al final para ganar por cascada sobre las anteriores;
+           varias corrigen valores de tandas previas (la barra de la X del
+           modal de cobertura pasa de #103266 a #d0d7e2, por ejemplo). */
+        :root[data-tema="claro"] #cov-info-modal div.modal-box div.modal-x-bar { background: #d0d7e2 !important; }
+        :root[data-tema="claro"] #cov-info-modal div.modal-box div.modal-x-bar button:nth-child(1) { color: #103266 !important; background: #d0d7e2 !important; }
+        :root[data-tema="claro"] #cov-info-body div:nth-child(10) { background: #d0d7e2 !important; }
+        :root[data-tema="claro"] #cov-info-body div:nth-child(10) span:nth-child(2) { color: #143a66 !important; }
+        :root[data-tema="claro"] #mult-receipt-body div.mrec-row div.mrec-n { color: #32518f !important; }
+        :root[data-tema="claro"] #mult-receipt-body div.mrec-row div:nth-child(2) div.mrec-k { color: #32518f !important; background: #d4deea !important; }
+        :root[data-tema="claro"] #mult-receipt-body div:nth-child(6) { background: #c9ccf3 !important; }
+        :root[data-tema="claro"] #rules-mult-block div:nth-child(1) { background: #C9CCF3 !important; }
+        :root[data-tema="claro"] #rules-mult-block div:nth-child(1) div:nth-child(1) { color: #000000 !important; }
+        :root[data-tema="claro"] #rules-mult-block div:nth-child(1) div:nth-child(1) i.fa.fa-bolt { color: #d6a739 !important; border-color: #ffaf1a !important; }
+        :root[data-tema="claro"] #anuncios-modal div.modal-box { background: #D4DEEA !important; }
+        :root[data-tema="claro"] #anuncios-modal div.modal-box div.modal-x-bar { background: #D4DEEA !important; }
+
+    
+        /* ── Tanda del pincel: las dos tarjetas de prima ───────────────────
+           Las dos que llevan `html:root[...]` salieron con el prefijo escalado
+           de la herramienta. No es adorno: sin el empatan en peso con las
+           reglas de mas arriba y el resultado depende del orden. Se dejan tal
+           cual salieron, que es lo que se verifico en pantalla. */
+        html:root[data-tema="claro"] #m-tt-\$ { color: #ffffff !important; }
+        :root[data-tema="claro"] #tab-bitacora div.card div.m-totals div.m-total-card { background: #304e8a !important; }
+        :root[data-tema="claro"] #tab-bitacora div.m-totals div.m-total-card.m-total-month div.m-total-label { color: #001b52 !important; }
+        html:root[data-tema="claro"] #m-mt-\$ { color: #001B52 !important; }
+        :root[data-tema="claro"] #tab-bitacora div.card div.m-totals div.m-total-card.m-total-month { background: #bfc6cf !important; }
+
+
+        /* ── TIENDA · ACTIVIDAD, TEMA CLARO ────────────────────────────────
+           Fuera el blanco y fuera el dorado de esta pestaña: los paneles se
+           van al papel #D4DEEA y todo el acento amarillo pasa a Oxford.
+
+           No se hace regla por regla sino REDEFINIENDO LOS TOKENS sobre el
+           subarbol. Casi todo lo que se ve aqui se pinta desde el JS con
+           estilos en linea (`background:var(--panel)`, `color:var(--gold-l)`),
+           y un estilo en linea le gana a cualquier hoja que no traiga
+           !important. Redefinir la variable esquiva esa pelea entera: el
+           navegador resuelve var() en el contexto del elemento, asi que el
+           mismo `var(--panel)` que ya estaba escrito devuelve otro color aqui
+           dentro y el de siempre en el resto de la app. De paso no toca ni
+           Comprar ni Mis solicitudes, que comparten esos tokens.
+
+           --panel         fondo de las tarjetas y de cada fila del feed y del top
+           --gold          titulos de seccion y las cifras de totopos
+           --gold-l        los realces de "(tú)"
+           --amarillo      las plecas de arriba de cada titulo
+           --amarillo-rgb  el velo y el borde de tu fila en el top 10 */
+        :root[data-tema="claro"] #ts-view-actividad {
+            --panel: #D4DEEA;
+            --gold: #071D49;
+            --gold-l: #071D49;
+            --amarillo: #071D49;
+            --amarillo-rgb: 7, 29, 73;
+        }
+
+        /* Con el panel en #D4DEEA las filas quedan del mismo tono que la
+           tarjeta que las contiene y la lista se leia como un solo bloque.
+           El hairline que ya usa el resto de la app les devuelve el corte sin
+           meter ningun color nuevo. Las filas propias traen su borde azul en
+           linea y ese gana, que es lo que se quiere. */
+        :root[data-tema="claro"] #tienda-feed > div:not(.empty-state),
+        :root[data-tema="claro"] #tienda-leaderboard > div:not(.empty-state) {
+            border: 1px solid var(--border);
+        }
+
+
+        /* ── BADGES DE ROL DEL FORO, TEMA CLARO ────────────────────────────
+           Los tonos de arriba estan pensados para leerse sobre panel oscuro:
+           son claros. Sobre el papel claro pasan dos cosas a la vez y las dos
+           en contra — la letra clara se acerca al fondo, y el velo al 18% se
+           lava hasta casi desaparecer. El COACH quedaba en 1.4:1.
+
+           Se baja el tono de cada rol conservando el matiz, para que el rol se
+           siga reconociendo por color, y se sube el velo de 18% a 20% con ese
+           mismo tono ya oscuro: el chip se despega del papel y la letra se
+           recorta contra el chip.
+
+           Medidos contra su propio chip sobre el panel #E6ECF4:
+             agente         5.3:1     director        4.6:1
+             coach          4.8:1     superdirector   5.3:1
+             promotor       5.1:1
+           Todos por encima del 4.5:1 de la norma. */
+        :root[data-tema="claro"] .rol-badge.rol-agente        { background: rgba(20, 73, 143, 0.20);  color: #14498F; }
+        :root[data-tema="claro"] .rol-badge.rol-coach         { background: rgba(27, 94, 58, 0.20);   color: #1B5E3A; }
+        :root[data-tema="claro"] .rol-badge.rol-promotor      { background: rgba(110, 71, 0, 0.20);   color: #6E4700; }
+        :root[data-tema="claro"] .rol-badge.rol-director      { background: rgba(154, 43, 34, 0.20);  color: #9A2B22; }
+        :root[data-tema="claro"] .rol-badge.rol-superdirector { background: rgba(91, 58, 140, 0.20);  color: #5B3A8C; }
 
     </style>
 
@@ -3037,7 +3513,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.14.0';
+        window.APP_HTML_VERSION = 'v2.15.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -3162,20 +3638,39 @@
         // rejilla que no declare color no termine en el gris de fabrica, que
         // sobre navy es casi invisible. Los tooltips vienen en negro solido y
         // desentonan con todo lo demas.
-        let _chartDefaultsListos = false;
+        // OJO: aca NO se puede usar var(--x). Chart.js dibuja sobre canvas y el
+        // canvas no resuelve variables CSS — hay que darle colores literales.
+        // Por eso estas dos funciones eligen a mano segun el tema, y por eso
+        // hay que volver a llamarlas cuando el tema cambia (lo hace _ponerTema).
+        //
+        // Ya no hay guarda de "solo una vez": antes corria una sola vez porque
+        // los valores no cambiaban nunca. Ahora si cambian, y volver a fijarlos
+        // es idempotente dentro de un mismo tema.
         function _chartDefaults() {
-            if (_chartDefaultsListos || typeof Chart === 'undefined') return;
-            Chart.defaults.color = '#D2DDEB';
-            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.10)';
+            if (typeof Chart === 'undefined') return;
+            const claro = document.documentElement.getAttribute('data-tema') === 'claro';
+            Chart.defaults.color       = claro ? '#465C7B' : '#D2DDEB';
+            Chart.defaults.borderColor = claro ? 'rgba(7, 29, 73, 0.14)' : 'rgba(255, 255, 255, 0.10)';
             const tt = Chart.defaults.plugins && Chart.defaults.plugins.tooltip;
             if (tt) {
-                tt.backgroundColor = '#143566';
-                tt.titleColor = '#FFFFFF';
-                tt.bodyColor = '#D2DDEB';
-                tt.borderColor = '#A9BFD9';
+                tt.backgroundColor = claro ? '#E6ECF4' : '#143566';
+                tt.titleColor      = claro ? '#061837' : '#FFFFFF';
+                tt.bodyColor       = claro ? '#465C7B' : '#D2DDEB';
+                tt.borderColor     = claro ? '#143A66' : '#A9BFD9';
                 tt.borderWidth = 1;
             }
-            _chartDefaultsListos = true;
+        }
+
+        // Colores para lo que se dibuja DENTRO del canvas. Todo lo que estaba
+        // clavado en #FFFFFF o #A9BFD9 quedaba ilegible en tema claro: blanco
+        // sobre tarjeta clara da 1.2:1 y el gris azulado 1.6:1.
+        function _chartTinta() {
+            const claro = document.documentElement.getAttribute('data-tema') === 'claro';
+            return {
+                texto:   claro ? '#143A66' : '#FFFFFF',   // leyendas y titulos
+                suave:   claro ? '#465C7B' : '#A9BFD9',   // etiquetas de eje / radar
+                rejilla: claro ? 'rgba(7, 29, 73, 0.16)' : '#A9BFD9'
+            };
         }
 
         const CHART_COLORS = { P: '#3E7AC4', E: '#7999C2', C: '#A9BFD9', V: '#FFC72C', S: '#E8EFF7' };
@@ -3783,12 +4278,12 @@
                     const dt = a.createdAt ? new Date(a.createdAt).toLocaleString('es-MX',
                         { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
                     const card = document.createElement('div');
-                    card.style.cssText = `position:relative; padding:12px 36px 12px 14px; background:${isUnread ? 'rgba(32, 85, 154,0.08)' : 'rgba(255,255,255,0.03)'};
-                        border:1px solid ${isUnread ? 'rgba(32, 85, 154,0.35)' : 'rgba(255,255,255,0.08)'};
+                    card.style.cssText = `position:relative; padding:12px 36px 12px 14px; background:${isUnread ? 'rgba(32, 85, 154,0.08)' : 'rgba(var(--vk),0.03)'};
+                        border:1px solid ${isUnread ? 'rgba(32, 85, 154,0.35)' : 'rgba(var(--vk),0.08)'};
                         border-radius:8px; transition:background .15s;`;
                     card.innerHTML = `
                         <button onclick="event.stopPropagation(); hideAnuncio('${a.id}')" aria-label="Ocultar"
-                            style="position:absolute; top:8px; right:8px; width:24px; height:24px; padding:0; background:transparent; color:rgba(255,255,255,0.4); border:none; font-size:18px; line-height:1; cursor:pointer; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
+                            style="position:absolute; top:8px; right:8px; width:24px; height:24px; padding:0; background:transparent; color:rgba(var(--vk),0.4); border:none; font-size:18px; line-height:1; cursor:pointer; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
                         <div style="cursor:pointer;" data-mark-read>
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; padding-right:8px;">
                                 <div style="font-weight:700; color:${isUnread ? 'var(--gold-l)' : '#fff'}; font-size:14px; line-height:1.3;">
@@ -3796,7 +4291,7 @@
                                 </div>
                                 <div style="font-size:11px; color:var(--slate); white-space:nowrap; flex-shrink:0;">${dt}</div>
                             </div>
-                            <div style="font-size:13px; color:rgba(255,255,255,0.85); line-height:1.45; margin-bottom:6px; white-space:pre-wrap;">${renderAnuncioBody(a.body || '')}</div>
+                            <div style="font-size:13px; color:rgba(var(--vk),0.85); line-height:1.45; margin-bottom:6px; white-space:pre-wrap;">${renderAnuncioBody(a.body || '')}</div>
                             <div style="font-size:10px; color:var(--slate);">— ${escapeHtml(a.createdByName || a.createdBy || '')}</div>
                         </div>
                     `;
@@ -5515,7 +6010,7 @@
                 const off = t.pct === 0;
                 // `bdr`, no `bd`: el desglose de cobertura ya usa `bd` en el scope
                 // de arriba y un shadow acá sería una trampa para el próximo cambio.
-                const bdr = 'border-bottom:1px solid rgba(255,255,255,0.05);';
+                const bdr = 'border-bottom:1px solid rgba(var(--vk),0.05);';
                 const num = (v, size, color, weight) =>
                     `<span style="font-size:${size}px; font-weight:${weight}; color:${color}; font-variant-numeric:tabular-nums;">${v}</span>`;
                 return `<tr style="${off ? 'opacity:0.55;' : ''}">
@@ -5554,7 +6049,7 @@
                     </div><div></div>
                 </div>
 
-                <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.10); font-size:12.5px; color:var(--slate); line-height:1.6;">
+                <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(var(--vk),0.10); font-size:12.5px; color:var(--slate); line-height:1.6;">
                     Y los días que reportes en <b style="color:var(--white); text-transform:capitalize;">${mesAct}</b>
                     deciden <b style="color:var(--white);">cuánto de ese multiplicador cobras</b> en
                     <b style="color:var(--gold); text-transform:capitalize;">${mesSig}</b>.
@@ -5571,7 +6066,7 @@
                     <div class="cov-legend">
                         <span><i class="cov-dot" style="background:linear-gradient(90deg,var(--gold),#7999C2);"></i><b style="color:var(--white);">${bd.reportados}</b> reportados</span>
                         ${bd.perdidos > 0 ? `<span><i class="cov-dot" style="background:rgba(240, 138, 128,0.45);"></i><b style="color:#F08A80;">${bd.perdidos}</b> ${bd.perdidos === 1 ? 'perdido' : 'perdidos'}</span>` : ''}
-                        ${bd.porVenir > 0 ? `<span><i class="cov-dot" style="background:rgba(255,255,255,0.18);"></i><b style="color:var(--white);">${bd.porVenir}</b> por reportar</span>` : ''}
+                        ${bd.porVenir > 0 ? `<span><i class="cov-dot" style="background:rgba(var(--vk),0.18);"></i><b style="color:var(--white);">${bd.porVenir}</b> por reportar</span>` : ''}
                     </div>
                     ${bd.perdidos > 0 ? `
                     <div style="font-size:11.5px; color:var(--slate); margin-top:9px; line-height:1.5;">
@@ -5586,14 +6081,14 @@
                 </div>
 
                 <div style="display:flex; align-items:center; gap:8px; margin:16px 0 6px; flex-wrap:wrap;">
-                    <span style="background:rgba(255,255,255,0.10); color:var(--slate); font-size:9px; font-weight: 900; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:8px;">Ejemplos</span>
+                    <span style="background:rgba(var(--vk),0.10); color:var(--slate); font-size:9px; font-weight: 900; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:8px;">Ejemplos</span>
                     <span style="font-size:11px; color:var(--gold); text-transform:uppercase; letter-spacing:1px; font-weight:700;">
                         Lo que valdría cada día de ${mesSig}
                     </span>
                 </div>
                 <div style="overflow-x:auto;">
                 <table style="width:100%; border-collapse:collapse;">
-                    <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.14);">
+                    <thead><tr style="border-bottom:1px solid rgba(var(--vk),0.14);">
                         <th style="text-align:left; font-size:9.5px; color:var(--slate); text-transform:uppercase; letter-spacing:0.8px; font-weight:500; padding-bottom:7px;">Si cierras ${mesAct} con…</th>
                         <th style="text-align:right; font-size:8.5px; color:var(--gold); text-transform:uppercase; letter-spacing:0.2px; font-weight: 900; padding-bottom:7px; padding-left:8px; line-height:1.3;">Reportando<br>todos los días<br>del mes</th>
                         <th style="text-align:right; font-size:8.5px; color:rgba(240, 138, 128,0.85); text-transform:uppercase; letter-spacing:0.2px; font-weight:700; padding-bottom:7px; padding-left:10px; line-height:1.3;">Habiendo<br>reportado la mitad<br>de los días</th>
@@ -5619,7 +6114,7 @@
                         : 'Reportaste el mes completo. Tu multiplicador va a entrar al 100%.'}
                 </div>`}
 
-                <div style="margin-top:18px; border-top:1px solid rgba(255,255,255,0.10); padding-top:14px; display:flex; flex-direction:column; gap:10px;">
+                <div style="margin-top:18px; border-top:1px solid rgba(var(--vk),0.10); padding-top:14px; display:flex; flex-direction:column; gap:10px;">
                     <div style="background:rgba(46, 125, 79,0.08); border-left:3px solid var(--green); border-radius:0 6px 6px 0; padding:10px 12px;">
                         <div style="font-size:10.5px; color:#2E7D4F; text-transform:uppercase; letter-spacing:1px; font-weight: 900; margin-bottom:6px;">✓ Días que sí cuentan</div>
                         <div style="font-size:12px; color:var(--slate); line-height:1.85;">
@@ -5658,9 +6153,9 @@
                     ? `${_money(t.min)} — ${_money(tiers[i + 1].min - 1)}`
                     : `${_money(t.min)} o más`;
                 return `<tr>
-                    <td style="padding:6px 0; font-size:12px; border-bottom:1px solid rgba(255,255,255,0.05);">${rango}</td>
-                    <td style="padding:6px 0; text-align:right; font-size:11.5px; color:var(--slate); border-bottom:1px solid rgba(255,255,255,0.05); font-variant-numeric:tabular-nums; white-space:nowrap;">hasta +${t.pct}%</td>
-                    <td style="padding:6px 0 6px 12px; text-align:right; border-bottom:1px solid rgba(255,255,255,0.05); white-space:nowrap;">
+                    <td style="padding:6px 0; font-size:12px; border-bottom:1px solid rgba(var(--vk),0.05);">${rango}</td>
+                    <td style="padding:6px 0; text-align:right; font-size:11.5px; color:var(--slate); border-bottom:1px solid rgba(var(--vk),0.05); font-variant-numeric:tabular-nums; white-space:nowrap;">hasta +${t.pct}%</td>
+                    <td style="padding:6px 0 6px 12px; text-align:right; border-bottom:1px solid rgba(var(--vk),0.05); white-space:nowrap;">
                         <span style="font-size:10px; color:var(--slate);">hasta</span>
                         <span style="font-size:15px; font-weight: 900; color:var(--gold); font-variant-numeric:tabular-nums;">${Math.round(base * (1 + t.pct / 100))}</span>
                     </td>
@@ -5681,16 +6176,16 @@
                     </p>
                     <div style="overflow-x:auto;">
                     <table style="width:100%; border-collapse:collapse;">
-                        <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.14); color:var(--slate);">
+                        <thead><tr style="border-bottom:1px solid rgba(var(--vk),0.14); color:var(--slate);">
                             <th style="text-align:left; font-size:9.5px; text-transform:uppercase; letter-spacing:1px; font-weight:500; padding-bottom:6px;">Prima ingresada en el mes</th>
                             <th style="text-align:right; font-size:9.5px; text-transform:uppercase; letter-spacing:1px; font-weight:500; padding-bottom:6px;">Bonus</th>
                             <th style="text-align:right; font-size:9.5px; text-transform:uppercase; letter-spacing:1px; font-weight:500; padding-bottom:6px; padding-left:12px;">Vale el día</th>
                         </tr></thead>
                         <tbody>
                             <tr style="opacity:0.55;">
-                                <td style="padding:6px 0; font-size:12px; border-bottom:1px solid rgba(255,255,255,0.05);">menos de ${_money(piso.min)}</td>
-                                <td style="padding:6px 0; text-align:right; font-size:11.5px; color:var(--slate); border-bottom:1px solid rgba(255,255,255,0.05);">—</td>
-                                <td style="padding:6px 0 6px 12px; text-align:right; font-size:15px; font-weight: 900; color:var(--slate); border-bottom:1px solid rgba(255,255,255,0.05); font-variant-numeric:tabular-nums;">${base}</td>
+                                <td style="padding:6px 0; font-size:12px; border-bottom:1px solid rgba(var(--vk),0.05);">menos de ${_money(piso.min)}</td>
+                                <td style="padding:6px 0; text-align:right; font-size:11.5px; color:var(--slate); border-bottom:1px solid rgba(var(--vk),0.05);">—</td>
+                                <td style="padding:6px 0 6px 12px; text-align:right; font-size:15px; font-weight: 900; color:var(--slate); border-bottom:1px solid rgba(var(--vk),0.05); font-variant-numeric:tabular-nums;">${base}</td>
                             </tr>
                             ${filas}
                         </tbody>
@@ -5715,12 +6210,15 @@
             { id: 'totopos',     label: 'Totopos' },
             { id: 'sugerencias', label: 'Sugerencias' }
         ];
+        // Solo la etiqueta. El color de cada rol vive en el CSS, en
+        // `.rol-badge.rol-<id>`, porque tiene que cambiar con el tema y un
+        // estilo en linea no cambia con nada.
         const FORO_ROLES = {
-            agente:        { label: 'Agente',        bg: 'rgba(126, 173, 247,0.18)', fg: '#7EADF7' },
-            coach:         { label: 'Coach',         bg: 'rgba(111, 215, 155,0.18)', fg: '#6FD79B' },
-            promotor:      { label: 'Promotor',      bg: 'rgba(255, 199, 44,0.18)',  fg: '#FFC72C' },
-            director:      { label: 'Director',      bg: 'rgba(240, 138, 128,0.18)', fg: '#F08A80' },
-            superdirector: { label: 'Superdirector', bg: 'rgba(197, 160, 233,0.18)', fg: '#C5A0E9' }
+            agente:        { label: 'Agente' },
+            coach:         { label: 'Coach' },
+            promotor:      { label: 'Promotor' },
+            director:      { label: 'Director' },
+            superdirector: { label: 'Superdirector' }
         };
         // Este archivo es la app del AGENTE, asi que el rol propio es fijo.
         const FORO_MI_ROL = 'agente';
@@ -5782,8 +6280,11 @@
         function _foroDC() { return state.directorCode || ''; }
 
         function _foroBadge(rol) {
-            const r = FORO_ROLES[rol] || FORO_ROLES.agente;
-            return `<span class="rol-badge" style="background:${r.bg}; color:${r.fg};">${r.label}</span>`;
+            // La clave resuelta, no `rol` a secas: si llega un rol que no
+            // conocemos la etiqueta cae en Agente y la clase tiene que caer
+            // con ella, o el badge sale sin color.
+            const clave = FORO_ROLES[rol] ? rol : 'agente';
+            return `<span class="rol-badge rol-${clave}">${FORO_ROLES[clave].label}</span>`;
         }
         function _foroFecha(ts) {
             if (!ts) return '';
@@ -5843,7 +6344,7 @@
                     const soyYo = d.id === yo;
                     return `
                     <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;
-                                background:${soyYo ? 'rgba(255,199,44,0.12)' : 'rgba(255,255,255,0.04)'};
+                                background:${soyYo ? 'rgba(255,199,44,0.12)' : 'rgba(var(--vk),0.04)'};
                                 border:1px solid ${soyYo ? 'rgba(255,199,44,0.45)' : 'var(--border)'};">
                         <span style="width:26px;text-align:center;font-size:13px;font-weight:800;color:var(--slate);">${medalla(i)}</span>
                         <span style="flex:1;font-size:12.5px;font-weight:${soyYo ? '900' : '600'};color:${soyYo ? 'var(--gold-l)' : 'var(--white)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
@@ -6741,8 +7242,8 @@
                         btn.style.fontWeight = '700';
                     } else {
                         btn.style.background = 'transparent';
-                        btn.style.borderColor = 'rgba(255,255,255,0.10)';
-                        btn.style.color = 'rgba(255,255,255,0.7)';
+                        btn.style.borderColor = 'rgba(var(--vk),0.10)';
+                        btn.style.color = 'rgba(var(--vk),0.7)';
                         btn.style.fontWeight = '600';
                     }
                 }
@@ -6785,7 +7286,7 @@
                 active.style.color = 'var(--gold-l)';
                 active.style.fontWeight = '700';
                 inactive.style.background = 'transparent';
-                inactive.style.color = 'rgba(255,255,255,0.6)';
+                inactive.style.color = 'rgba(var(--vk),0.6)';
                 inactive.style.fontWeight = '600';
             }
             if (label) label.textContent = period === 'month' ? 'Top del mes' : 'Top del año';
@@ -6832,7 +7333,7 @@
                             const isMine = r.emailSolicitante === user.email;
                             return `<div style="padding:10px 12px; background:${isMine ? 'rgba(32, 85, 154,0.10)' : 'var(--panel)'}; border-radius:8px; ${isMine ? 'border:1px solid rgba(32, 85, 154,0.35);' : ''}">
                                 <div style="font-weight:700; font-size:13px; color:${isMine ? 'var(--gold-l)' : '#fff'};">👤 ${eName}${isMine ? ' (tú)' : ''}</div>
-                                <div style="font-size:12px; color:rgba(255,255,255,0.75); margin-top:3px;">${eEmoji} ${eItem}${cantStr} · <span style="color:var(--gold); font-weight:700;"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoTotal}</span> · <span style="color:var(--slate);">${dt}</span></div>
+                                <div style="font-size:12px; color:rgba(var(--vk),0.75); margin-top:3px;">${eEmoji} ${eItem}${cantStr} · <span style="color:var(--gold); font-weight:700;"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoTotal}</span> · <span style="color:var(--slate);">${dt}</span></div>
                             </div>`;
                         }).join('')
                         : '<div class="empty-state"><i class="fa fa-inbox"></i> Sin compras aprobadas en tu región todavía.</div>';
@@ -6879,7 +7380,7 @@
                     const medal = medals[r.position] || (r.position + '.');
                     const sepGap = r._separator ? 'margin-top:10px; position:relative;' : '';
                     const sepLine = r._separator
-                        ? `<div style="position:absolute; top:-7px; left:0; right:0; border-top:1px dashed rgba(255,255,255,0.2);"></div>` : '';
+                        ? `<div style="position:absolute; top:-7px; left:0; right:0; border-top:1px dashed rgba(var(--vk),0.2);"></div>` : '';
                     return `<div style="padding:8px 12px; background:${isMe ? 'rgba(32, 85, 154,0.15)' : 'var(--panel)'}; border-radius:8px; ${isMe ? 'border:1px solid rgba(32, 85, 154,0.4);' : ''} display:flex; justify-content:space-between; align-items:center; ${sepGap}">
                         ${sepLine}
                         <span style="font-size:13px; ${isMe ? 'font-weight:700; color:var(--gold-l);' : ''}">${medal} ${escapeHtml(r.name)}${isMe ? ' (tú)' : ''}</span>
@@ -7067,6 +7568,51 @@
             }
             updateKarmaDisplay();
         }
+
+        // ─── TEMA CLARO / OSCURO ─────────────────────────────────────────
+        // El cambio es solo de tokens: ninguna regla concreta sabe de temas.
+        // Los velos van en rgba(var(--vk), a), asi que voltean solos.
+        window.alternarTema = function () {
+            const claro = document.documentElement.getAttribute('data-tema') === 'claro';
+            _ponerTema(claro ? 'oscuro' : 'claro');
+        };
+
+        function _ponerTema(t) {
+            const raiz = document.documentElement;
+            if (t === 'claro') raiz.setAttribute('data-tema', 'claro');
+            else raiz.removeAttribute('data-tema');
+            // Esto es lo que hace que la eleccion sobreviva a cerrar la app: el
+            // script del <head> la vuelve a leer antes del primer pixel.
+            try { localStorage.setItem('pecvsTemaActivo', t); } catch (e) {}
+
+            // La barra del sistema operativo tiene que seguir al cromo, o en
+            // claro queda una franja Oxford arriba que no pertenece a nada.
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', t === 'claro' ? '#20559A' : '#071D49');
+
+            _sincronizarSwitchTema();
+
+            // Chart.js pinta sobre canvas y no hereda NADA del CSS: sin esto
+            // las graficas ya dibujadas se quedan con los colores del tema
+            // anterior — ejes ilegibles y tooltips que desentonan.
+            try { _chartDefaults(); } catch (e) {}
+            try { if (typeof switchTab === 'function') {
+                const act = document.querySelector('.tab-panel.active');
+                const id = act && act.id ? act.id.replace('tab-', '') : '';
+                if (id === 'charts' || id === 'kpis') switchTab(id, null);
+            } } catch (e) { console.warn('[tema] redibujo:', e); }
+        }
+
+        function _sincronizarSwitchTema() {
+            const claro = document.documentElement.getAttribute('data-tema') === 'claro';
+            const sw = document.getElementById('tema-switch');
+            const lb = document.getElementById('tema-lbl');
+            if (sw) sw.setAttribute('aria-checked', claro ? 'true' : 'false');
+            if (lb) lb.textContent = claro ? 'Tema claro' : 'Tema oscuro';
+        }
+        // Al cargar: el atributo ya lo puso el script del <head>, pero el switch
+        // nace en "oscuro" en el markup y hay que ponerlo al dia.
+        _sincronizarSwitchTema();
 
         window.switchTab = function (name, btn) {
             // Con el foro abierto el bottom nav queda encima del overlay, así que
@@ -7618,7 +8164,7 @@
         window.openHistory = function () {
             const list = document.getElementById('history-list');
             list.innerHTML = state.entries.map((e, i) => `
-                <div style="background:rgba(255,255,255,.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="background:rgba(var(--vk),.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
                     <div onclick="loadEntry(${i})" style="cursor:pointer; flex:1;">
                         <div style="font-weight:700; color:var(--gold);">${e.mes} · Sem ${e.semana}</div>
                         <div style="font-size:11px; color:var(--slate);">P:${e.totales.P} V:${e.totales.V} $:${e.totales.prima}</div>
@@ -7893,8 +8439,8 @@
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: {
-                        title: { display: true, text: `Efectividad: ${kTotals.P > 0 ? (kTotals.V / kTotals.P * 100).toFixed(1) : 0}%`, color: '#fff' },
-                        legend: { position: 'top', align: 'center', labels: { boxWidth: 12, padding: 15, color: '#fff', font: { weight: 'bold' } } }
+                        title: { display: true, text: `Efectividad: ${kTotals.P > 0 ? (kTotals.V / kTotals.P * 100).toFixed(1) : 0}%`, color: _chartTinta().texto },
+                        legend: { position: 'top', align: 'center', labels: { boxWidth: 12, padding: 15, color: _chartTinta().texto, font: { weight: 'bold' } } }
                     },
                     cutout: '70%'
                 }
@@ -7940,8 +8486,8 @@
                     scales: {
                         r: {
                             grid: { color: 'rgba(255,255,255,0.1)' },
-                            angleLines: { color: 'rgba(255,255,255,0.1)' },
-                            pointLabels: { color: '#A9BFD9', font: { size: 11, weight: 'bold' } },
+                            angleLines: { color: 'rgba(var(--vk),0.1)' },
+                            pointLabels: { color: _chartTinta().suave, font: { size: 11, weight: 'bold' } },
                             ticks: { display: false },
                             suggestedMin: 0,
                             suggestedMax: 1
@@ -8038,7 +8584,7 @@
             charts['lineV'] = new Chart(document.getElementById('chartVolume'), {
                 type: 'line',
                 data: { labels, datasets: COLS.map(c => ({ label: c, data: entries.map(e => e.totales[c]), borderColor: CHART_COLORS[c], tension: 0.3, pointRadius: 4 })) },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#A9BFD9' } }, y: { ticks: { color: '#A9BFD9' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: _chartTinta().texto } } }, scales: { x: { ticks: { color: _chartTinta().suave } }, y: { ticks: { color: _chartTinta().suave } } } }
             });
 
             destroyChart('lineP');
@@ -8046,7 +8592,7 @@
             charts['lineP'] = new Chart(document.getElementById('chartPrima'), {
                 type: 'line',
                 data: { labels, datasets: [{ label: 'Prima Bruta', data: entries.map(e => e.totales.prima), borderColor: '#FFC72C', backgroundColor: 'rgba(255, 199, 44, .16)', borderWidth: 3, pointBackgroundColor: '#FFC72C', pointBorderColor: '#071D49', pointBorderWidth: 2, pointRadius: 4, fill: true, tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { x: { ticks: { color: '#A9BFD9' } }, y: { ticks: { color: '#A9BFD9' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: _chartTinta().texto } } }, scales: { x: { ticks: { color: _chartTinta().suave } }, y: { ticks: { color: _chartTinta().suave } } } }
             });
 
             // TENDENCIA EFICIENCIA
@@ -8062,7 +8608,7 @@
                         { label: 'C ➔ V', data: entries.map(e => e.totales.C > 0 ? (e.totales.V / e.totales.C * 100).toFixed(1) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#A9BFD9', callback: v => v + '%' } }, x: { ticks: { color: '#A9BFD9' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: _chartTinta().texto } } }, scales: { y: { ticks: { color: _chartTinta().suave, callback: v => v + '%' } }, x: { ticks: { color: _chartTinta().suave } } } }
             });
 
             // TENDENCIA PRIMA PROMEDIO
@@ -8076,7 +8622,7 @@
                         { label: '$/Vta', data: entries.map(e => e.totales.V > 0 ? (e.totales.prima / e.totales.V).toFixed(0) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#A9BFD9' } }, x: { ticks: { color: '#A9BFD9' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: _chartTinta().texto } } }, scales: { y: { ticks: { color: _chartTinta().suave } }, x: { ticks: { color: _chartTinta().suave } } } }
             });
 
             // TENDENCIA EFICIENCIA TOTAL
@@ -8090,7 +8636,7 @@
                         { label: '% P ➔ V (Cierre)', data: entries.map(e => e.totales.P > 0 ? (e.totales.V / e.totales.P * 100).toFixed(1) : 0), borderColor: CHART_COLORS.V, tension: 0.3 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } }, scales: { y: { beginAtZero: true, ticks: { color: '#A9BFD9', callback: v => v + '%' } }, x: { ticks: { color: '#A9BFD9' } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: _chartTinta().texto } } }, scales: { y: { beginAtZero: true, ticks: { color: _chartTinta().suave, callback: v => v + '%' } }, x: { ticks: { color: _chartTinta().suave } } } }
             });
         }
 

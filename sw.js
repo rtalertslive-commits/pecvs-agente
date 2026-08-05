@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pecvs-agent-mainnet-v2.14.0';
+const CACHE_NAME = 'pecvs-agent-mainnet-v2.15.0';
 // Los iconos llevan sufijo -v2 A PROPOSITO. Chrome decide si tiene que
 // regenerar el WebAPK comparando los campos del manifest, y para los iconos
 // compara la URL, NO el contenido: dejarlos con el mismo nombre y cambiarles
@@ -18,7 +18,8 @@ const assets = [
     // El logo del login. Va precacheado porque es lo primero que se ve al
     // abrir la app, y sin red la etiqueta trae onerror que esconde el hueco:
     // se veria la pantalla sin marca en vez de rota, pero sin marca.
-    './promessa-logo.png'
+    './promessa-logo.png',
+    './promessa-logo-claro.png'
 ];
 
 // ─── FIREBASE CLOUD MESSAGING ─────────────────────────────────────────────────
