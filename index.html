@@ -3567,7 +3567,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.20.0';
+        window.APP_HTML_VERSION = 'v2.21.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -3745,9 +3745,14 @@
         // Y al reves, el Oxford que se pidio para P sobre el panel oscuro
         // (#0E2A5C) seria invisible. No hay un juego que sirva para los dos.
         function _barrasVolumen() {
-            return document.documentElement.getAttribute('data-tema') === 'claro'
-                ? ['#071D49', '#3E7AC4', '#3E7AC4', '#3E7AC4', '#3E7AC4']
-                : [CHART_COLORS.P, CHART_COLORS.E, CHART_COLORS.C, CHART_COLORS.V, CHART_COLORS.S];
+            const base = [CHART_COLORS.P, CHART_COLORS.E, CHART_COLORS.C, CHART_COLORS.V, CHART_COLORS.S];
+            if (document.documentElement.getAttribute('data-tema') !== 'claro') return base;
+            // La escala azul del embudo y el amarillo del cierre se quedan: son
+            // el codigo de la grafica. Lo unico que estorba en claro es la S, que
+            // iba en #E8EFF7 —casi blanco— y desaparecia contra el papel. Pasa a
+            // Oxford, el mismo que lleva $/S en Prima Promedio, que es la misma
+            // metrica en la otra grafica.
+            return [base[0], base[1], base[2], base[3], '#071D49'];
         }
         function _barrasPrima() {
             return document.documentElement.getAttribute('data-tema') === 'claro'
