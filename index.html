@@ -406,15 +406,15 @@
             min-width: 18px;
             height: 18px;
             padding: 0 5px;
-            background: #F08A80;
-            color: #fff;
+            background: #C0392B;
+            color: var(--on-brand);
             border-radius: 8px;
             font-size: 10px;
             font-weight: 900;
             display: none;
             align-items: center;
             justify-content: center;
-            border: 2px solid var(--panel, #0E2A5C);
+            border: 2px solid var(--panel, #FFFFFF);
             line-height: 1;
         }
         #anuncios-badge.show { display: flex; }
@@ -441,8 +441,8 @@
             padding: 12px 16px;
             border-radius: 8px;
             border: 1px solid var(--gold);
-            background: rgba(14, 42, 92, .8);
-            color: var(--gold-l);
+            background: var(--panel);
+            color: transparent;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -552,7 +552,7 @@
             flex: 1;
             background: none;
             border: none;
-            color: var(--slate);
+            color: transparent;
             cursor: pointer;
             text-align: center;
             padding: 6px 2px;
@@ -693,7 +693,7 @@
             margin-bottom: 6px;
             opacity: 0.45;
             background: rgba(var(--vk), 0.02);
-            border: 1px solid rgba(var(--vk), 0.04);
+            border: 1px solid var(--border);
             font-size: 12px;
         }
         .m-day-compact .m-day-label {
@@ -728,9 +728,9 @@
            como funciona la jerarquía en superficie oscura. El borde solo los
            delimita. */
         .m-day-today input {
-            background: rgba(var(--vk), 0.08);
-            border: 1.5px solid rgba(var(--vk), 0.24);
-            color: #FFFFFF;
+            background: rgba(var(--vk), 0.10);
+            border: 1.5px solid rgba(var(--vk), 0.30);
+            color: var(--white);
         }
         .m-day-today input:focus {
             background: rgba(var(--vk), 0.16);
@@ -755,7 +755,7 @@
             font-family: 'Source Sans Pro', sans-serif;
             font-size: 20px;
             font-weight: 900;
-            color: #FFFFFF;
+            color: var(--white);
         }
         .m-today-day small {
             display: block;
@@ -766,7 +766,7 @@
         }
         .m-today-badge {
             background: var(--azul-cobalto);
-            color: #FFFFFF;
+            color: var(--white);
             border: 1px solid var(--azul-cobalto);
             padding: 4px 10px;
             border-radius: 20px;
@@ -875,9 +875,9 @@
         /* Botón "Sin intento de venta hoy" — solo cuando todo está en 0 y no marcado */
         .btn-no-activity {
             width: 100%;
-            background: rgba(169, 191, 217,0.08);
-            border: 1.5px dashed rgba(169, 191, 217,0.4);
-            color: var(--slate);
+            background: rgba(var(--vk), 0.07);
+            border: 1.5px dashed rgba(var(--vk), 0.38);
+            color: rgba(var(--vk), 0.85);
             padding: 10px;
             border-radius: 8px;
             font-size: 12px;
@@ -1083,9 +1083,9 @@
         .cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform .1s, box-shadow .15s; position: relative; padding: 2px; border: 1px solid transparent; }
         .cal-cell.empty { visibility: hidden; }
         .cal-cell.none { background: rgba(var(--vk), 0.04); color: var(--slate); }
-        .cal-cell.ok { background: rgba(46, 125, 79,0.18); color: #2E7D4F; border-color: rgba(46, 125, 79,0.35); }
+        .cal-cell.ok { background: rgba(46, 125, 79,0.18); color: var(--green); border-color: rgba(46, 125, 79,0.35); }
         /* Verde igual que .ok — la plantita hace la diferencia semántica */
-        .cal-cell.ok-no-close { background: rgba(46, 125, 79,0.18); color: #2E7D4F; border-color: rgba(46, 125, 79,0.35); }
+        .cal-cell.ok-no-close { background: rgba(46, 125, 79,0.18); color: var(--green); border-color: rgba(46, 125, 79,0.35); }
         .cal-cell.red { background: rgba(192, 57, 43,0.18); color: #C0392B; border-color: rgba(192, 57, 43,0.35); }
         .cal-cell.sin-actividad { background: rgba(138, 91, 0,0.18); color: #8A5B00; border-color: rgba(138, 91, 0,0.35); }
         .cal-cell.future { opacity: 0.22; cursor: not-allowed; background: rgba(var(--vk), 0.015); color: var(--slate); pointer-events: none; }
@@ -1324,7 +1324,7 @@
             white-space: nowrap;
             background: linear-gradient(135deg, rgba(46, 125, 79,0.22), rgba(46, 125, 79,0.08));
             border: 1.5px solid rgba(46, 125, 79,0.55);
-            color: #2E7D4F;
+            color: var(--green);
         }
         .mult-chip-demo b { font-size: 15px; font-weight: 900; }
         /* Contador de totopos falso, solo para ubicar el badge en la pantalla */
@@ -1362,7 +1362,7 @@
             gap: 10px;
             align-items: start;
             padding: 11px 0;
-            border-bottom: 1px solid rgba(var(--vk),0.07);
+            border-bottom: 1px solid var(--border);
         }
         .mrec-row:last-of-type { border-bottom: none; }
         .mrec-ico { font-size: 15px; line-height: 1.3; }
@@ -1474,7 +1474,7 @@
         .karma-tooltip {
             position: fixed;
             background: rgba(32, 85, 154,0.97);
-            color: #0E2A5C;
+            color: var(--white);
             padding: 9px 14px;
             border-radius: 8px;
             font-size: 12px;
@@ -1612,7 +1612,7 @@
         }
         /* La pleca del sistema, el otro uso autorizado del amarillo. */
         .cel-pleca { width: 34px; height: 4px; background: var(--amarillo); margin-bottom: 14px; }
-        .cel-grito { font-size: 22px; font-weight: 900; color: #FFFFFF; letter-spacing: 0.01em; margin-bottom: 4px; }
+        .cel-grito { font-size: 22px; font-weight: 900; color: var(--white); letter-spacing: 0.01em; margin-bottom: 4px; }
         /* Sin mayusculas sostenidas: el manual solo las permite en kickers
            cortos, y "¡Felicidades!" no lo es. TOTOPOS si califica. */
         .cel-desde { font-size: 13px; color: var(--slate); margin-bottom: 10px; }
@@ -1622,7 +1622,7 @@
             font-variant-numeric: tabular-nums;
         }
         .cel-unidad {
-            font-size: 13px; font-weight: 800; color: #FFFFFF;
+            font-size: 13px; font-weight: 800; color: var(--white);
             letter-spacing: 0.18em; text-transform: uppercase;
             margin: 5px 0 12px; display: flex; align-items: center; gap: 6px;
         }
@@ -1636,7 +1636,7 @@
             margin-top: 18px; width: 100%;
             /* Cobalto porque el manual lo define como color de accion por
                defecto. Antes era un degradado dorado con radio de 30px. */
-            background: var(--azul-cobalto); color: #FFFFFF;
+            background: var(--azul-cobalto); color: var(--white);
             border: none; border-radius: 8px; padding: 13px;
             font-family: inherit; font-size: 14px; font-weight: 800;
             letter-spacing: 0.01em; cursor: pointer;
@@ -1677,7 +1677,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at top right, #143566, #0E2A5C);
+            background: radial-gradient(circle at top right, #F4F7FB, #FFFFFF);
             z-index: 9999;
             display: flex;
             align-items: center;
@@ -1800,7 +1800,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(7, 29, 73, 0.55);
             z-index: 99998;
             align-items: center;
             justify-content: center;
@@ -2864,7 +2864,7 @@
                    mismo valor que body usa en su padding-bottom. */
                 height: calc(100vh - 76px - env(safe-area-inset-bottom, 0px));
                 height: calc(100dvh - 76px - env(safe-area-inset-bottom, 0px));
-                border: none;
+                border: 1.5px solid var(--gold);
                 border-radius: 0;
             }
             /* La caja ahora llega hasta el borde físico de arriba, así que el
@@ -3037,74 +3037,74 @@
            tbody tr:nth-child(2) td:nth-child(3)...): apuntan al LUGAR, no al
            elemento. Si se agrega una fila a una tabla o un bloque a un modal,
            el color salta a otra cosa. Estan marcados abajo. */
-        #login-overlay div.login-card { color: #ffffff !important; background: #071D49 !important; }
-        #login-btn { color: #ffffff !important; background: #20559A !important; }
-        #login-overlay { color: #676b6f !important; background: #04122f !important; }
-        div.app div.header div.row-menu button.btn.btn-sm { color: #ffffff !important; background: #20559A !important; }
-        #logout-btn { color: #ffffff !important; background: #071d49 !important; border-color: #ffffff !important; }
-        #cov-invite-btn { color: #ffffff !important; background: #20559A !important; border-color: #ffffff !important; }
+        #login-overlay div.login-card { color: var(--white) !important; background: var(--bg) !important; }
+        #login-btn { color: var(--white) !important; background: #20559A !important; }
+        #login-overlay { color: #676b6f !important; background: radial-gradient(circle at top right, #F4F7FB, #FFFFFF); }
+        div.app div.header div.row-menu button.btn.btn-sm { color: var(--white) !important; background: #20559A !important; }
+        #logout-btn { color: var(--white) !important; background: var(--bg) !important; border-color: var(--white) !important; }
+        #cov-invite-btn { color: var(--white) !important; background: #20559A !important; border-color: var(--white) !important; }
         #karma-badge { background: #072f5f !important; }
-        #karma-value { color: #ffffff !important; }
-        #karma-badge span.karma-lbl { color: #FFC72C !important; }
+        #karma-value { color: var(--white) !important; }
+        #karma-badge span.karma-lbl { color: var(--gold-l) !important; }
         #mult-badge { color: #ffffff !important; background: #072F5F !important; border-color: #FFC72C !important; }
-        div.row-brand div.brand-block div.brand-title span.version-tag { color: #FFC72C !important; background: #072F5F !important; }
-        #notif-bell-btn { color: #ffffff !important; background: #072F5F !important; }
-        #anuncios-btn { color: #ffffff !important; background: #072F5F !important; }
-        #anuncios-badge { background: #e01600 !important; }
-        #mult-badge b:nth-child(2) { color: #FFC72C !important; }
-        #cov-invite-card { border-color: #ffffff !important; }
-        #mobile-week div.m-day-today { border-color: #FFC72C !important; }
-        #mobile-week div.m-day-compact { background: #002a61 !important; border-color: #a8a8a8 !important; }
-        #mobile-week div.m-day-compact div.m-day-label { color: #ededed !important; }
-        #mobile-week div.m-day-compact div.m-day-label small:nth-child(1) { color: #ffffff !important; }
-        #tab-bitacora div.card div.m-totals div.m-total-card { border-color: #ffffff !important; }
-        nav.bottom-nav button.bn-btn.active i.fa.fa-book-open { color: #A9BFD9 !important; border-color: #7797c0 !important; }
-        #cov-info-body div.mult-demo-wrap { background: #071D49 !important; }
-        #cov-info-body div.mult-demo-wrap span.karma-chip-demo { background: #072F5F !important; border-color: #FFC72C !important; }
-        #cov-info-body div.mult-demo-wrap span.mult-chip-demo { color: #ffffff !important; background: #072F5F !important; border-color: #FFC72C !important; }
-        #cov-info-body div.mult-demo-wrap span.mult-chip-demo b:nth-child(2) { color: #FFC72C !important; border-color: #9bc5ac !important; }
-        #cov-info-body div:nth-child(13) { border-color: #ffffff !important; }
-        #cov-info-body { background: #0E2A5C !important; }
-        #cov-info-modal div.modal-box { background: #0E2A5C !important; }
-        #cov-info-body div:nth-child(9) { border-color: #ffffff !important; }
-        tbody:nth-child(2) tr:nth-child(2) td:nth-child(2) span:nth-child(1) { color: #ffffff !important; }
-        tbody:nth-child(2) tr:nth-child(3) td:nth-child(2) span:nth-child(1) { color: #ffffff !important; }
-        tbody:nth-child(2) tr:nth-child(4) td:nth-child(2) span:nth-child(1) { color: #ffffff !important; }
-        tbody:nth-child(2) tr:nth-child(1) td:nth-child(2) span:nth-child(1) { color: #eaedf0 !important; }
-        tbody:nth-child(2) tr:nth-child(1) td:nth-child(3) span:nth-child(1) { color: #ecf2f9 !important; }
-        tbody:nth-child(2) tr:nth-child(2) td:nth-child(3) span:nth-child(1) { color: #ffffff !important; }
-        tbody:nth-child(2) tr:nth-child(3) td:nth-child(3) span:nth-child(1) { color: #ffffff !important; }
-        tbody:nth-child(2) tr:nth-child(4) td:nth-child(3) span:nth-child(1) { color: #ffffff !important; }
-        table:nth-child(1) thead:nth-child(1) tr:nth-child(1) th:nth-child(3) { color: #FEC72C !important; }
-        #mult-receipt-body div.mrec-row div.mrec-n { color: #018917 !important; border-color: #192129 !important; }
-        #mult-receipt-body div:nth-child(6) div:nth-child(2) { color: #ffc72c !important; }
-        #mult-receipt-body div:nth-child(6) { border-color: #ffc72c !important; }
-        #rules-mult-block div:nth-child(1) div:nth-child(1) { color: #ffc72c !important; }
-        tbody:nth-child(2) tr:nth-child(2) td:nth-child(3) span:nth-child(2) { color: #FEC72C !important; }
-        tbody:nth-child(2) tr:nth-child(3) td:nth-child(3) span:nth-child(2) { color: #FEC72C !important; }
-        tbody:nth-child(2) tr:nth-child(4) td:nth-child(3) span:nth-child(2) { color: #FEC72C !important; }
-        #rules-mult-block div:nth-child(1) { border-color: #ffffff !important; }
-        #rules-mult-block div:nth-child(1) div.mult-demo-wrap { background: #071D49 !important; }
-        #rules-mult-block div:nth-child(1) div.mult-demo-wrap span.karma-chip-demo { background: #072F5F !important; border-color: #ffffff !important; }
-        #rules-mult-block div:nth-child(1) div.mult-demo-wrap span.mult-chip-demo { color: #f7f7f7 !important; background: #072F5F !important; border-color: #ffffff !important; }
-        div:nth-child(1) div.mult-demo-wrap span.mult-chip-demo b:nth-child(2) { color: #ffc72c !important; }
-        div.rules-modal-box div.rules-modal-body ul:nth-child(3) li:nth-child(1) { border-color: #ffffff !important; }
-        #rules-modal div.rules-modal-box div.rules-modal-body ul:nth-child(3) { border-color: #ffffff !important; }
-        #tab-conceptos div.card h2:nth-child(1) { color: #ffffff !important; }
-        div.conceptos-grid div.conceptos-visual div:nth-child(3) div:nth-child(3) { background: #071D49 !important; }
+        div.row-brand div.brand-block div.brand-title span.version-tag { color: var(--gold-l) !important; background: var(--panel2) !important; }
+        #notif-bell-btn { color: var(--white) !important; background: var(--panel2) !important; }
+        #anuncios-btn { color: var(--white) !important; background: var(--panel2) !important; }
+        #anuncios-badge { background: #C0392B; }
+        #mult-badge b:nth-child(2) { color: var(--gold-l) !important; }
+        #cov-invite-card { border-color: var(--white) !important; }
+        #mobile-week div.m-day-today { border-color: var(--gold-l) !important; }
+        #mobile-week div.m-day-compact { background: var(--panel2) !important; border-color: var(--slate) !important; }
+        #mobile-week div.m-day-compact div.m-day-label { color: var(--white) !important; }
+        #mobile-week div.m-day-compact div.m-day-label small:nth-child(1) { color: var(--white) !important; }
+        #tab-bitacora div.card div.m-totals div.m-total-card { border-color: var(--white) !important; }
+        nav.bottom-nav button.bn-btn.active i.fa.fa-book-open { color: var(--slate) !important; border-color: var(--gold) !important; }
+        #cov-info-body div.mult-demo-wrap { background: var(--bg) !important; }
+        #cov-info-body div.mult-demo-wrap span.karma-chip-demo { background: var(--panel2) !important; border-color: var(--gold-l) !important; }
+        #cov-info-body div.mult-demo-wrap span.mult-chip-demo { color: var(--white) !important; background: var(--panel2) !important; border-color: var(--gold-l) !important; }
+        #cov-info-body div.mult-demo-wrap span.mult-chip-demo b:nth-child(2) { color: var(--gold-l) !important; border-color: var(--green) !important; }
+        #cov-info-body div:nth-child(13) { border-color: var(--white) !important; }
+        #cov-info-body { background: var(--panel) !important; }
+        #cov-info-modal div.modal-box { background: var(--panel) !important; }
+        #cov-info-body div:nth-child(9) { border-color: var(--white) !important; }
+        tbody:nth-child(2) tr:nth-child(2) td:nth-child(2) span:nth-child(1) { color: var(--white) !important; }
+        tbody:nth-child(2) tr:nth-child(3) td:nth-child(2) span:nth-child(1) { color: var(--white) !important; }
+        tbody:nth-child(2) tr:nth-child(4) td:nth-child(2) span:nth-child(1) { color: var(--white) !important; }
+        tbody:nth-child(2) tr:nth-child(1) td:nth-child(2) span:nth-child(1) { color: var(--white) !important; }
+        tbody:nth-child(2) tr:nth-child(1) td:nth-child(3) span:nth-child(1) { color: var(--white) !important; }
+        tbody:nth-child(2) tr:nth-child(2) td:nth-child(3) span:nth-child(1) { color: var(--white) !important; }
+        tbody:nth-child(2) tr:nth-child(3) td:nth-child(3) span:nth-child(1) { color: var(--white) !important; }
+        tbody:nth-child(2) tr:nth-child(4) td:nth-child(3) span:nth-child(1) { color: var(--white) !important; }
+        table:nth-child(1) thead:nth-child(1) tr:nth-child(1) th:nth-child(3) { color: var(--gold-l) !important; }
+        #mult-receipt-body div.mrec-row div.mrec-n { color: var(--green) !important; border-color: #192129 !important; }
+        #mult-receipt-body div:nth-child(6) div:nth-child(2) { color: var(--gold-l) !important; }
+        #mult-receipt-body div:nth-child(6) { border-color: var(--gold-l) !important; }
+        #rules-mult-block div:nth-child(1) div:nth-child(1) { color: var(--gold-l) !important; }
+        tbody:nth-child(2) tr:nth-child(2) td:nth-child(3) span:nth-child(2) { color: var(--gold-l) !important; }
+        tbody:nth-child(2) tr:nth-child(3) td:nth-child(3) span:nth-child(2) { color: var(--gold-l) !important; }
+        tbody:nth-child(2) tr:nth-child(4) td:nth-child(3) span:nth-child(2) { color: var(--gold-l) !important; }
+        #rules-mult-block div:nth-child(1) { border-color: var(--white) !important; }
+        #rules-mult-block div:nth-child(1) div.mult-demo-wrap { background: var(--bg) !important; }
+        #rules-mult-block div:nth-child(1) div.mult-demo-wrap span.karma-chip-demo { background: var(--panel2) !important; border-color: var(--white) !important; }
+        #rules-mult-block div:nth-child(1) div.mult-demo-wrap span.mult-chip-demo { color: var(--white) !important; background: var(--panel2) !important; border-color: var(--white) !important; }
+        div:nth-child(1) div.mult-demo-wrap span.mult-chip-demo b:nth-child(2) { color: var(--gold-l) !important; }
+        div.rules-modal-box div.rules-modal-body ul:nth-child(3) li:nth-child(1) { border-color: var(--white) !important; }
+        #rules-modal div.rules-modal-box div.rules-modal-body ul:nth-child(3) { border-color: var(--white) !important; }
+        #tab-conceptos div.card h2:nth-child(1) { color: var(--white) !important; }
+        div.conceptos-grid div.conceptos-visual div:nth-child(3) div:nth-child(3) { background: var(--bg) !important; }
         div.conceptos-grid div.conceptos-visual div:nth-child(3) div:nth-child(4) { color: #00050f !important; background: #ffc72c !important; }
-        #kpi-period-sel, #chart-period-sel { color: #8da7c8 !important; background: #071D49 !important; }
-        #kpiEfectividad { color: #FFFFFF !important; background: #143566 !important; }
-        #ts-btn-solicitudes { color: #ffffff !important; background: #0D2A63 !important; }
-        #ts-btn-actividad { color: #ffffff !important; background: #0D2A63 !important; }
-        #ts-btn-comprar { color: #ffffff !important; background: #0D2A63 !important; }
-        #tienda-items div:nth-child(1) div:nth-child(4) { color: #7999C2 !important; }
-        #tienda-items div:nth-child(2) div:nth-child(4) { color: #7999C2 !important; background: #143566 !important; border-color: #7999C2 !important; }
-        #foro-resp-txt { color: #ffffff !important; background: #071D49 !important; border-color: #ffffff !important; }
+        #kpi-period-sel, #chart-period-sel { color: var(--gold) !important; background: var(--bg) !important; }
+        #kpiEfectividad { color: var(--white) !important; background: var(--panel2) !important; }
+        #ts-btn-solicitudes { color: var(--white) !important; background: var(--panel2) !important; }
+        #ts-btn-actividad { color: var(--white) !important; background: var(--panel2) !important; }
+        #ts-btn-comprar { color: var(--white) !important; background: var(--panel2) !important; }
+        #tienda-items div:nth-child(1) div:nth-child(4) { color: var(--gold) !important; }
+        #tienda-items div:nth-child(2) div:nth-child(4) { color: var(--gold) !important; background: var(--panel2) !important; border-color: var(--gold) !important; }
+        #foro-resp-txt { color: var(--white) !important; background: var(--bg) !important; border-color: var(--white) !important; }
         #foro-body button.foro-hilo-item div.foro-meta span.rol-badge { color: var(--white) !important; background: var(--bg) !important; }
-        #cov-info-body div:nth-child(9) div:nth-child(5) { color: #ffffff !important; border-color: #4eca82 !important; }
+        #cov-info-body div:nth-child(9) div:nth-child(5) { color: var(--white) !important; border-color: var(--green) !important; }
         .m-day-today .m-field label { color: rgba(var(--vk),0.78); }
-        .m-day-today .m-status-msg.ok { color: #6FD79B; }
+        .m-day-today .m-status-msg.ok { color: var(--green); }
         .novedad-glow {
             position: relative;
             animation: novedadGlowPulse 1.6s ease-in-out infinite;
@@ -3476,6 +3476,39 @@
         :root[data-tema="claro"] .rol-badge.rol-director      { background: rgba(154, 43, 34, 0.20);  color: #9A2B22; }
         :root[data-tema="claro"] .rol-badge.rol-superdirector { background: rgba(91, 58, 140, 0.20);  color: #5B3A8C; }
 
+
+        /* ── CAMPOS DE TEXTO Y SELECTS ─────────────────────────────────────
+           La UNICA regla de la hoja base que NO se copio igual a testnet.
+
+           Testnet tiene el fondo de los inputs en rgba(233, 238, 245, .6) para
+           los DOS temas. Sobre panel oscuro eso da un gris azulado y el texto
+           va en var(--white), o sea blanco: 2.6:1. Aca se conserva el valor
+           oscuro, que hoy funciona, y el aspecto de testnet se reproduce solo
+           donde hace falta. En claro el papel claro con tinta Oxford da 11:1.
+
+           Sin esta regla el input quedaria en rgba(7, 29, 73, .6) —navy— con
+           texto #061837 encima, que es el mismo navy: ilegible. */
+        :root[data-tema="claro"] input[type=text],
+        :root[data-tema="claro"] input[type=number],
+        :root[data-tema="claro"] select {
+            background: rgba(233, 238, 245, .6);
+        }
+
+
+
+        /* ── AJUSTES DEL TEMA OSCURO ───────────────────────────────────────
+           Estas NO son del tema claro: :root:not([data-tema="claro"]) es el
+           tema oscuro. Salieron del pincel en testnet y se traen para que los
+           dos entornos se vean identicos en los DOS temas, que es lo que se
+           pidio. Son bordes y un badge; ninguna toca texto sobre fondo. */
+        :root:not([data-tema="claro"]) #mobile-week div.m-day-today div.m-today-header div.m-today-badge { color: #ffffff !important; background: #20559a !important; border-color: #5654d9 !important; }
+        :root:not([data-tema="claro"]) #tab-bitacora div.card div:nth-child(2) { border-color: #9c9c9c !important; }
+        :root:not([data-tema="claro"]) #karma-badge { border-color: #ffc736 !important; }
+        :root:not([data-tema="claro"]) #mult-badge { border-color: #2e7d36 !important; }
+        :root:not([data-tema="claro"]) #cov-invite-card div.cov-invite-head span.cov-invite-claim { color: #ffc736 !important; }
+        :root:not([data-tema="claro"]) #cov-invite-card { color: #cfcfcf !important; border-color: #ffffff !important; }
+        :root:not([data-tema="claro"]) nav.bottom-nav { background: #22487c !important; }
+
     </style>
 
     <div class="modal-overlay" id="foro-modal" onclick="if(event.target===this)closeForo()">
@@ -3513,7 +3546,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.15.0';
+        window.APP_HTML_VERSION = 'v2.16.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
