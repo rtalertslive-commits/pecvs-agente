@@ -3567,7 +3567,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.21.0';
+        window.APP_HTML_VERSION = 'v2.22.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -4975,8 +4975,15 @@
                     state.karma = fresh.karma;
                     karmaChanged = true;
                 }
-                if (Array.isArray(fresh.karmaLog) && fresh.karmaLog.length !== (state.karmaLog || []).length) {
-                    state.karmaLog = fresh.karmaLog;
+                // Antes se comparaba solo el LARGO. El director ahora puede
+                // recalcular los totopos de dias ya pagados cuando re-otorga el
+                // multiplicador, y eso cambia VALORES sin agregar entradas: con
+                // la comparacion vieja el agente no lo adoptaba y su copia vieja
+                // volvia a subir en el siguiente sync, dejando el desglose por
+                // dia peleado con el saldo.
+                const logFresco = Array.isArray(fresh.karmaLog) ? fresh.karmaLog : null;
+                if (logFresco && JSON.stringify(logFresco) !== JSON.stringify(state.karmaLog || [])) {
+                    state.karmaLog = logFresco;
                     karmaChanged = true;
                 }
                 if (typeof fresh.karmaLastNotified === 'number') state.karmaLastNotified = fresh.karmaLastNotified;
@@ -5493,6 +5500,23 @@
         // Distingue cierres de día normales (sin type) de mints manuales del director
         // (type='manual_grant', con reason opcional).
         function _buildCelebrateReason(entries) {
+            // El recalculo del multiplicador no agrega totopos con una entrada
+            // propia: SUBE el valor de dias que ya estaban en el log. Asi que el
+            // delta se le atribuiria a esos dias y saldria "Por reportar tu
+            // actividad" — cierto, pero sin explicar por que subio hoy algo que
+            // ya se habia pagado. La marca `mult_retro` que deja el director es
+            // lo que permite decirlo bien.
+            //
+            // Se busca en la cola del log y no entre `entries`, porque la marca
+            // va en 0 totopos y `entries` solo trae positivos.
+            const log = Array.isArray(state.karmaLog) ? state.karmaLog : [];
+            for (let i = log.length - 1; i >= 0 && i >= log.length - 4; i--) {
+                if (log[i] && log[i].type === 'mult_retro') {
+                    const d = Number(log[i].dias) || 0;
+                    return `🔄 ${escapeHtml(log[i].reason || 'Recálculo de tu multiplicador')}` +
+                           (d ? ` — se ajustaron ${d} día${d === 1 ? '' : 's'}` : '');
+                }
+            }
             if (!entries || !entries.length) return '';
             const grants = entries.filter(e => e.type === 'manual_grant');
             const dayCloses = entries.filter(e => !e.type);
