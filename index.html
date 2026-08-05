@@ -3546,7 +3546,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.16.0';
+        window.APP_HTML_VERSION = 'v2.17.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -8725,6 +8725,418 @@
         }
 
         // init(); <--- Desactivado para que solo corra en Auth gate
+    </script>
+    <!-- ═══ MODO PINCEL ═══════════════════════════════════════════════════════
+         Editor por elemento: se toca cualquier cosa de la pantalla y se le
+         cambia el color a ESA, no al tema entero. Se activa solo con ?editar=1.
+
+         Como funciona por dentro: se genera un selector CSS para el elemento
+         tocado y se escribe una regla en una hoja de estilos propia. Lo que se
+         ve es exactamente el CSS que sale al copiar — no hay traduccion de por
+         medio, asi que lo que apruebas es lo que queda.
+
+         Dos cosas que conviene saber al usarlo:
+
+         - Las reglas llevan !important. No es descuido: la app tiene 491
+           estilos escritos dentro del HTML (style="...") y un estilo inline le
+           gana a cualquier hoja. Sin !important, tocar esos elementos no haria
+           nada. Al pasarlo al codigo definitivo se acomoda en su lugar y el
+           !important se quita.
+
+         - Si el elemento tiene clase, el selector usa la clase y por lo tanto
+           afecta a TODOS los que la comparten. El panel avisa a cuantos, para
+           que no sea sorpresa. -->
+    <script>
+    (function () {
+        if (new URLSearchParams(location.search).get('editar') !== '1') return;
+
+        var LLAVE = 'pecvsPincel';
+        // ?limpio=1 arranca sin nada guardado. Sin esto cada sesion hereda las
+        // reglas de la anterior y "Copiar CSS" devuelve todo junto otra vez —
+        // imposible ver que se cambio esta vez. Las reglas viejas ya estan en
+        // la hoja del archivo, asi que la app se sigue viendo igual: lo que
+        // arranca vacio es el cuaderno del pincel, no los colores.
+        if (/[?&]limpio=1/.test(location.search)) {
+            try { localStorage.removeItem(LLAVE); } catch (e) {}
+        }
+        var reglas = {};                       // selector -> { color, background, borderColor }
+        try { reglas = JSON.parse(localStorage.getItem(LLAVE) || '{}'); } catch (e) {}
+        var sel = null, elActual = null;
+
+        var hoja = document.createElement('style');
+        hoja.id = 'pincel-hoja';
+        // AL FINAL DEL BODY, no en el head. Las reglas ya aplicadas viven en el
+        // segundo <style>, que esta en el BODY: con la misma especificidad y
+        // ambos con !important, gana el que va DESPUES en el documento. Con la
+        // hoja en el head, todo lo ya pintado quedaba inmodificable — cambiabas
+        // el color y no pasaba nada, sin ningun error que lo delatara.
+        //
+        // Puesta al final del body queda despues de ese bloque, que es el mismo
+        // lugar donde terminan las reglas al pegarlas: lo que se ve mientras se
+        // pinta es lo que va a quedar.
+        (document.body || document.documentElement).appendChild(hoja);
+
+        // Si algo agrega un <style> despues (Chart.js, alguna libreria), la
+        // hoja del pincel dejaria de ser la ultima. Reasegurarla en cada
+        // repintado cuesta nada y evita perseguir un fantasma.
+        function _hojaAlFinal() {
+            var padre = document.body || document.documentElement;
+            if (padre.lastElementChild !== hoja) padre.appendChild(hoja);
+        }
+
+        var css = document.createElement('style');
+        css.textContent = [
+            '#pincel{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:var(--panel);color: var(--white);',
+            '  border:2px solid #FFC72C;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));',
+            '  font-family:system-ui,sans-serif;font-size:12px;box-shadow:0 6px 24px rgba(0,0,0,.5);',
+            '  border-radius:8px}',
+            '#pincel.suelto{left:auto;right:auto;bottom:auto;width:340px;max-width:94vw;',
+            '  max-height:86vh;overflow-y:auto}',
+            '#pincel h4{touch-action:none;-webkit-user-select:none;user-select:none}',
+            '#pincel.plegado .pincel-cuerpo{display:none}',
+            '#pincel h4{margin:0 0 8px;font-size:12px;font-weight:800;display:flex;justify-content:space-between;',
+            '  align-items:center;gap:8px;cursor:pointer}',
+            '#pincel-sel{font-family:ui-monospace,monospace;font-size:10.5px;background:rgba(var(--vk), .1);',
+            '  padding:5px 7px;border-radius:4px;margin-bottom:8px;word-break:break-all;line-height:1.4}',
+            '#pincel-cuenta{opacity:.7;font-size:10px}',
+            '.pincel-fila{display:flex;align-items:center;gap:8px;margin-bottom:6px}',
+            '.pincel-fila span{flex:1}',
+            '.pincel-fila input[type=color]{width:36px;height:26px;padding:0;border:1px solid rgba(var(--vk), .3);',
+            '  border-radius:4px;background:none;cursor:pointer;flex:none}',
+            '.pincel-fila input[type=text]{width:76px;flex:none;padding:5px 6px;border-radius:4px;',
+            '  border:1px solid rgba(var(--vk), .25);background:rgba(var(--vk), .08);color: var(--white);',
+            '  font-family:ui-monospace,monospace;font-size:11px;text-transform:uppercase}',
+            '.pincel-fila button{padding:4px 8px;border-radius:4px;border:1px solid rgba(var(--vk), .25);',
+            '  background:none;color: var(--white);font-size:10px;cursor:pointer;font-family:inherit;flex:none}',
+            '.pincel-btns{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}',
+            '.pincel-btns button{flex:1;min-width:78px;padding:8px;border-radius:6px;border:1px solid rgba(var(--vk), .25);',
+            '  background:rgba(var(--vk), .1);color: var(--white);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}',
+            '.pincel-tema{display:flex;align-items:center;gap:8px;font-size:10.5px;margin-bottom:8px;',
+    '  padding:5px 8px;border-radius:4px;background:rgba(var(--vk), .08)}',
+    '.pincel-tema b{text-transform:uppercase;letter-spacing:.6px;color:var(--gold-l)}',
+    '.pincel-limpio{font-size:8.5px;font-weight:900;letter-spacing:.7px;text-transform:uppercase;',
+    '  padding:2px 6px;border-radius:20px;background:#2E7D4F;color:#fff}',
+    '.pincel-tema button{margin-left:auto;padding:3px 9px;border-radius:4px;cursor:pointer;',
+    '  border:1px solid rgba(var(--vk), .3);background:none;color:var(--white);font:inherit;font-size:10px}',
+    '#pincel-aviso{font-size:10px;line-height:1.4;margin:-4px 0 8px;padding:5px 7px;border-radius:4px;',
+    '  background:rgba(224,22,0,.18);border:1px solid rgba(224,22,0,.5)}',
+    '.pincel-marcado{outline:2px dashed #FFC72C !important;outline-offset:1px !important}',
+            'body.pincel-on{cursor:crosshair}'
+        ].join('');
+        document.head.appendChild(css);
+
+        // ── Selector estable para el elemento ──────────────────────────────
+        // Con id, se usa el id y listo. Con clase, se usa la clase — y entonces
+        // la regla alcanza a todos sus hermanos, que a veces es justo lo que se
+        // quiere ("todas las tarjetas") y a veces no. Sin ninguna de las dos, se
+        // cae a la posicion dentro del padre.
+        function selectorDe(el) {
+            if (el.id) return '#' + CSS.escape(el.id);
+
+            // Se sube SIEMPRE hasta encontrar un ancestro con id. Antes se
+            // cortaba a los 4 niveles con un break, y dentro de un modal los
+            // elementos estan mas profundos que eso: el recorrido se detenia
+            // antes de llegar al id y salia un selector sin ancla —
+            // "tbody:nth-child(2) tr:nth-child(3) td span"— que alcanza a
+            // cualquier tabla de la app o a ninguna. Se sentia como que la
+            // herramienta no dejaba editar ahi: seleccionabas, ponias color y
+            // no pasaba nada.
+            var partes = [];
+            var ancla = null;
+            var n = 0;
+            while (el && el.nodeType === 1 && el !== document.body && n < 40) {
+                if (el.id) { ancla = '#' + CSS.escape(el.id); break; }
+                var t = el.tagName.toLowerCase();
+                var cls = (typeof el.className === 'string' ? el.className : '')
+                    .trim().split(/\s+/)
+                    .filter(function (c) { return c && c.indexOf('pincel') !== 0; })
+                    .slice(0, 2);
+                if (cls.length) t += '.' + cls.map(function (c) { return CSS.escape(c); }).join('.');
+                else {
+                    var i = 1, s2 = el;
+                    while (s2.previousElementSibling) { s2 = s2.previousElementSibling; i++; }
+                    t += ':nth-child(' + i + ')';
+                }
+                partes.unshift(t);
+                el = el.parentElement;
+                n++;
+            }
+
+            // El selector no necesita la cadena completa: el combinador de
+            // descendencia se salta los niveles de en medio. Con el ancla mas
+            // los tres tramos mas cercanos al elemento alcanza, y queda corto
+            // y legible.
+            if (partes.length > 3) partes = partes.slice(-3);
+            if (ancla) partes.unshift(ancla);
+            return partes.join(' ');
+        }
+
+        // El tema en el que se pinto queda GUARDADO con cada regla, y al
+        // generar el CSS se antepone el selector del tema. Sin eso, un color
+        // elegido en claro se aplicaria tambien en oscuro y romperia el tema
+        // que ya funciona — el tipo de daño colateral que no se nota hasta
+        // que alguien se queja.
+        function _temaActual() {
+            return document.documentElement.getAttribute('data-tema') === 'claro' ? 'claro' : 'oscuro';
+        }
+        // El prefijo puede escalar. Si la regla que sale con el prefijo normal
+        // no logra cambiar el elemento —porque algo horneado en la hoja del
+        // archivo tiene la misma especificidad y quedo despues— se antepone
+        // `html`, que suma un selector de tipo y desempata sin tener que
+        // inventar un selector distinto.
+        var _escalados = {};
+        var _inline = {};   // reglas que ademas necesitaron estilo inline para verse
+        function _prefijoTema(t, clave) {
+            var base = t === 'claro' ? ':root[data-tema="claro"] ' : ':root:not([data-tema="claro"]) ';
+            return (clave && _escalados[clave]) ? 'html' + base : base;
+        }
+
+        function pintarHoja() {
+            _hojaAlFinal();
+            hoja.textContent = Object.keys(reglas).map(function (s2) {
+                var d = reglas[s2];
+                var props = [];
+                if (d.color)       props.push('color: ' + d.color + ' !important');
+                if (d.background)  props.push('background: ' + d.background + ' !important');
+                if (d.borderColor) props.push('border-color: ' + d.borderColor + ' !important');
+                if (!props.length) return '';
+                var par  = s2.split('||');            // clave: "claro||selector"
+                var tema = par.length > 1 ? par[0] : 'oscuro';
+                var sel  = par.length > 1 ? par[1] : s2;
+                return _prefijoTema(tema, s2) + sel + ' { ' + props.join('; ') + '; }';
+            }).filter(Boolean).join('\n');
+            try { localStorage.setItem(LLAVE, JSON.stringify(reglas)); } catch (e) {}
+            var n = Object.keys(reglas).length;
+            document.getElementById('pincel-total').textContent = n ? n + ' cambio' + (n === 1 ? '' : 's') : 'sin cambios';
+        }
+
+        function aHex(c) {
+            c = (c || '').trim();
+            if (/^#[0-9a-f]{6}$/i.test(c)) return c.toLowerCase();
+            var m = c.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i);
+            if (!m) return '#888888';
+            return '#' + [1,2,3].map(function (i) {
+                return ('0' + parseInt(m[i], 10).toString(16)).slice(-2);
+            }).join('');
+        }
+
+        var caja = document.createElement('div');
+        caja.id = 'pincel';
+        caja.innerHTML =
+            '<h4><span>Pincel · arrastra para mover</span><span id="pincel-total">sin cambios</span></h4>' +
+            '<div class="pincel-cuerpo">' +
+            '<div class="pincel-tema">Pintando en <b id="pincel-tema-txt">oscuro</b>' + (/[?&]limpio=1/.test(location.search) ? '<span class="pincel-limpio">tanda nueva</span>' : '') + '<button id="pincel-tema-btn">cambiar</button></div>' +
+            '<div id="pincel-sel">Nada seleccionado</div>' +
+            '<div id="pincel-aviso" style="display:none"></div>' +
+            '<div id="pincel-controles" style="display:none;">' +
+              '<div class="pincel-fila"><span>Texto</span><input type="text" id="pincel-color-hex" placeholder="#20559A">' +
+                '<input type="color" id="pincel-color"><button data-q="color">quitar</button></div>' +
+              '<div class="pincel-fila"><span>Fondo</span><input type="text" id="pincel-bg-hex" placeholder="#20559A">' +
+                '<input type="color" id="pincel-bg"><button data-q="background">quitar</button></div>' +
+              '<div class="pincel-fila"><span>Borde</span><input type="text" id="pincel-bd-hex" placeholder="#20559A">' +
+                '<input type="color" id="pincel-bd"><button data-q="borderColor">quitar</button></div>' +
+            '</div>' +
+            '<div class="pincel-btns">' +
+              '<button id="pincel-modo" style="background:rgba(255,199,44,.2);border-color:var(--gold-l);">✋ Navegar</button>' +
+              '<button id="pincel-padre">↑ Contenedor</button>' +
+              '<button id="pincel-copiar">Copiar CSS</button>' +
+              '<button id="pincel-reset">Borrar todo</button>' +
+            '</div></div>';
+        document.body.appendChild(caja);
+
+        function seleccionar(el) {
+            if (elActual) elActual.classList.remove('pincel-marcado');
+            elActual = el;
+            el.classList.add('pincel-marcado');
+            sel = selectorDe(el);
+            var cuantos = document.querySelectorAll(sel).length;
+            document.getElementById('pincel-sel').innerHTML =
+                sel + '<br><span id="pincel-cuenta">afecta a ' + cuantos +
+                ' elemento' + (cuantos === 1 ? '' : 's') + ' de la pantalla</span>';
+            document.getElementById('pincel-controles').style.display = '';
+            var cs = getComputedStyle(el);
+            [['pincel-color', cs.color], ['pincel-bg', cs.backgroundColor],
+             ['pincel-bd', cs.borderTopColor]].forEach(function (par) {
+                var h = aHex(par[1]);
+                document.getElementById(par[0]).value = h;
+                document.getElementById(par[0] + '-hex').value = h.toUpperCase();
+            });
+        }
+
+        // Captura en fase de captura para poder frenar los manejadores de la app:
+        // sin esto, tocar un boton para pintarlo tambien lo activaria.
+        var pintando = false;
+        document.addEventListener('click', function (ev) {
+            if (!pintando) return;                 // modo navegar: la app funciona normal
+            if (caja.contains(ev.target)) return;
+            ev.preventDefault(); ev.stopPropagation();
+            seleccionar(ev.target);
+        }, true);
+
+        // Traduce la propiedad del panel al nombre que devuelve getComputedStyle.
+        var _propCss = { color: 'color', background: 'backgroundColor', borderColor: 'borderTopColor' };
+
+        function set(prop, valor) {
+            if (!sel) return;
+            // La clave lleva el tema, asi el mismo elemento puede tener un
+            // color en oscuro y otro en claro sin pisarse.
+            var k = _temaActual() + '||' + sel;
+            reglas[k] = reglas[k] || {};
+            if (valor === null) {
+                delete reglas[k][prop];
+                // si se habia pintado inline, tambien hay que soltarlo
+                var nom = ({ color: 'color', background: 'background-color',
+                             borderColor: 'border-color' })[prop];
+                if (elActual && nom) { try { elActual.style.removeProperty(nom); } catch (e) {} }
+            }
+            else reglas[k][prop] = valor;
+            if (!Object.keys(reglas[k]).length) delete reglas[k];
+            pintarHoja();
+            if (valor !== null) _verificar(k, prop, valor);
+        }
+
+        // Escribir la regla no garantiza que el elemento cambie: puede haber
+        // algo con la misma especificidad mas abajo en la hoja del archivo. En
+        // vez de dejar al usuario adivinando por que "no sirve ahi", se
+        // comprueba el estilo YA CALCULADO y, si no cambio, se escala el
+        // prefijo y se reintenta una vez.
+        function _verificar(clave, prop, valor) {
+            if (!elActual) return;
+            var css = _propCss[prop];
+            var aviso = document.getElementById('pincel-aviso');
+            var mira = function () { return aHex(getComputedStyle(elActual)[css]) === aHex(valor); };
+            var logrado = mira();
+
+            // Paso 2: mas especificidad.
+            if (!logrado && !_escalados[clave]) {
+                _escalados[clave] = true;
+                pintarHoja();
+                logrado = mira();
+            }
+
+            // Paso 3: estilo inline con !important. Le gana a CUALQUIER regla
+            // de hoja, sin importar especificidad ni orden — es el unico
+            // recurso que no puede perder. Se usa solo para la VISTA PREVIA;
+            // el CSS que se copia sigue siendo la regla, que al pegarla al
+            // final del archivo si gana. Sin esto la herramienta simplemente
+            // no servia en los elementos que ya tienen regla propia con
+            // !important, y no habia forma de trabajar ahi.
+            if (!logrado) {
+                var nombre = ({ color: 'color', background: 'background-color',
+                                borderColor: 'border-color' })[prop];
+                try { elActual.style.setProperty(nombre, valor, 'important'); } catch (e) {}
+                logrado = mira();
+                if (logrado) _inline[clave] = true;
+            }
+
+            if (!aviso) return;
+            if (!logrado) {
+                aviso.style.display = '';
+                aviso.style.background = 'rgba(224,22,0,.18)';
+                aviso.textContent = 'No se pudo cambiar este elemento ni con estilo inline. Avisa que paso aca.';
+            } else if (_inline[clave]) {
+                aviso.style.display = '';
+                aviso.style.background = 'rgba(255,199,44,.16)';
+                aviso.textContent = 'Este elemento tiene una regla propia con !important en el archivo. Se pinto por encima para que lo veas; al pegar el CSS al final queda igual.';
+            } else {
+                aviso.style.display = 'none';
+            }
+        }
+        [['color','pincel-color'],['background','pincel-bg'],['borderColor','pincel-bd']]
+        .forEach(function (par) {
+            var prop = par[0], rueda = document.getElementById(par[1]),
+                hex = document.getElementById(par[1] + '-hex');
+            rueda.oninput = function () {
+                hex.value = rueda.value.toUpperCase();
+                set(prop, rueda.value);
+            };
+            // Pegar un hex del manual es lo mas comun, asi que se acepta con o
+            // sin almohadilla y se aplica en cuanto queda valido.
+            hex.oninput = function () {
+                var v = hex.value.trim().replace(/^#?/, '#');
+                if (/^#[0-9a-f]{6}$/i.test(v)) { rueda.value = v.toLowerCase(); set(prop, v); }
+            };
+        });
+        caja.querySelectorAll('.pincel-fila button').forEach(function (b) {
+            b.onclick = function () { set(b.dataset.q, null); };
+        });
+
+        // Cambiar de tema sin salir del pincel: las reglas se guardan por
+        // tema, asi que hay que poder ir y venir para pintar los dos.
+        function _pincelSyncTema() {
+            var t = document.getElementById('pincel-tema-txt');
+            if (t) t.textContent = _temaActual();
+        }
+        _pincelSyncTema();
+        document.getElementById('pincel-tema-btn').onclick = function () {
+            if (typeof window.alternarTema === 'function') window.alternarTema();
+            _pincelSyncTema();
+            pintarHoja();
+        };
+
+        document.getElementById('pincel-modo').onclick = function () {
+            pintando = !pintando;
+            this.textContent = pintando ? '🖌 Pintando' : '✋ Navegar';
+            this.style.background = pintando ? 'rgba(255,199,44,.85)' : 'rgba(255,199,44,.2)';
+            this.style.color = pintando ? '#071D49' : '#fff';
+            document.body.classList.toggle('pincel-on', pintando);
+            if (!pintando && elActual) { elActual.classList.remove('pincel-marcado'); }
+        };
+        document.getElementById('pincel-padre').onclick = function () {
+            if (elActual && elActual.parentElement && elActual.parentElement !== document.body) {
+                seleccionar(elActual.parentElement);
+            }
+        };
+        document.getElementById('pincel-copiar').onclick = function () {
+            var txt = hoja.textContent || '/* sin cambios */';
+            navigator.clipboard.writeText(txt).then(function () {
+                alert('Copiado. Pégamelo y lo dejo fijo en el código.');
+            }, function () { prompt('Copia esto:', txt); });
+        };
+        document.getElementById('pincel-reset').onclick = function () {
+            if (!confirm('¿Borrar todos los cambios del pincel?')) return;
+            reglas = {}; pintarHoja();
+            try { localStorage.removeItem(LLAVE); } catch (e) {}
+        };
+        // El panel tapa justo lo que se quiere pintar, asi que se arrastra desde
+        // su encabezado. Se distingue arrastre de toque por la distancia: menos
+        // de 4 px sigue contando como toque y pliega el panel.
+        (function arrastrable() {
+            var cab = caja.querySelector('h4');
+            var moviendo = false, movido = false, dx = 0, dy = 0, x0 = 0, y0 = 0;
+            function inicio(e) {
+                var t = e.touches ? e.touches[0] : e;
+                var r = caja.getBoundingClientRect();
+                caja.classList.add('suelto');
+                caja.style.left = r.left + 'px';
+                caja.style.top = r.top + 'px';
+                dx = t.clientX - r.left; dy = t.clientY - r.top;
+                x0 = t.clientX; y0 = t.clientY;
+                moviendo = true; movido = false;
+                e.preventDefault();
+            }
+            function mover(e) {
+                if (!moviendo) return;
+                var t = e.touches ? e.touches[0] : e;
+                if (Math.abs(t.clientX - x0) > 4 || Math.abs(t.clientY - y0) > 4) movido = true;
+                caja.style.left = Math.max(0, Math.min(window.innerWidth - 70, t.clientX - dx)) + 'px';
+                caja.style.top = Math.max(0, Math.min(window.innerHeight - 40, t.clientY - dy)) + 'px';
+                e.preventDefault();
+            }
+            function fin() {
+                if (moviendo && !movido) caja.classList.toggle('plegado');
+                moviendo = false;
+            }
+            cab.addEventListener('mousedown', inicio);
+            cab.addEventListener('touchstart', inicio, { passive: false });
+            document.addEventListener('mousemove', mover);
+            document.addEventListener('touchmove', mover, { passive: false });
+            document.addEventListener('mouseup', fin);
+            document.addEventListener('touchend', fin);
+        })();
+
+        pintarHoja();
+    })();
     </script>
 </body>
 
