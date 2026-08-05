@@ -442,7 +442,7 @@
             border-radius: 8px;
             border: 1px solid var(--gold);
             background: var(--panel);
-            color: transparent;
+            color: var(--gold);
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -552,7 +552,7 @@
             flex: 1;
             background: none;
             border: none;
-            color: transparent;
+            color: var(--slate);
             cursor: pointer;
             text-align: center;
             padding: 6px 2px;
@@ -766,7 +766,7 @@
         }
         .m-today-badge {
             background: var(--azul-cobalto);
-            color: var(--white);
+            color: var(--on-brand);
             border: 1px solid var(--azul-cobalto);
             padding: 4px 10px;
             border-radius: 20px;
@@ -1474,7 +1474,7 @@
         .karma-tooltip {
             position: fixed;
             background: rgba(32, 85, 154,0.97);
-            color: var(--white);
+            color: var(--on-brand);
             padding: 9px 14px;
             border-radius: 8px;
             font-size: 12px;
@@ -1636,7 +1636,7 @@
             margin-top: 18px; width: 100%;
             /* Cobalto porque el manual lo define como color de accion por
                defecto. Antes era un degradado dorado con radio de 30px. */
-            background: var(--azul-cobalto); color: var(--white);
+            background: var(--azul-cobalto); color: var(--on-brand);
             border: none; border-radius: 8px; padding: 13px;
             font-family: inherit; font-size: 14px; font-weight: 800;
             letter-spacing: 0.01em; cursor: pointer;
@@ -2535,11 +2535,11 @@
             <div style="display:flex; flex-direction:column; gap:12px;">
                 <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:8px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI NOMBRE COMPLETO</label>
-                    <span id="disp-myname" style="font-size:16px; font-weight:700; color:#fff;">—</span>
+                    <span id="disp-myname" style="font-size:16px; font-weight:700; color: var(--white);">—</span>
                 </div>
                 <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:8px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI CORREO</label>
-                    <span id="disp-myemail" style="font-size:13px; font-weight:600; color:#fff; word-break:break-all;">—</span>
+                    <span id="disp-myemail" style="font-size:13px; font-weight:600; color: var(--white); word-break:break-all;">—</span>
                 </div>
                 <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:8px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI CLAVE DE AGENTE</label>
@@ -2547,7 +2547,7 @@
                 </div>
                 <div style="background:rgba(32, 85, 154,0.07); border:1px solid rgba(32, 85, 154,0.2); border-radius:8px; padding:12px 14px;">
                     <label style="font-size:10px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">MI REGIÓN</label>
-                    <span id="disp-myregion" style="font-size:16px; font-weight:700; color:#fff;">—</span>
+                    <span id="disp-myregion" style="font-size:16px; font-weight:700; color: var(--white);">—</span>
                 </div>
 
                 <button class="btn btn-sm"
@@ -2564,13 +2564,13 @@
 
             <label id="notif-master-row" style="display:none; align-items:center; justify-content:space-between; padding:14px 16px; background:rgba(var(--vk),0.04); border:1px solid rgba(var(--vk),0.1); border-radius:8px; margin-bottom:12px; cursor:pointer; gap:12px;">
                 <div style="flex:1; min-width:0;">
-                    <div id="notif-master-title" style="font-size:15px; color:#fff; font-weight:700;">Notificaciones</div>
+                    <div id="notif-master-title" style="font-size:15px; color: var(--white); font-weight:700;">Notificaciones</div>
                     <div id="notif-master-sub" style="font-size:12px; color:var(--slate); margin-top:3px;">Cargando…</div>
                 </div>
                 <input type="checkbox" id="notif-master-toggle" onchange="onMasterToggle()" style="width:26px; height:26px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;">
             </label>
 
-            <div id="notif-status" style="display:none; font-size:13px; font-weight:600; color:#fff; margin-bottom:12px; line-height:1.4; padding:12px 14px; background:rgba(var(--vk),0.04); border-radius:8px;">Cargando…</div>
+            <div id="notif-status" style="display:none; font-size:13px; font-weight:600; color: var(--white); margin-bottom:12px; line-height:1.4; padding:12px 14px; background:rgba(var(--vk),0.04); border-radius:8px;">Cargando…</div>
             <button id="notif-action-btn" class="btn btn-sm" style="display:none; width:100%; margin-bottom:10px;" onclick="onNotifActionClick()">Activar notificaciones</button>
 
             <div id="notif-prefs" style="display:none; margin-top:8px; padding-top:14px; border-top:1px solid rgba(var(--vk),0.08);">
@@ -2578,7 +2578,7 @@
 
                 <label class="notif-toggle-row" style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(var(--vk),0.05); cursor:pointer;">
                     <div style="flex:1; min-width:0;">
-                        <div style="font-size:14px; color:#fff; font-weight:600;">📢 Anuncios de la dirección</div>
+                        <div style="font-size:14px; color: var(--white); font-weight:600;">📢 Anuncios de la dirección</div>
                         <div style="font-size:11px; color:var(--slate); margin-top:2px;">Broadcasts importantes del director, promotor y coach.</div>
                     </div>
                     <input type="checkbox" id="notif-pref-anuncios" onchange="saveNotifPrefs()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;" checked>
@@ -2587,18 +2587,18 @@
                 <div style="padding:12px 0;">
                     <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
                         <div style="flex:1; min-width:0;">
-                            <div style="font-size:14px; color:#fff; font-weight:600;">⏰ Recordatorio diario</div>
+                            <div style="font-size:14px; color: var(--white); font-weight:600;">⏰ Recordatorio diario</div>
                             <div style="font-size:11px; color:var(--slate); margin-top:2px;">Te avisamos si no reportaste actividad.</div>
                         </div>
                         <input type="checkbox" id="notif-pref-recordatorio" onchange="onRecordatorioToggle()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;">
                     </label>
                     <div id="notif-recordatorio-time-row" style="display:none; margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:8px; align-items:center; gap:10px;">
                         <span style="font-size:12px; color:rgba(var(--vk),0.7); font-weight:600;">Hora:</span>
-                        <select id="notif-pref-recordatorio-hour" onchange="saveNotifPrefs()" style="background:rgba(var(--vk),0.08); color:#fff; border:1px solid rgba(var(--vk),0.15); border-radius:8px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                        <select id="notif-pref-recordatorio-hour" onchange="saveNotifPrefs()" style="background:rgba(var(--vk),0.08); color: var(--white); border:1px solid rgba(var(--vk),0.15); border-radius:8px; padding:6px 8px; font-size:14px; font-family:inherit;">
                             <option value="00">12 AM</option><option value="01">1 AM</option><option value="02">2 AM</option><option value="03">3 AM</option><option value="04">4 AM</option><option value="05">5 AM</option><option value="06">6 AM</option><option value="07">7 AM</option><option value="08">8 AM</option><option value="09">9 AM</option><option value="10">10 AM</option><option value="11">11 AM</option><option value="12">12 PM</option><option value="13">1 PM</option><option value="14">2 PM</option><option value="15">3 PM</option><option value="16">4 PM</option><option value="17">5 PM</option><option value="18">6 PM</option><option value="19" selected>7 PM</option><option value="20">8 PM</option><option value="21">9 PM</option><option value="22">10 PM</option><option value="23">11 PM</option>
                         </select>
-                        <span style="font-size:16px; color:#fff; font-weight:600;">:</span>
-                        <select id="notif-pref-recordatorio-min" onchange="saveNotifPrefs()" style="background:rgba(var(--vk),0.08); color:#fff; border:1px solid rgba(var(--vk),0.15); border-radius:8px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                        <span style="font-size:16px; color: var(--white); font-weight:600;">:</span>
+                        <select id="notif-pref-recordatorio-min" onchange="saveNotifPrefs()" style="background:rgba(var(--vk),0.08); color: var(--white); border:1px solid rgba(var(--vk),0.15); border-radius:8px; padding:6px 8px; font-size:14px; font-family:inherit;">
                             <option value="00" selected>00</option><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="40">40</option><option value="50">50</option>
                         </select>
                     </div>
@@ -2717,7 +2717,7 @@
                 </div>
                 <div>
                     <label style="font-size:11px; color:var(--slate); font-weight:700; display:block; margin-bottom:6px;">TU REGIÓN</label>
-                    <select id="reg-region" style="width:100%; padding:10px; background:var(--panel); color:#fff; border:1px solid rgba(var(--vk),0.15); border-radius:8px; font-size:14px;">
+                    <select id="reg-region" style="width:100%; padding:10px; background:var(--panel); color: var(--white); border:1px solid rgba(var(--vk),0.15); border-radius:8px; font-size:14px;">
                         <option value="">Cargando regiones...</option>
                     </select>
                 </div>
@@ -2725,7 +2725,7 @@
             <div style="background:rgba(32, 85, 154,0.1); border:1px solid rgba(32, 85, 154,0.3); border-radius:8px; padding:12px; font-size:12px; color:var(--gold-l); margin-bottom:20px; text-align:left; line-height:1.6;">
                 <i class="fa fa-circle-info"></i> Tu solicitud será revisada por el director, quien te asignará tu rol y equipo.
             </div>
-            <button id="reg-submit-btn" onclick="submitRegistration()" style="width:100%; padding:13px; border-radius:8px; background:var(--green); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;">
+            <button id="reg-submit-btn" onclick="submitRegistration()" style="width:100%; padding:13px; border-radius:8px; background:var(--green); color:var(--on-brand); border:none; font-size:14px; font-weight:700; cursor:pointer;">
                 <i class="fa fa-paper-plane"></i> Enviar Solicitud de Acceso
             </button>
             <button onclick="doSignOut()" style="width:100%; margin-top:10px; padding:10px; border-radius:8px; background:none; border:1px solid rgba(var(--vk),0.15); color:var(--slate); font-size:13px; cursor:pointer;">Salir</button>
@@ -2756,7 +2756,7 @@
     <!-- Push notification permission banner (compacto, sin copy extra) -->
     <div id="push-banner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; background:linear-gradient(135deg,#1e3a8a,#0E2A5C); padding:12px 16px; border-bottom:1px solid rgba(32, 85, 154,0.3); box-shadow:0 4px 16px rgba(0,0,0,0.4); align-items:center; gap:10px;">
         <div style="font-size:22px; flex-shrink:0;">🔔</div>
-        <div style="flex:1; color:#fff; font-size:15px; font-weight:700;">¿Activar notificaciones?</div>
+        <div style="flex:1; color: var(--white); font-size:15px; font-weight:700;">¿Activar notificaciones?</div>
         <button onclick="requestPushPermission()" style="padding:8px 14px; background:var(--gold,#7999C2); color: var(--on-brand); border:none; border-radius:8px; font-weight: 900; font-size:13px; cursor:pointer; white-space:nowrap;">Aceptar</button>
         <button onclick="dismissPushBanner()" style="padding:8px 12px; background:rgba(var(--vk),0.08); color:rgba(var(--vk),0.85); border:1px solid rgba(var(--vk),0.15); border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap;">Rechazar</button>
     </div>
@@ -3494,6 +3494,14 @@
             background: rgba(233, 238, 245, .6);
         }
 
+        /* Mismo caso que los inputs: el campo del foro va en rgba(var(--vk),0.6),
+           que en claro es navy solido, y el texto encima es tinta Oxford: 3.5:1.
+           Sobre papel claro se lee en 11:1. */
+        :root[data-tema="claro"] .foro-input,
+        :root[data-tema="claro"] .foro-area {
+            background: rgba(233, 238, 245, .6);
+        }
+
 
 
         /* ── AJUSTES DEL TEMA OSCURO ───────────────────────────────────────
@@ -3508,6 +3516,19 @@
         :root:not([data-tema="claro"]) #cov-invite-card div.cov-invite-head span.cov-invite-claim { color: #ffc736 !important; }
         :root:not([data-tema="claro"]) #cov-invite-card { color: #cfcfcf !important; border-color: #ffffff !important; }
         :root:not([data-tema="claro"]) nav.bottom-nav { background: #22487c !important; }
+
+
+        /* ── Tanda del pincel sobre mainnet: datos del agente, mis solicitudes
+           y el modal de cobertura. Pegadas TAL CUAL salieron de la herramienta. */
+        :root[data-tema="claro"] #disp-myname { color: #1b3569 !important; }
+        :root[data-tema="claro"] #disp-myemail { color: #143a66 !important; background: #d8e1ee !important; }
+        :root[data-tema="claro"] #disp-myregion { color: #143a66 !important; }
+        :root[data-tema="claro"] #ts-view-solicitudes div.card { background: #DDE5EF !important; }
+        :root[data-tema="claro"] #cov-info-body div:nth-child(13) { background: #d3dce8 !important; }
+        :root[data-tema="claro"] #cov-info-body div:nth-child(13) b:nth-child(1) { color: #061837 !important; }
+        :root[data-tema="claro"] #cov-info-body div:nth-child(14) div:nth-child(1) { background: #c9cef3 !important; }
+        :root[data-tema="claro"] #cov-info-body div:nth-child(14) div:nth-child(1) div:nth-child(1) { color: #152a54 !important; }
+        :root[data-tema="claro"] #cov-info-body div:nth-child(14) div:nth-child(2) div:nth-child(1) { color: #d91f0e !important; background: #d2d2db !important; }
 
     </style>
 
@@ -3546,7 +3567,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.17.0';
+        window.APP_HTML_VERSION = 'v2.18.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -4319,7 +4340,7 @@
                             style="position:absolute; top:8px; right:8px; width:24px; height:24px; padding:0; background:transparent; color:rgba(var(--vk),0.4); border:none; font-size:18px; line-height:1; cursor:pointer; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
                         <div style="cursor:pointer;" data-mark-read>
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; padding-right:8px;">
-                                <div style="font-weight:700; color:${isUnread ? 'var(--gold-l)' : '#fff'}; font-size:14px; line-height:1.3;">
+                                <div style="font-weight:700; color:${isUnread ? 'var(--gold-l)' : 'var(--white)'}; font-size:14px; line-height:1.3;">
                                     ${isUnread ? '<span style="color:#F08A80; margin-right:4px;">●</span>' : ''}${escapeHtml(a.title || '')}
                                 </div>
                                 <div style="font-size:11px; color:var(--slate); white-space:nowrap; flex-shrink:0;">${dt}</div>
@@ -4880,7 +4901,7 @@
             banner = document.createElement('div');
             banner.id = 'load-error-banner';
             banner.style.cssText = `position:fixed; top:0; left:0; right:0; z-index:99999;
-                background:linear-gradient(135deg,#7c2d12,#450a0a); color:#fff;
+                background:linear-gradient(135deg,#7c2d12,#450a0a); color:var(--on-brand);
                 padding:14px 18px; box-shadow:0 4px 16px rgba(0,0,0,0.4);
                 display:flex; align-items:center; gap:12px; font-family:Inter,sans-serif;`;
             banner.innerHTML = `
@@ -7365,7 +7386,7 @@
                             const dt = _relativeTimeEs(r.fechaResolucion || r.fechaSolicitud);
                             const isMine = r.emailSolicitante === user.email;
                             return `<div style="padding:10px 12px; background:${isMine ? 'rgba(32, 85, 154,0.10)' : 'var(--panel)'}; border-radius:8px; ${isMine ? 'border:1px solid rgba(32, 85, 154,0.35);' : ''}">
-                                <div style="font-weight:700; font-size:13px; color:${isMine ? 'var(--gold-l)' : '#fff'};">👤 ${eName}${isMine ? ' (tú)' : ''}</div>
+                                <div style="font-weight:700; font-size:13px; color:${isMine ? 'var(--gold-l)' : 'var(--white)'};">👤 ${eName}${isMine ? ' (tú)' : ''}</div>
                                 <div style="font-size:12px; color:rgba(var(--vk),0.75); margin-top:3px;">${eEmoji} ${eItem}${cantStr} · <span style="color:var(--gold); font-weight:700;"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoTotal}</span> · <span style="color:var(--slate);">${dt}</span></div>
                             </div>`;
                         }).join('')
