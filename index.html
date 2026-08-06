@@ -3567,7 +3567,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.22.0';
+        window.APP_HTML_VERSION = 'v2.23.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -5751,6 +5751,46 @@
             const mes  = _mesLargo(mx.month);
             const head = `<h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin:0 0 4px; font-size:20px;">Tu multiplicador</h2>
                 <div style="font-size:12px; color:var(--slate); margin-bottom:16px; text-transform:capitalize;">${mes} ${String(mx.month || '').split('-')[0]}</div>`;
+
+            // ── Otorgado a mano por el director ─────────────────────────────
+            // Va ANTES que todo lo demás. Un multiplicador de regalo no tiene CSV
+            // detrás: si cayera en las ramas de abajo le imprimiría un escalón,
+            // una cobertura y un "coincidiste con el corporativo" que no
+            // corresponden a nada, y el agente leería números que no existen.
+            if (mx.manual === true) {
+                if (mx.earned !== true) {
+                    el.innerHTML = head + `
+                        <div class="mrec-row"><div class="mrec-ico">—</div><div>
+                            <div class="mrec-k">Tu director retiró tu multiplicador</div>
+                            <div class="mrec-v">${escapeHtml(mx.nota || '')}</div>
+                        </div></div>
+                        <div style="font-size:12px; color:var(--slate); margin-top:14px; line-height:1.55;">
+                            Los totopos que ya habías ganado con él <b>son tuyos</b>: no se te descuenta nada.
+                            De hoy en adelante tu día vuelve a valer ${base}.
+                        </div>`;
+                    return;
+                }
+                const valeM = Math.round(base * (1 + (Number(mx.bonusPct) || 0) / 100));
+                el.innerHTML = head + `
+                    <div class="mrec-row"><div class="mrec-ico">🎁</div><div>
+                        <div class="mrec-k">Te lo otorgó tu director</div>
+                        <div class="mrec-v">${escapeHtml(mx.nota || 'Otorgado por tu director')}</div>
+                    </div></div>
+                    <div class="mrec-row"><div class="mrec-ico">⚡</div><div>
+                        <div class="mrec-k">Tu bono</div>
+                        <div class="mrec-v"><b style="color:var(--gold);">+${mx.bonusPct}%</b> sobre cada día que reportes</div>
+                    </div></div>
+                    <div class="mrec-row"><div class="mrec-ico">🌽</div><div>
+                        <div class="mrec-k">Cada día de ${mes} vale</div>
+                        <div class="mrec-v"><b style="color:var(--gold);">${valeM}</b> totopos en vez de ${base}</div>
+                    </div></div>
+                    <div style="font-size:12px; color:var(--slate); margin-top:14px; line-height:1.55;">
+                        Este no salió del cálculo mensual: te lo dio tu director directamente.
+                        Aplica sólo a los días de ${mes}, y los que ya habías reportado ese mes
+                        ya se recalcularon con este bono.
+                    </div>`;
+                return;
+            }
 
             // ── No lo ganó ──────────────────────────────────────────────────
             // Son dos fallas distintas con dos acciones distintas. Al que reportó
