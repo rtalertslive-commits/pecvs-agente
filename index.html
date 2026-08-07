@@ -3567,7 +3567,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.23.0';
+        window.APP_HTML_VERSION = 'v2.24.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -5776,6 +5776,13 @@
                         <div class="mrec-k">Te lo otorgó tu director</div>
                         <div class="mrec-v">${escapeHtml(mx.nota || 'Otorgado por tu director')}</div>
                     </div></div>
+                    ${(mx.porCobertura === true && (mx.tierPct || 0) > (mx.bonusPct || 0)) ? `
+                    <div class="mrec-row"><div class="mrec-ico">📅</div><div>
+                        <div class="mrec-k">Tus días reportados</div>
+                        <div class="mrec-v">Reportaste <b>${mx.daysReported}</b> de <b>${mx.daysInMonth}</b> días.<br>
+                            Tu director te dio <b>+${mx.tierPct}%</b>, y como el bono se reparte según los días
+                            que reportaste, quedó en <b style="color:var(--gold);">+${mx.bonusPct}%</b>.</div>
+                    </div></div>` : ''}
                     <div class="mrec-row"><div class="mrec-ico">⚡</div><div>
                         <div class="mrec-k">Tu bono</div>
                         <div class="mrec-v"><b style="color:var(--gold);">+${mx.bonusPct}%</b> sobre cada día que reportes</div>
