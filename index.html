@@ -14,7 +14,7 @@
 
     <!-- PWA / Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#20559A">
+    <meta name="theme-color" content="#071D49">
     <script>
         /* Tema, aplicado antes del primer pixel. El script de la app es
            type="module" y por lo tanto diferido: aplicarlo alla haria que la
@@ -1887,6 +1887,7 @@
 </head>
 
 <body>
+    <div id="barra-estado" aria-hidden="true"></div>
     <!-- ICONO SVG TOTOPO (Variante H — hecho a mano, asimétrico).
          Reusable via <svg class="totopo-icon"><use href="#totopo"/></svg> -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -3022,6 +3023,28 @@
            para que no tenga que buscarse entre 150. */
         .rk-yo-fijo { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(var(--vk), 0.2); }
 
+
+        /* ── FRANJA DE LA BARRA DE ESTADO ──────────────────────────────────
+           En iOS con `black-translucent` la pagina se mete DEBAJO de la barra
+           de estado, asi que esa franja toma el color de lo que haya arriba del
+           todo. Con el tema claro eso quedaba palido y el reloj y el wifi salian
+           en negro.
+
+           Se pinta a proposito en Oxford, con una barra fija de la altura del
+           notch. En un telefono sin notch env(safe-area-inset-top) es 0 y esto
+           no existe, asi que no cambia nada donde no hace falta.
+
+           El .header compensa con el mismo inset: sin eso su contenido queda
+           por debajo del reloj. Suma 0 cuando el inset es 0. */
+        #barra-estado {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: env(safe-area-inset-top, 0px);
+            background: var(--azul-oxford);
+            z-index: 2000;
+            pointer-events: none;
+        }
+        .header { padding-top: calc(12px + env(safe-area-inset-top, 0px)) !important; }
+
         /* ── Badges de rol ── */
         .rol-badge {
             display: inline-block; font-size: 9px; font-weight: 900; letter-spacing: 0.6px;
@@ -3665,7 +3688,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.26.0';
+        window.APP_HTML_VERSION = 'v2.27.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -8043,7 +8066,7 @@
             // La barra del sistema operativo tiene que seguir al cromo, o en
             // claro queda una franja Oxford arriba que no pertenece a nada.
             const meta = document.querySelector('meta[name="theme-color"]');
-            if (meta) meta.setAttribute('content', t === 'claro' ? '#20559A' : '#071D49');
+            if (meta) meta.setAttribute('content', '#071D49');
 
             _sincronizarSwitchTema();
 
