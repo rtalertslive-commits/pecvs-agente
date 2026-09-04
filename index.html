@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- viewport-fit=cover es lo que hace que env(safe-area-inset-*) valga algo.
+         Sin el resuelven a 0, y la franja Oxford de la barra de estado medía
+         cero pixeles: nunca se dibujo. El resto del layout ya lo esperaba —el
+         nav de abajo, el body y la cabecera del foro ya suman sus insets. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Actividad — Registro Profesional</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -3699,7 +3703,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.27.1';
+        window.APP_HTML_VERSION = 'v2.27.2';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
