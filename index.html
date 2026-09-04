@@ -110,7 +110,7 @@
                Sale a variable porque de esto dependen CUATRO reglas —el nav, lo
                que el body reserva y las dos alturas del foro— y tenerlo repetido
                ya obligo a tocarlas todas dos veces. */
-            --nav-bottom: max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px));
+            --nav-bottom: max(10px, calc(env(safe-area-inset-bottom, 0px) - 19px));
         }
 
         /* ── Interruptor de tema ─────────────────────────────────────── */
@@ -3714,7 +3714,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.27.4';
+        window.APP_HTML_VERSION = 'v2.27.5';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
