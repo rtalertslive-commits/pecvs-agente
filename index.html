@@ -14,20 +14,19 @@
 
     <!-- PWA / Mobile Web App Meta -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#071D49">
+    <meta name="theme-color" content="#20559A">
     <script>
         /* Tema, aplicado antes del primer pixel. El script de la app es
            type="module" y por lo tanto diferido: aplicarlo alla haria que la
            pantalla arrancara oscura y saltara a clara a la vista del agente.
            Por eso va aqui, como script clasico, y sin depender de nada. */
+        /* ══ TEMA OSCURO DESHABILITADO ═══════════════════════════════
+           Se dejo solo el claro POR AHORA. No se borro nada: los tokens y
+           las reglas del oscuro siguen enteros. Rehabilitarlo es deshacer
+           tres puntos: este script, _ponerTema y el display:none de
+           .tema-row. */
         (function () {
-            var t;
-            try { t = localStorage.getItem('pecvsTemaActivo'); } catch (e) {}
-            if (t === 'claro') {
-                document.documentElement.setAttribute('data-tema', 'claro');
-                var m = document.querySelector('meta[name="theme-color"]');
-                if (m) m.setAttribute('content', '#20559A');
-            }
+            document.documentElement.setAttribute('data-tema', 'claro');
         })();
     </script>
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -101,7 +100,10 @@
 
         /* ── Interruptor de tema ─────────────────────────────────────── */
         .tema-row {
-            display: flex; align-items: center; gap: 9px;
+            /* TEMA OSCURO DESHABILITADO: no tiene sentido ofrecer un cambio
+               que no cambia nada. Quitar este display:none para devolverlo. */
+            display: none !important;
+            align-items: center; gap: 9px;
             padding: 9px 13px; margin-bottom: 13px;
             background: var(--panel); border: 1px solid var(--border);
             border-radius: 24px;
@@ -568,10 +570,18 @@
             transition: transform 0.15s ease;
         }
         .bottom-nav .bn-btn span {
-            font-size: 10px;
+            /* 7 botones: en un telefono de 360px son ~51px cada uno. A 10px con
+               letter-spacing, "Bitácora" no cabe y se parte en dos renglones,
+               que desalinea toda la barra. */
+            font-size: 9px;
             font-weight: 600;
-            letter-spacing: 0.2px;
+            letter-spacing: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
         }
+
         .bottom-nav .bn-btn.active { color: var(--gold); }
         .bottom-nav .bn-btn.active i { transform: scale(1.12); }
 
@@ -2014,6 +2024,7 @@
                 KPIs</button>
             <button class="tab-btn" data-tab="charts" onclick="switchTab('charts',this)"><i class="fa fa-chart-area"></i>
                 Tendencias</button>
+            <button class="tab-btn" data-tab="rankings" onclick="switchTab('rankings',this)"><i class="fa fa-ranking-star"></i> Rankings</button>
             <button class="tab-btn" data-tab="tienda" onclick="switchTab('tienda',this)"><i class="fa fa-store"></i> Tienda</button>
         </div>
 
@@ -2307,6 +2318,60 @@
             </div>
         </div>
 
+        <!-- ═══════════════════ TAB: RANKINGS ═══════════════════
+             Los cuatro rankings de la region, en el orden pedido. Las listas NO
+             se cortan en 10: cada una trae su propio scroll y se puede recorrer
+             entera. La fila del propio agente se resalta y, si no cae en lo que
+             se pinta de entrada, se ancla al final con su lugar. -->
+        <div id="tab-rankings" class="tab-panel">
+            <div class="card" style="margin-bottom:16px;">
+                <p class="card-title" style="margin:0 0 4px;"><i class="fa fa-bolt"></i> <span id="mult-top-titulo">Multiplicadores activos</span></p>
+                <p style="font-size:11px;color:var(--slate);margin:0 0 12px;">Los que más multiplican su día este mes en tu región.</p>
+                <div id="mult-top10" class="rk-lista">
+                    <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:16px;">
+                <p class="card-title" style="margin:0 0 4px;"><i class="fa fa-calendar-check"></i> Los más constantes</p>
+                <p style="font-size:11px;color:var(--slate);margin:0 0 12px;">
+                    Días reportados de <span id="rk-mes-const">este mes</span>, contra los días que ya pasaron.
+                    Reportar todos los días es lo único que depende sólo de ti.
+                </p>
+                <div id="rk-constancia" class="rk-lista">
+                    <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
+                    <p class="card-title" style="margin:0;"><svg class="totopo-icon"><use href="#totopo"/></svg> <span id="rk-gan-label">Los que más han ganado — mes</span></p>
+                    <div style="display:flex; gap:4px; background:rgba(var(--vk), 0.04); border: 1px solid var(--border); border-radius:8px; padding:3px;">
+                        <button id="rk-gan-mes" onclick="switchGanadosPeriod('month')" style="padding:5px 14px; background:rgba(32, 85, 154, 0.18); border:none; border-radius:8px; color:var(--gold-l); font-weight:700; font-size:12px; cursor:pointer;">Mes</button>
+                        <button id="rk-gan-anio" onclick="switchGanadosPeriod('year')" style="padding:5px 14px; background:transparent; border:none; border-radius:8px; color:rgba(var(--vk), 0.6); font-weight:600; font-size:12px; cursor:pointer;">Año</button>
+                    </div>
+                </div>
+                <p style="font-size:11px;color:var(--slate);margin:0 0 12px;">Totopos ganados en tu región: por reportar, por multiplicador y por regalos del director.</p>
+                <div id="rk-ganados" class="rk-lista">
+                    <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
+                    <p class="card-title" style="margin:0;">🏆 <span id="lb-period-label">Los que más han gastado — mes</span></p>
+                    <div id="lb-period-toggle" style="display:flex; gap:4px; background:rgba(var(--vk), 0.04); border: 1px solid var(--border); border-radius:8px; padding:3px;">
+                        <button id="lb-btn-month" onclick="switchLeaderboardPeriod('month')" style="padding:5px 14px; background:rgba(32, 85, 154, 0.18); border:none; border-radius:8px; color:var(--gold-l); font-weight:700; font-size:12px; cursor:pointer;">Mes</button>
+                        <button id="lb-btn-year" onclick="switchLeaderboardPeriod('year')" style="padding:5px 14px; background:transparent; border:none; border-radius:8px; color:rgba(var(--vk), 0.6); font-weight:600; font-size:12px; cursor:pointer;">Año</button>
+                    </div>
+                </div>
+                <p style="font-size:11px;color:var(--slate);margin:0 0 12px;">Los agentes que más canjearon en tu región.</p>
+                <div id="tienda-leaderboard" class="rk-lista">
+                    <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
+                </div>
+            </div>
+        </div>
+
         <!-- ═══════════════════ TAB: TIENDA ═══════════════════ -->
         <div id="tab-tienda" class="tab-panel">
             <!-- Sub-tabs -->
@@ -2340,27 +2405,6 @@
             <!-- Sub-view: ACTIVIDAD (feed + leaderboard) -->
             <div id="ts-view-actividad" style="display:none;">
 
-                <!-- Top 10 de multiplicadores del mes en curso -->
-                <div class="card" style="margin-bottom:16px;">
-                    <p class="card-title" style="margin:0 0 4px;"><i class="fa fa-bolt"></i> <span id="mult-top-titulo">Multiplicadores activos</span></p>
-                    <p style="font-size:11px;color:var(--slate);margin:0 0 12px;">Los 10 que más multiplican su día este mes en tu región.</p>
-                    <div id="mult-top10" style="display:flex;flex-direction:column;gap:6px;">
-                        <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
-                    </div>
-                </div>
-                <div class="card" style="margin-bottom:16px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
-                        <p class="card-title" style="margin:0;">🏆 <span id="lb-period-label">Top del mes</span></p>
-                        <div id="lb-period-toggle" style="display:flex; gap:4px; background:rgba(var(--vk),0.04); border:1px solid rgba(var(--vk),0.10); border-radius:8px; padding:3px;">
-                            <button id="lb-btn-month" onclick="switchLeaderboardPeriod('month')" style="padding:5px 14px; background:rgba(32, 85, 154,0.18); border:none; border-radius:8px; color:var(--gold-l); font-weight:700; font-size:12px; cursor:pointer;">Mes</button>
-                            <button id="lb-btn-year" onclick="switchLeaderboardPeriod('year')" style="padding:5px 14px; background:transparent; border:none; border-radius:8px; color:rgba(var(--vk),0.6); font-weight:600; font-size:12px; cursor:pointer;">Año</button>
-                        </div>
-                    </div>
-                    <p style="font-size:11px;color:var(--slate);margin:0 0 12px;">Los agentes que más gastaron en tu región.</p>
-                    <div id="tienda-leaderboard" style="display:flex;flex-direction:column;gap:6px;">
-                        <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
-                    </div>
-                </div>
                 <div class="card">
                     <p class="card-title">🔥 Compras recientes</p>
                     <p style="font-size:11px;color:var(--slate);margin-bottom:12px;">Lo que estaban canjeando otros agentes de tu región.</p>
@@ -2390,6 +2434,10 @@
         <button class="bn-btn" data-tab="charts" onclick="switchTab('charts',this)">
             <i class="fa fa-chart-area"></i>
             <span>Tend.</span>
+        </button>
+        <button class="bn-btn" data-tab="rankings" onclick="switchTab('rankings',this)">
+            <i class="fa fa-ranking-star"></i>
+            <span>Ranking</span>
         </button>
         <button class="bn-btn" data-tab="tienda" onclick="switchTab('tienda',this)">
             <i class="fa fa-store"></i>
@@ -2701,7 +2749,7 @@
     </div>
 
     <!-- REGISTER OVERLAY -->
-    <div id="register-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#143566,#0E2A5C); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+    <div id="register-overlay" style="display:none; position:fixed; inset:0; background:var(--panel2); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
         <div class="login-card" style="max-width:420px;">
             <div style="font-size:40px; margin-bottom:16px;">📝</div>
             <h2 style="color:var(--gold); font-family:'Source Sans Pro',sans-serif; margin-bottom:8px;">Solicitar Acceso</h2>
@@ -2733,7 +2781,7 @@
     </div>
 
     <!-- PENDING OVERLAY -->
-    <div id="pending-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#143566,#0E2A5C); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+    <div id="pending-overlay" style="display:none; position:fixed; inset:0; background:var(--panel2); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
         <div class="login-card" style="max-width:400px;">
             <div style="font-size:50px; margin-bottom:16px;">⏳</div>
             <h2 style="color:var(--orange); font-family:'Source Sans Pro',sans-serif; margin-bottom:8px;">Solicitud Pendiente</h2>
@@ -2743,7 +2791,7 @@
     </div>
 
     <!-- REVOKED OVERLAY -->
-    <div id="revoked-overlay" style="display:none; position:fixed; inset:0; background:radial-gradient(circle at top right,#143566,#0E2A5C); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+    <div id="revoked-overlay" style="display:none; position:fixed; inset:0; background:var(--panel2); z-index:10001; align-items:center; justify-content:center; flex-direction:column; padding:20px;">
         <div class="login-card" style="max-width:400px;">
             <div style="font-size:50px; margin-bottom:16px;">🚫</div>
             <h2 style="color:var(--red); font-family:'Source Sans Pro',sans-serif; margin-bottom:8px;">Acceso Revocado</h2>
@@ -2948,6 +2996,32 @@
             border-bottom: 1px solid var(--border);
         }
 
+        /* ── Listas de ranking ──────────────────────────────────────────
+           Scroll propio por lista. Sin esto, tres listas de 150 agentes hacen
+           una pagina de scroll infinito donde nadie encuentra nada. */
+        .rk-lista {
+            display: flex; flex-direction: column; gap: 6px;
+            max-height: 380px; overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 4px;
+        }
+        .rk-fila {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 11px; border-radius: 8px;
+            background: rgba(var(--vk), 0.04); border: 1px solid var(--border);
+        }
+        .rk-fila.yo {
+            background: rgba(var(--amarillo-rgb), 0.12);
+            border-color: rgba(var(--amarillo-rgb), 0.45);
+        }
+        .rk-pos { width: 28px; text-align: center; font-size: 12px; font-weight: 800; color: var(--slate); flex-shrink: 0; }
+        .rk-nom { flex: 1; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rk-fila.yo .rk-nom { font-weight: 900; color: var(--gold-l); }
+        .rk-val { font-size: 12px; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+        /* Cuando el agente no entra en lo que se ve, se ancla su fila al final
+           para que no tenga que buscarse entre 150. */
+        .rk-yo-fijo { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(var(--vk), 0.2); }
+
         /* ── Badges de rol ── */
         .rol-badge {
             display: inline-block; font-size: 9px; font-weight: 900; letter-spacing: 0.6px;
@@ -3039,7 +3113,7 @@
            el color salta a otra cosa. Estan marcados abajo. */
         #login-overlay div.login-card { color: var(--white) !important; background: var(--bg) !important; }
         #login-btn { color: var(--white) !important; background: #20559A !important; }
-        #login-overlay { color: #676b6f !important; background: radial-gradient(circle at top right, #F4F7FB, #FFFFFF); }
+        #login-overlay { color: #676b6f !important; background: var(--panel2) !important; }
         div.app div.header div.row-menu button.btn.btn-sm { color: var(--white) !important; background: #20559A !important; }
         #logout-btn { color: var(--white) !important; background: var(--bg) !important; border-color: var(--white) !important; }
         #cov-invite-btn { color: var(--white) !important; background: #20559A !important; border-color: var(--white) !important; }
@@ -3276,6 +3350,30 @@
         :root[data-tema="claro"] #install-btn span:nth-child(2) { color: #9c8307 !important; border-color: #cccccc !important; }
         :root[data-tema="claro"] #install-btn { color: #000000 !important; }
         :root[data-tema="claro"] #login-overlay div.login-card { color: #ffc2c2 !important; }
+
+        /* ── REGISTRO, PENDIENTE Y BAJA ────────────────────────────────────
+           Los tres traian el fondo clavado en un degradado oscuro
+           (#143566 -> #0E2A5C) para los DOS temas, y el de login al reves, en
+           blanco. Con el tema claro forzado, esos tres quedaban con texto
+           oscuro sobre fondo oscuro.
+
+           Se alinean con el login usando tokens. NO se copia el
+           `color: #ffc2c2` de la regla de arriba: ese rosa palido sobre papel
+           claro da 1.1:1 y es un error de una tanda vieja del pincel. */
+        #register-overlay, #pending-overlay, #revoked-overlay {
+            background: var(--panel2) !important;
+        }
+        #register-overlay div.login-card,
+        #pending-overlay div.login-card,
+        #revoked-overlay div.login-card {
+            color: var(--white) !important;
+            background: var(--bg) !important;
+        }
+        :root[data-tema="claro"] #register-overlay,
+        :root[data-tema="claro"] #pending-overlay,
+        :root[data-tema="claro"] #revoked-overlay {
+            background: #133971 !important;
+        }
         /* Aqui habia una regla que ponia #m-tt-$ en #2f5291 — azul oscuro sobre
            la tarjeta cobalto, 1.0:1. Se retira porque contradice lo pedido
            despues: que la cifra vaya del mismo blanco que su etiqueta. Estaba
@@ -3567,7 +3665,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.25.0';
+        window.APP_HTML_VERSION = 'v2.26.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -6479,6 +6577,8 @@
         // El filtro por `multiplier.month` es lo que hace que la lista sea de
         // ACTIVOS y no de historicos: un multiplicador ganado en junio sigue
         // en el documento, pero ya no paga.
+        // Sin limite: se pidio poder recorrer la lista completa. El limit(10)
+        // se quito y el scroll lo maneja .rk-lista.
         async function renderMultTop10() {
             const cont = document.getElementById('mult-top10');
             if (!cont) return;
@@ -6496,8 +6596,7 @@
                     where('directorCode', '==', dc),
                     where('multiplier.month', '==', mesKey),
                     where('multiplier.earned', '==', true),
-                    orderBy('multiplier.bonusPct', 'desc'),
-                    limit(10)));
+                    orderBy('multiplier.bonusPct', 'desc')));
 
                 if (snap.empty) {
                     cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Todavía nadie tiene multiplicador activo este mes.</div>';
@@ -6505,28 +6604,38 @@
                 }
                 const base = (pointsConfig && pointsConfig.agentDailyPoints) || 10;
                 const yo = (auth.currentUser && auth.currentUser.email) || '';
-                const medalla = i => (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.');
-
-                cont.innerHTML = snap.docs.map((d, i) => {
+                const filas = snap.docs.map((d, i) => {
                     const x = d.data(), m = x.multiplier || {};
-                    const vale = Math.round(base * (1 + (Number(m.bonusPct) || 0) / 100));
-                    const soyYo = d.id === yo;
-                    return `
-                    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;
-                                background:${soyYo ? 'rgba(255,199,44,0.12)' : 'rgba(var(--vk),0.04)'};
-                                border:1px solid ${soyYo ? 'rgba(255,199,44,0.45)' : 'var(--border)'};">
-                        <span style="width:26px;text-align:center;font-size:13px;font-weight:800;color:var(--slate);">${medalla(i)}</span>
-                        <span style="flex:1;font-size:12.5px;font-weight:${soyYo ? '900' : '600'};color:${soyYo ? 'var(--gold-l)' : 'var(--white)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                            ${escapeHtml(x.agentName || d.id)}${soyYo ? ' <span style="font-size:10px;">(tú)</span>' : ''}
-                        </span>
-                        <span style="font-size:11px;color:var(--slate);white-space:nowrap;">${m.daysReported || 0}/${m.daysInMonth || 0} días</span>
-                        <span class="mult-chip-demo" style="padding:3px 10px;"><i class="fa fa-bolt"></i> <b>${vale}</b></span>
-                    </div>`;
-                }).join('');
+                    return { email: d.id, nombre: x.agentName || d.id, pos: i + 1,
+                             bonusPct: Number(m.bonusPct) || 0,
+                             dias: (m.daysReported || 0) + '/' + (m.daysInMonth || 0),
+                             vale: Math.round(base * (1 + (Number(m.bonusPct) || 0) / 100)) };
+                });
+                cont.innerHTML = _rkPintar(filas, yo, f =>
+                    '<span class="rk-val" style="color:var(--slate);font-weight:600;">' + f.dias + ' días</span>' +
+                    '<span class="mult-chip-demo" style="padding:3px 10px;"><i class="fa fa-bolt"></i> <b>' + f.vale + '</b></span>');
             } catch (e) {
-                console.warn('[mult] top10:', e && e.message);
+                console.warn('[mult] top:', e && e.message);
                 cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> No se pudo cargar el top de multiplicadores.</div>';
             }
+        }
+
+        // Pinta una lista de ranking. `filas` trae {email, nombre, pos} y `extra`
+        // devuelve el HTML de la derecha. Si el agente no cae dentro de los
+        // primeros 30, su fila se ancla al final: buscarse entre 150 no es
+        // razonable, y su lugar es justo lo que viene a ver.
+        function _rkPintar(filas, yo, extra) {
+            const medalla = p => (p === 1 ? '🥇' : p === 2 ? '🥈' : p === 3 ? '🥉' : p + '.');
+            const fila = (f, fijo) =>
+                '<div class="rk-fila' + (f.email === yo ? ' yo' : '') + (fijo ? ' rk-yo-fijo' : '') + '">' +
+                '<span class="rk-pos">' + medalla(f.pos) + '</span>' +
+                '<span class="rk-nom">' + escapeHtml(f.nombre) + (f.email === yo ? ' (tú)' : '') + '</span>' +
+                extra(f) + '</div>';
+            const visibles = filas.slice(0, 30);
+            let html = visibles.map(f => fila(f, false)).join('');
+            const mio = filas.find(f => f.email === yo);
+            if (mio && !visibles.some(f => f.email === yo)) html += fila(mio, true);
+            return html;
         }
 
         // ─── PUNTO ROJO DEL FORO ────────────────────────────────────────
@@ -7417,7 +7526,7 @@
                     }
                 }
             });
-            if (which === 'actividad') { renderActividadTab(); renderMultTop10(); }
+            if (which === 'actividad') { renderActividadTab(); }
             if (which === 'solicitudes') renderMisSolicitudes();
             if (which === 'comprar') renderTiendaItems();
         };
@@ -7458,23 +7567,23 @@
                 inactive.style.color = 'rgba(var(--vk),0.6)';
                 inactive.style.fontWeight = '600';
             }
-            if (label) label.textContent = period === 'month' ? 'Top del mes' : 'Top del año';
+            if (label) label.textContent = 'Los que más han gastado — ' + (period === 'month' ? 'mes' : 'año');
             if (_actividadCache) _renderLeaderboardFromCache();
         };
 
         // Carga las solicitudes aprobadas de toda la región y renderiza:
         //   1) Leaderboard top 5 gastadores del período elegido (mes o año)
         //   2) Feed cronológico de las últimas 20 compras aprobadas
+        // Solo el feed de compras recientes. Los dos rankings que vivian aqui
+        // se movieron a la pestaña Rankings, y tocar sus contenedores desde aca
+        // escribiria dentro de esa pestaña sin que nadie lo pidiera.
         async function renderActividadTab() {
             const feedEl = document.getElementById('tienda-feed');
-            const lbEl   = document.getElementById('tienda-leaderboard');
             if (!user || !state.directorCode) {
                 if (feedEl) feedEl.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Sin director asignado aún.</div>';
-                if (lbEl)   lbEl.innerHTML   = '';
                 return;
             }
             if (feedEl) feedEl.innerHTML = '<div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>';
-            if (lbEl)   lbEl.innerHTML   = '<div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>';
             try {
                 const q = query(
                     collection(db, 'redemptionRequests'),
@@ -7508,12 +7617,188 @@
                         : '<div class="empty-state"><i class="fa fa-inbox"></i> Sin compras aprobadas en tu región todavía.</div>';
                 }
 
-                _renderLeaderboardFromCache();
             } catch (e) {
                 console.error('[actividad]', e);
                 if (feedEl) feedEl.innerHTML = '<div class="empty-state">Error cargando actividad.</div>';
-                if (lbEl)   lbEl.innerHTML   = '';
             }
+        }
+
+        // ─── RANKINGS ────────────────────────────────────────────────────
+        // Constancia del MES EN CURSO. No se puede sacar de multiplier.daysReported
+        // porque ese campo es del mes pasado, que es contra el que se otorgo.
+        // Hay que contar los dias reportados leyendo las bitacoras de la region:
+        // son ~258 documentos y 1.5 MB, que un telefono aguanta de sobra, y se
+        // cachea por sesion para no repetirlo al volver a entrar a la pestaña.
+        let _rkConstanciaCache = null;
+
+        // Una sola lectura de la region para los dos rankings que la necesitan.
+        // Se cachea por sesion: son ~258 docs y 1.5 MB, y no cambia entre una
+        // tarjeta y la otra.
+        async function _rkCargarAgentes(dc) {
+            if (_rkConstanciaCache) return _rkConstanciaCache;
+            const snap = await getDocs(query(collection(db, 'users'),
+                where('directorCode', '==', dc)));
+            _rkConstanciaCache = snap.docs.map(d => ({ id: d.id, x: d.data() }));
+            return _rkConstanciaCache;
+        }
+
+        async function renderConstancia() {
+            const cont = document.getElementById('rk-constancia');
+            if (!cont) return;
+            const dc = state.directorCode || '';
+            if (!dc) { cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Sin región configurada.</div>'; return; }
+
+            const hoy = serverNow || new Date();
+            const anio = hoy.getFullYear(), mesNum = hoy.getMonth() + 1;
+            const mesNombre = MONTHS_ES[hoy.getMonth()] + ' ' + anio;
+            const lbl = document.getElementById('rk-mes-const');
+            if (lbl) lbl.textContent = MONTHS_ES[hoy.getMonth()].toLowerCase();
+            // El denominador son los dias YA TRANSCURRIDOS, no los del mes: a
+            // mitad de mes, medir contra 30 hace que todos se vean mal.
+            const transcurridos = hoy.getDate();
+
+            try {
+                await _rkCargarAgentes(dc);
+                const cal = getMonthCalendar(anio, mesNum);
+                const filas = [];
+                _rkConstanciaCache.forEach(({ id, x }) => {
+                    if (!x.agentName || x.status === 'inactive') return;
+                    const dias = new Set();
+                    (x.entries || []).filter(e => String(e.mes || '').trim() === mesNombre).forEach(e => {
+                        const semana = cal[parseInt(e.semana) - 1] || [];
+                        (e.dias || []).forEach(d => {
+                            const info = semana.find(w => w.dayName === d.dia);
+                            if (!info || info.date > transcurridos) return;
+                            const dd = { P: Number(d.P) || 0, E: Number(d.E) || 0, C: Number(d.C) || 0,
+                                         V: Number(d.V) || 0, S: Number(d.S) || 0, prima: parseFloat(d.prima) || 0 };
+                            const hay = (dd.P + dd.E + dd.C + dd.V + dd.S) > 0 || dd.prima > 0;
+                            if (d.sinActividad === true || (hay && validateDay(dd).ok)) dias.add(info.date);
+                        });
+                    });
+                    filas.push({ email: id, nombre: x.agentName, dias: dias.size });
+                });
+                if (!filas.length) { cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Sin datos todavía.</div>'; return; }
+
+                filas.sort((a, b) => b.dias - a.dias || a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+                filas.forEach((f, i) => { f.pos = i + 1; });
+                const yo = (auth.currentUser && auth.currentUser.email) || '';
+                cont.innerHTML = _rkPintar(filas, yo, f => {
+                    const pleno = f.dias >= transcurridos;
+                    return '<span class="rk-val" style="color:' + (pleno ? 'var(--green)' : 'var(--slate)') + ';">' +
+                           (pleno ? '🔥 ' : '') + f.dias + '/' + transcurridos + '</span>';
+                });
+            } catch (e) {
+                console.warn('[rank] constancia:', e && e.message);
+                cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> No se pudo cargar.</div>';
+            }
+        }
+
+        // Totopos GANADOS en el periodo. Sale del mismo cache de agentes que la
+        // constancia, asi que no cuesta una lectura mas.
+        //
+        // Dos detalles del karmaLog: los cierres de dia guardan `date`
+        // ('2026-09-03') y los movimientos del director guardan `fecha` (ISO
+        // completo), asi que hay que mirar los dos campos. Y solo cuentan los
+        // POSITIVOS: los canjes dejan entradas negativas y restarlas convertiria
+        // este ranking en uno de saldo, que ya es el de mas abajo.
+        let _rkGanPeriodo = 'month';
+
+        window.switchGanadosPeriod = function (periodo) {
+            _rkGanPeriodo = periodo;
+            const mes = document.getElementById('rk-gan-mes');
+            const anio = document.getElementById('rk-gan-anio');
+            if (mes && anio) {
+                const on = periodo === 'month' ? mes : anio;
+                const off = periodo === 'month' ? anio : mes;
+                on.style.background = 'rgba(32, 85, 154, 0.18)';
+                on.style.color = 'var(--gold-l)';
+                on.style.fontWeight = '700';
+                off.style.background = 'transparent';
+                off.style.color = 'rgba(var(--vk), 0.6)';
+                off.style.fontWeight = '600';
+            }
+            renderGanados();
+        };
+
+        async function renderGanados() {
+            const cont = document.getElementById('rk-ganados');
+            if (!cont) return;
+            const dc = state.directorCode || '';
+            if (!dc) { cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Sin región configurada.</div>'; return; }
+
+            const hoy = serverNow || new Date();
+            const prefijo = _rkGanPeriodo === 'year'
+                ? String(hoy.getFullYear())
+                : hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0');
+            const lbl = document.getElementById('rk-gan-label');
+            if (lbl) lbl.textContent = 'Los que más han ganado — ' +
+                (_rkGanPeriodo === 'year' ? String(hoy.getFullYear()) : MONTHS_ES[hoy.getMonth()].toLowerCase());
+
+            try {
+                await _rkCargarAgentes(dc);
+                const fechaDe = k => (typeof k.date === 'string' && k.date) ||
+                                     (typeof k.fecha === 'string' ? k.fecha.slice(0, 10) : '');
+                const filas = [];
+                _rkConstanciaCache.forEach(({ id, x }) => {
+                    if (!x.agentName || x.status === 'inactive') return;
+                    let total = 0;
+                    (x.karmaLog || []).forEach(k => {
+                        const pts = Number(k.points) || 0;
+                        if (pts <= 0) return;
+                        const f = fechaDe(k);
+                        if (f && f.startsWith(prefijo)) total += pts;
+                    });
+                    if (total > 0) filas.push({ email: id, nombre: x.agentName, total });
+                });
+                if (!filas.length) {
+                    cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Sin totopos ganados en el período.</div>';
+                    return;
+                }
+                filas.sort((a, b) => b.total - a.total ||
+                    a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+                filas.forEach((f, i) => { f.pos = i + 1; });
+                const yo = (auth.currentUser && auth.currentUser.email) || '';
+                cont.innerHTML = _rkPintar(filas, yo, f =>
+                    '<span class="rk-val" style="color:var(--gold);"><svg class="totopo-icon"><use href="#totopo"/></svg> ' +
+                    f.total.toLocaleString('es-MX') + '</span>');
+            } catch (e) {
+                console.warn('[rank] ganados:', e && e.message);
+                cont.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> No se pudo cargar.</div>';
+            }
+        }
+
+        window.renderRankings = function () {
+            renderMultTop10();
+            renderConstancia();
+            renderGanados();
+            renderGastadores();
+        };
+
+        // El top de gastadores vive de las mismas solicitudes aprobadas que el
+        // feed de la Tienda. Se separo para que Rankings no dependa de haber
+        // entrado antes a la Tienda.
+        async function renderGastadores() {
+            const lbEl = document.getElementById('tienda-leaderboard');
+            if (!lbEl) return;
+            if (!user || !state.directorCode) {
+                lbEl.innerHTML = '<div class="empty-state"><i class="fa fa-circle-info"></i> Sin director asignado aún.</div>';
+                return;
+            }
+            if (!_actividadCache) {
+                lbEl.innerHTML = '<div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>';
+                try {
+                    const snap = await getDocs(query(collection(db, 'redemptionRequests'),
+                        where('directorCode', '==', state.directorCode),
+                        where('status', '==', 'approved')));
+                    _actividadCache = snap.docs.map(d => d.data())
+                        .sort((a, b) => (b.fechaResolucion || '').localeCompare(a.fechaResolucion || ''));
+                } catch (e) {
+                    console.error('[rank] gastadores', e);
+                    lbEl.innerHTML = '<div class="empty-state">Error cargando.</div>';
+                    return;
+                }
+            }
+            _renderLeaderboardFromCache();
         }
 
         function _renderLeaderboardFromCache() {
@@ -7534,11 +7819,9 @@
                 byEmail[email].total += spent;
             });
             const ranking = Object.values(byEmail).sort((a, b) => b.total - a.total);
-            const top5 = ranking.slice(0, 5).map((r, i) => ({ ...r, position: i + 1 }));
-            const myIdx = ranking.findIndex(r => r.email === user.email);
-            if (myIdx >= 5) {
-                top5.push({ ...ranking[myIdx], position: myIdx + 1, _separator: true });
-            }
+            // Antes se cortaba en 5. Ahora va la lista completa y el scroll lo
+            // maneja .rk-lista; _rkPintar ancla la fila propia si queda fuera.
+            const top5 = ranking.map((r, i) => ({ ...r, position: i + 1 }));
             const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
             const emptyMsg = _actividadPeriod === 'year'
                 ? 'Sin gastos en lo que va del año.'
@@ -7741,12 +8024,15 @@
         // ─── TEMA CLARO / OSCURO ─────────────────────────────────────────
         // El cambio es solo de tokens: ninguna regla concreta sabe de temas.
         // Los velos van en rgba(var(--vk), a), asi que voltean solos.
+        // Mientras el oscuro este deshabilitado esto no hace nada. Se deja en
+        // pie porque el pincel (?editar=1) tiene un boton que la llama.
         window.alternarTema = function () {
-            const claro = document.documentElement.getAttribute('data-tema') === 'claro';
-            _ponerTema(claro ? 'oscuro' : 'claro');
+            _ponerTema('claro');
         };
 
         function _ponerTema(t) {
+            // TEMA OSCURO DESHABILITADO: se ignora lo que pidan.
+            t = 'claro';
             const raiz = document.documentElement;
             if (t === 'claro') raiz.setAttribute('data-tema', 'claro');
             else raiz.removeAttribute('data-tema');
@@ -7797,6 +8083,7 @@
             if (name === 'kpis') renderKPIs();
             if (name === 'charts') renderCharts();
             if (name === 'tienda') window.initAgenteTienda();
+            if (name === 'rankings') window.renderRankings();
         }
 
         window.openConfig = function () {
