@@ -1347,9 +1347,18 @@
             font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
-            background: linear-gradient(135deg, rgba(46, 125, 79,0.22), rgba(46, 125, 79,0.08));
-            border: 1.5px solid rgba(46, 125, 79,0.55);
-            color: var(--green);
+            /* Los mismos azules que #mult-badge.mult-on, el badge de verdad que
+               el agente ve en su encabezado. El comentario de arriba ya decia
+               que este chip es su replica y que si se cambia uno hay que
+               cambiar el otro — pero se habian separado: el badge ya estaba en
+               cobalto y el chip se quedo en verde.
+
+               Donde se notaba era en el ranking. En los dos modales que usan
+               este chip el fondo ya venia pisado a --panel2, asi que ahi no
+               cambia nada. */
+            background: linear-gradient(135deg, rgba(32, 85, 154, 0.16), rgba(32, 85, 154, 0.06));
+            border: 1.5px solid rgba(32, 85, 154, 0.45);
+            color: var(--gold);
         }
         .mult-chip-demo b { font-size: 15px; font-weight: 900; }
         /* Contador de totopos falso, solo para ubicar el badge en la pantalla */
@@ -3714,7 +3723,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.27.5';
+        window.APP_HTML_VERSION = 'v2.27.6';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
