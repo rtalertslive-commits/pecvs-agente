@@ -3040,8 +3040,19 @@
             position: fixed; top: 0; left: 0; right: 0;
             height: env(safe-area-inset-top, 0px);
             background: var(--azul-oxford);
-            z-index: 2000;
+            /* Por encima de TODO lo que se abre a pantalla completa. El foro es
+               9999, su nav 10000, el modal de actualizacion 10001 y hay overlays
+               en 99999: si esta franja queda debajo, el modal la tapa y la barra
+               de estado vuelve a tomar el color del overlay. Solo el pincel
+               (2147483000) queda arriba, y eso es a proposito. */
+            z-index: 999999;
             pointer-events: none;
+            /* Capa propia. Un position:fixed sin capa se despega o deja de
+               pintarse en iOS despues de cerrar un modal con backdrop-filter
+               —el foro tiene uno— que es justo lo que se reporto: al volver del
+               foro la franja se quedaba blanca. */
+            transform: translateZ(0);
+            will-change: transform;
         }
         .header { padding-top: calc(12px + env(safe-area-inset-top, 0px)) !important; }
 
@@ -3688,7 +3699,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.27.0';
+        window.APP_HTML_VERSION = 'v2.27.1';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
