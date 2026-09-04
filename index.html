@@ -3567,7 +3567,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.24.0';
+        window.APP_HTML_VERSION = 'v2.25.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -5613,10 +5613,23 @@
         // Otorga karma por TODOS los días pasados (estrictamente antes de hoy) que aún no tienen karma.
         // Se llama al abrir la app y cuando se detecta cambio de día o de semana.
         function _multBonusFor(dateKey) {
-            const mx = state.multiplier;
-            if (!mx || mx.earned !== true) return 0;
-            if (typeof mx.month !== 'string' || typeof dateKey !== 'string') return 0;
-            return dateKey.startsWith(mx.month) ? (Number(mx.bonusPct) || 0) / 100 : 0;
+            if (typeof dateKey !== 'string') return 0;
+            const sirve = m => m && m.earned === true && typeof m.month === 'string' &&
+                               m.month && dateKey.startsWith(m.month);
+            // El multiplicador VIGENTE, para los dias del mes que paga.
+            if (sirve(state.multiplier)) return (Number(state.multiplier.bonusPct) || 0) / 100;
+            // Y el ANTERIOR, para los dias del mes que ya cerro.
+            //
+            // Un dia se paga al dia siguiente y solo cuando el agente abre la app.
+            // Si el director re-otorga el dia 1 por la tarde y el agente abre en la
+            // noche, el ultimo dia del mes pasado todavia estaba sin pagar y se
+            // cobraba contra el multiplicador NUEVO: la fecha no empieza con el mes
+            // nuevo, asi que salia sin bono. En agosto le paso a 8 agentes.
+            //
+            // Con esto ya no importa a que hora abra el telefono ni a que hora se
+            // otorgue: el dia siempre se paga con el multiplicador de SU mes.
+            if (sirve(state.multiplierPrev)) return (Number(state.multiplierPrev.bonusPct) || 0) / 100;
+            return 0;
         }
 
         // Cuanto vale un dia reportado en esa fecha, ya multiplicado.
