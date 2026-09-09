@@ -3723,7 +3723,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.27.6';
+        window.APP_HTML_VERSION = 'v2.28.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -5490,16 +5490,51 @@
         }
 
         // ─── SERVER TIME ──────────────────────────────────────────────────────────────
+        // Corta una peticion a los `ms` con AbortController y no con
+        // AbortSignal.timeout, que pide Safari 16. En un iPhone mas viejo
+        // AbortSignal.timeout es undefined, la llamada revienta antes de salir a
+        // la red, y el intento se pierde entero sin haberlo hecho.
+        function _fetchConTope(url, ms, opts) {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), ms);
+            return fetch(url, Object.assign({}, opts || {}, { signal: ctrl.signal }))
+                .finally(() => clearTimeout(t));
+        }
+
+        // De aqui sale `serverNow`, y de `serverNow` dependen que dias pagan
+        // totopos y que dia se puede editar. Por eso no se usa el reloj del
+        // telefono si hay forma de verificarlo: es el unico reloj que el agente
+        // controla.
+        //
+        // La PRIMERA fuente es el propio servidor de la app. Toda respuesta HTTP
+        // trae una cabecera `Date` puesta por el servidor, y al ser el MISMO
+        // origen se puede leer desde JS —en otro origen no: `Date` no esta en la
+        // lista blanca de CORS, asi que la de Firestore no sirve aunque venga—.
+        //
+        // Va primero por tres razones: es el mismo host del que ya se descargo la
+        // app, no depende de un servicio publico ajeno que se pueda caer, y el
+        // HEAD ni siquiera pasa por el Service Worker (su handler ignora todo lo
+        // que no sea GET), asi que la hora es de ahora y no de la cache.
+        //
+        // Las dos APIs de antes quedan de respaldo, y el reloj local como ultimo
+        // recurso, igual que hasta ahora.
         async function getServerTime() {
             try {
-                const r = await fetch('https://timeapi.io/api/time/current/zone?timeZone=America/Monterrey',
-                    { signal: AbortSignal.timeout(3000) });
+                const r = await _fetchConTope('./manifest.json?t=' + Date.now(), 3000,
+                    { method: 'HEAD', cache: 'no-store' });
+                const h = r.headers.get('date');
+                const d = h ? new Date(h) : null;
+                // Un encabezado corrupto da Invalid Date, y eso envenenaria todo
+                // lo que cuelga de serverNow. Mejor caer al siguiente intento.
+                if (d && !isNaN(d.getTime())) return d;
+            } catch {}
+            try {
+                const r = await _fetchConTope('https://timeapi.io/api/time/current/zone?timeZone=America/Monterrey', 3000);
                 const d = await r.json();
                 return new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.seconds);
             } catch {}
             try {
-                const r = await fetch('https://worldtimeapi.org/api/timezone/America/Monterrey',
-                    { signal: AbortSignal.timeout(3000) });
+                const r = await _fetchConTope('https://worldtimeapi.org/api/timezone/America/Monterrey', 3000);
                 const { datetime } = await r.json();
                 return new Date(datetime);
             } catch {}
