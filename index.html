@@ -1326,6 +1326,45 @@
         #mult-badge { border-color: var(--green); }
         #mult-badge:hover { transform: translateY(-1px); }
         #mult-badge:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        /* ── BONO!: a la derecha del multiplicador, mismo tamaño ── */
+        #bono-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            border-radius: 24px; padding: 5px 14px; margin-top: 6px; margin-left: 8px;
+            font-size: 12px; font-weight: 900; letter-spacing: .5px; cursor: pointer; white-space: nowrap;
+            background: #32518f; color: #f4f7fb; border: 1.5px solid #d4deea;
+            transition: transform .15s;
+        }
+        #bono-badge i { color: #ffc72c; }
+        /* Hasta el primer toque: halo dorado + destello que cruza el boton.
+           Mas fuerte que el .novedad-glow azul generico, que sobre un boton
+           azul casi no se ve. Lo pone/quita applyFeatureGlows ('bono'). */
+        #bono-badge.novedad-glow {
+            position: relative; overflow: hidden;
+            animation: bonoGlow 1.6s ease-in-out infinite;
+        }
+        @keyframes bonoGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 199, 44, 0.8); }
+            50%      { box-shadow: 0 0 0 8px rgba(255, 199, 44, 0); }
+        }
+        #bono-badge.novedad-glow::after {
+            content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            transform: skewX(-20deg);
+            animation: bonoBarrido 2.4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes bonoBarrido { 0% { left: -60%; } 60%, 100% { left: 130%; } }
+        @media (prefers-reduced-motion: reduce) {
+            #bono-badge.novedad-glow { animation: none; box-shadow: 0 0 0 3px rgba(255, 199, 44, 0.7); }
+            #bono-badge.novedad-glow::after { display: none; }
+        }
+        #bono-badge:hover { transform: translateY(-1px); }
+        #bono-badge:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        .bono-fila { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+        .bono-fila.actual { background: rgba(32, 85, 154, 0.08); border-radius: 6px; }
+        .bono-fila .bono-sem { font-weight: 700; width: 78px; flex-shrink: 0; }
+        .bono-fila .bono-fechas { color: var(--slate); flex: 1; }
+        .bono-fila .bono-est { font-weight: 700; white-space: nowrap; }
         #mult-badge.mult-on {
             background: linear-gradient(135deg, rgba(32, 85, 154, 0.16), rgba(32, 85, 154, 0.06));
             border: 1.5px solid rgba(32, 85, 154, 0.45);
@@ -2028,6 +2067,11 @@
                 <div id="mult-badge" onclick="openMultReceipt()" role="button" tabindex="0"
                      aria-label="Ver de dónde sale tu multiplicador" title="Toca para ver de dónde sale"
                      style="display:none;"></div>
+                <div id="bono-badge" onclick="openBonoModal()" role="button" tabindex="0"
+                     aria-label="Ver tu bono semanal" title="Toca para ver tu bono semanal"
+                     style="display:none;">
+                    <i class="fa fa-trophy"></i> BONO!
+                </div>
             </div>
 
             <!-- Row 3: user menu (Mi Perfil + Salir) -->
@@ -2567,6 +2611,17 @@
                 <p style="margin-top:14px;"><strong>¿Para qué sirven?</strong> Los canjeas en la pestaña <strong>Tienda</strong> por premios que el director pone disponibles.</p>
                 <p style="color:var(--slate); font-size:12.5px; margin-top:6px;"><em>Tu compromiso y consistencia con el reporte diario.</em></p>
             </div>
+        </div>
+    </div>
+
+    <!-- BONO SEMANAL -->
+    <div class="modal-overlay" id="bono-modal" onclick="if(event.target===this)closeBonoModal()">
+        <div class="rules-modal-box">
+            <div class="rules-modal-header">
+                <div class="rules-modal-title"><i class="fa fa-trophy" style="color:#ffc72c;"></i> BONO! semanal</div>
+                <button class="rules-modal-close" onclick="closeBonoModal()" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="rules-modal-body" id="bono-body"></div>
         </div>
     </div>
 
@@ -3686,7 +3741,22 @@
         :root[data-tema="claro"] #cov-info-body div:nth-child(14) div:nth-child(1) div:nth-child(1) { color: #152a54 !important; }
         :root[data-tema="claro"] #cov-info-body div:nth-child(14) div:nth-child(2) div:nth-child(1) { color: #d91f0e !important; background: #d2d2db !important; }
 
-    </style>
+    
+        /* ── Fila de totopos en telefono ──
+           Totopos + multiplicador + BONO! no caben en un renglon a 360-412 px
+           con el tamaño de escritorio (el peor caso, "sin multiplicador" con
+           saldo de 5 cifras, pide ~417 px). Se compactan separacion, relleno
+           y letra; los textos no cambian. */
+        @media (max-width: 480px) {
+            .header .row-info { gap: 6px; }
+            .header #mult-badge,
+            .header #bono-badge { margin-left: 0; padding: 4px 8px; font-size: 10.5px; gap: 3px; }
+            .header #mult-badge b { font-size: 13px; }
+            .header #bono-badge { letter-spacing: 0; }
+            .header #karma-badge { padding: 4px 7px 4px 6px; gap: 4px; }
+            .header #karma-badge .karma-lbl { letter-spacing: .2px; }
+        }
+</style>
 
     <div class="modal-overlay" id="foro-modal" onclick="if(event.target===this)closeForo()">
         <div class="foro-box">
@@ -3723,7 +3793,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.28.0';
+        window.APP_HTML_VERSION = 'v2.29.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -4611,6 +4681,7 @@
         const NEW_FEATURES_TO_GLOW = [
             { feature: 'notif',    selector: '#notif-bell-btn' },
             { feature: 'anuncios', selector: '#anuncios-btn' },
+            { feature: 'bono',     selector: '#bono-badge' },
         ];
 
         function applyFeatureGlows() {
@@ -4874,6 +4945,8 @@
                         // Iniciar listener de anuncios para mantener badge y modal actualizados
                         startAnunciosListener();
                         applyFeatureGlows();
+                // BONO! solo si la region ya tiene su bono configurado.
+                _bonoMostrarBoton().catch(err => console.warn('[bono] boton:', err));
                 // Punto rojo del foro. Va despues de loadFromCloud porque
                 // necesita state.directorCode, y no se espera: si tarda o
                 // falla, la app ya esta pintada y usable.
@@ -5711,6 +5784,16 @@
             if (!entries || !entries.length) return '';
             const grants = entries.filter(e => e.type === 'manual_grant');
             const dayCloses = entries.filter(e => !e.type);
+            // Bono semanal: no es regalo, es resultado. Sin este caso caia en el
+            // mensaje generico de "regalos del director".
+            const bonos = entries.filter(e => e.type === 'bono_semanal');
+            if (bonos.length) {
+                if (!grants.length && !dayCloses.length) {
+                    return bonos.length === 1 ? '🏆 Cumpliste tu bono semanal' : `🏆 Cumpliste ${bonos.length} bonos semanales`;
+                }
+                return 'Por ' + [dayCloses.length && 'tu actividad', 'tu bono semanal', grants.length && 'regalos del director']
+                    .filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' y $1');
+            }
             if (grants.length === 0 && dayCloses.length > 0) {
                 return 'Por reportar tu actividad';
             }
@@ -8848,6 +8931,149 @@
             // Si el usuario tocó el badge, ya cumplió el propósito del tooltip — lo marcamos visto
             _markKarmaTooltipSeen();
         };
+
+        // ─── BONO! SEMANAL ───────────────────────────────────────────────
+        // Las reglas y las semanas del año con su resultado. Fuentes:
+        //  - ganada: una entrada { type:'bono_semanal', semana } en el karmaLog
+        //    del agente, que es lo que escribe el director al pagar.
+        //  - con resultados: config/{dc}_bono.subidas, las semanas que el
+        //    director ya subio. Sin esto no se distingue "perdida" de
+        //    "todavia no hay resultados".
+        //  - la meta y los totopos: config/{dc}_bono.meta / .totopos.
+        // Es un doc por region: en mainnet la config de puntos es compartida.
+        // Misma numeracion ISO que el director: la clave es '2026-W38'.
+        function _bonoSemanasAgente(anio) {
+            const ene4 = new Date(anio, 0, 4);
+            const lunes1 = new Date(anio, 0, 4 - ((ene4.getDay() + 6) % 7));
+            const dia = (base, n) => new Date(base.getFullYear(), base.getMonth(), base.getDate() + n);
+            const out = [];
+            for (let w = 1; ; w++) {
+                const lun = dia(lunes1, (w - 1) * 7);
+                if (dia(lun, 3).getFullYear() !== anio) break;
+                out.push({ key: anio + '-W' + String(w).padStart(2, '0'), num: w, lun, dom: dia(lun, 6), sig: dia(lun, 7) });
+            }
+            return out;
+        }
+
+        // Estado de cada semana. Separado del pintado para poder probarlo.
+        function _bonoEstados(hoy, karmaLog, subidasArr, altaIso) {
+            const d0 = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
+            hoy = d0(hoy);
+            // El año es el de la semana en curso (ISO): del 29 dic al 3 ene
+            // puede ser el año de al lado.
+            const anio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 3 - ((hoy.getDay() + 6) % 7)).getFullYear();
+            const ganadas = {};
+            (karmaLog || []).forEach(k => {
+                if (k && k.type === 'bono_semanal' && k.semana) ganadas[k.semana] = (ganadas[k.semana] || 0) + (Number(k.points) || 0);
+            });
+            const subidas = new Set(Array.isArray(subidasArr) ? subidasArr : []);
+            const inicio = [...subidas].sort()[0] || null;
+            const alta = altaIso ? d0(new Date(altaIso)) : null;
+            const semanas = _bonoSemanasAgente(anio).map(s => {
+                let est;
+                if (ganadas[s.key]) est = 'ganada';
+                else if (hoy < s.lun) est = 'futura';
+                else if (hoy < s.sig) est = 'curso';
+                else if (alta && !isNaN(alta) && s.dom < alta) est = 'antes-alta';   // aun no estaba registrado
+                else if (subidas.has(s.key)) est = 'perdida';
+                else if (inicio && s.key >= inicio) est = 'esperando';
+                else est = 'antes-bono';
+                return { ...s, est, pts: ganadas[s.key] || 0 };
+            });
+            return { anio, semanas };
+        }
+
+        let _bonoCfg = null;
+
+        // El boton solo aparece si la region tiene config/{dc}_bono, o sea si
+        // su director ya configuro el bono. Sin esto, una region sin bono veria
+        // el boton brillando con reglas por defecto que nadie le prometio.
+        async function _bonoMostrarBoton() {
+            const dc = state.directorCode;
+            if (!dc) return;
+            const s = await getDoc(doc(db, 'config', `${dc}_bono`));
+            if (!s.exists()) return;
+            _bonoCfg = s.data();
+            const b = document.getElementById('bono-badge');
+            if (b) b.style.display = '';
+        }
+
+        window.openBonoModal = async function () {
+            document.getElementById('bono-modal').classList.add('open');
+            // La primera vez se espera la config (sin ella las reglas saldrian
+            // con numeros por defecto); despues se pinta lo que ya habia y se
+            // relee por si el director subio una semana mientras tanto.
+            if (_bonoCfg) _pintarBono();
+            else document.getElementById('bono-body').innerHTML = '<div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando…</div>';
+            try {
+                const dc = state.directorCode;
+                if (dc) {
+                    const s = await getDoc(doc(db, 'config', `${dc}_bono`));
+                    _bonoCfg = s.exists() ? s.data() : {};
+                }
+            } catch (e) { console.warn('[bono] config:', e && e.message); }
+            if (!_bonoCfg) _bonoCfg = {};
+            _pintarBono();
+        };
+
+        window.closeBonoModal = function () {
+            document.getElementById('bono-modal').classList.remove('open');
+        };
+
+        function _pintarBono() {
+            const cont = document.getElementById('bono-body');
+            if (!cont) return;
+            const cfg  = _bonoCfg || {};
+            const meta = Number(cfg.meta) || 2000;
+            const tot  = Number(cfg.totopos) || 10;
+            const { anio, semanas } = _bonoEstados(serverNow || new Date(), state.karmaLog,
+                                                   cfg.subidas, state.approvedAt);
+            const nGan = semanas.filter(s => s.est === 'ganada').length;
+            const nPer = semanas.filter(s => s.est === 'perdida').length;
+            const ptsAnio = semanas.reduce((a, s) => a + s.pts, 0);
+            const fecha = d => d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+            const ESTADO = {
+                'ganada':     s => `<span class="bono-est" style="color:var(--green);">🏆 Ganada +${s.pts}</span>`,
+                'perdida':    () => '<span class="bono-est" style="color:var(--red);">❌ Perdida</span>',
+                'esperando':  () => '<span class="bono-est" style="color:var(--slate);">⏳ Esperando resultados</span>',
+                'curso':      () => '<span class="bono-est" style="color:var(--blue);">🕒 En curso</span>',
+                'antes-alta': () => '<span class="bono-est" style="color:var(--slate);font-weight:500;">Aún no te registrabas</span>',
+                'antes-bono': () => '<span class="bono-est" style="color:var(--slate);font-weight:500;">—</span>',
+                'futura':     () => '<span class="bono-est" style="color:var(--slate);font-weight:500;">—</span>'
+            };
+            const filas = semanas.map(s => {
+                const tenue = ['futura', 'antes-bono', 'antes-alta'].includes(s.est) ? ' style="opacity:.55;"' : '';
+                return `<div class="bono-fila${s.est === 'curso' ? ' actual' : ''}"${tenue}>
+                    <span class="bono-sem">Semana ${s.num}</span>
+                    <span class="bono-fechas">${fecha(s.lun)} – ${fecha(s.dom)}</span>
+                    ${ESTADO[s.est](s)}
+                </div>`;
+            }).join('');
+
+            cont.innerHTML = `
+                <p><strong>¿Cómo se gana?</strong> Cada semana, de <strong>lunes a domingo</strong>, si la prima
+                   que se te ingresa en Promessa suma al menos <strong>${_money(meta)}</strong>, ganas
+                   <strong>${tot} totopos</strong>.</p>
+                <ul>
+                    <li>📈 <strong>Cuenta lo que ingresas a Promessa.</strong> La prima excedente no cuenta.</li>
+                    <li>✅ <strong>No necesitas reportar.</strong> Este bono no depende de tu bitácora: se calcula solo con lo que ingresas a Promessa.</li>
+                    <li>🗓️ <strong>Promessa recibe producción hasta el viernes.</strong> La excepción son los días de cierre de mes, que pueden caer en fin de semana: lo que ingreses esos días también cuenta para su semana.</li>
+                    <li>📅 <strong>Cada semana cuenta sola.</strong> Si no llegas, esa semana se pierde: no se junta con la siguiente.</li>
+                    <li>📬 <strong>Los resultados salen cuando tu director sube el reporte de la semana</strong>, normalmente el lunes siguiente.</li>
+                    <li>➕ <strong>Es aparte</strong> de los totopos por reportar tu día: los dos se suman.</li>
+                </ul>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 10px;">
+                    <span style="background:rgba(46,125,79,.1); border:1px solid rgba(46,125,79,.35); border-radius:20px; padding:4px 12px; font-size:12px;">🏆 <strong>${nGan}</strong> ${nGan === 1 ? 'ganada' : 'ganadas'}</span>
+                    <span style="background:rgba(var(--vk),.05); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:12px;">❌ <strong>${nPer}</strong> ${nPer === 1 ? 'perdida' : 'perdidas'}</span>
+                    <span style="background:rgba(var(--vk),.05); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:12px;"><svg class="totopo-icon"><use href="#totopo"/></svg> <strong>${ptsAnio.toLocaleString('es-MX')}</strong> totopos en ${anio}</span>
+                </div>
+                <div id="bono-lista" style="max-height:46vh; overflow-y:auto; border-top:1px solid var(--border);">${filas}</div>`;
+
+            // La semana en curso a la vista, sin mover la pagina de atras.
+            const lista = document.getElementById('bono-lista');
+            const act = lista && lista.querySelector('.bono-fila.actual');
+            if (act) lista.scrollTop = act.offsetTop - lista.offsetTop - lista.clientHeight / 2;
+        }
 
         window.closeRulesModal = function () {
             document.getElementById('rules-modal').classList.remove('open');
