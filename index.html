@@ -1365,6 +1365,31 @@
         .bono-fila .bono-sem { font-weight: 700; width: 78px; flex-shrink: 0; }
         .bono-fila .bono-fechas { color: var(--slate); flex: 1; }
         .bono-fila .bono-est { font-weight: 700; white-space: nowrap; }
+        /* Tarifa de la semana: azul paga mas, ambar es la base */
+        .bono-tar { display: inline-block; min-width: 38px; text-align: center; padding: 1px 7px; border-radius: 9px;
+                    font-weight: 900; font-size: 12px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+        .bono-tar.v { background: #C7D7EE; color: #1B4880; }
+        .bono-tar.a { background: #F8E7D3; color: #A95A16; }
+        /* Calendario del mes dentro de BONO! */
+        .bcal-caja { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin: 12px 0; }
+        .bcal-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 15px; }
+        .bcal-nav { border: 1px solid var(--border); background: transparent; color: var(--white); border-radius: 8px;
+                    width: 34px; height: 30px; font-size: 18px; line-height: 1; cursor: pointer; }
+        .bcal-nav:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        .bcal { width: 100%; border-collapse: separate; border-spacing: 0 3px; font-variant-numeric: tabular-nums; }
+        .bcal th { font-size: 10.5px; color: var(--slate); font-weight: 600; text-align: center; padding-bottom: 2px; }
+        .bcal td { text-align: center; font-size: 13px; padding: 5px 0; }
+        .bcal tr.v td { background: #C7D7EE; } .bcal tr.a td { background: #F8E7D3; }
+        .bcal td.tar { text-align: left; padding-left: 8px; border-radius: 8px 0 0 8px; white-space: nowrap; line-height: 1.05; }
+        .bcal td:last-child { border-radius: 0 8px 8px 0; }
+        .bcal th.tar { text-align: left; padding-left: 8px; }
+        .bcal td.tar b { font-size: 16px; font-weight: 900; }
+        .bcal td.tar span { display: block; font-size: 9.5px; font-weight: 600; }
+        .bcal tr.v td.tar { color: #1B4880; } .bcal tr.a td.tar { color: #A95A16; }
+        .bcal td.fuera { color: #9AA6BA; }
+        .bcal td.cie { box-shadow: inset 0 -3px 0 #A95A16; }
+        .bcal td.hoy { background: #071D49 !important; color: #FFFFFF; border-radius: 6px; font-weight: 800; }
+        .bcal-pie { font-size: 11.5px; color: var(--slate); margin: 6px 0 0; }
         #mult-badge.mult-on {
             background: linear-gradient(135deg, rgba(32, 85, 154, 0.16), rgba(32, 85, 154, 0.06));
             border: 1.5px solid rgba(32, 85, 154, 0.45);
@@ -3793,7 +3818,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.29.0';
+        window.APP_HTML_VERSION = 'v2.30.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -8933,15 +8958,65 @@
         };
 
         // ─── BONO! SEMANAL ───────────────────────────────────────────────
-        // Las reglas y las semanas del año con su resultado. Fuentes:
-        //  - ganada: una entrada { type:'bono_semanal', semana } en el karmaLog
-        //    del agente, que es lo que escribe el director al pagar.
+        // Las reglas, el calendario del mes con lo que paga cada semana, y las
+        // semanas del año con su resultado. Fuentes:
+        //  - ganada: entradas { type:'bono_semanal', semana } en el karmaLog del
+        //    agente, que es lo que escribe el director al pagar (una semana puede
+        //    tener varias si el director volvio a subir el CSV y pago diferencia).
         //  - con resultados: config/{dc}_bono.subidas, las semanas que el
         //    director ya subio. Sin esto no se distingue "perdida" de
         //    "todavia no hay resultados".
-        //  - la meta y los totopos: config/{dc}_bono.meta / .totopos.
+        //  - la meta y las tarifas: config/{dc}_bono.meta / .tarifas.
         // Es un doc por region: en mainnet la config de puntos es compartida.
         // Misma numeracion ISO que el director: la clave es '2026-W38'.
+        // ── Cuanto paga cada semana (MISMO codigo en el director y el agente) ──
+        // Verde: la semana (lunes a domingo) queda completa dentro de un mes y
+        // no toca ninguno de los ultimos 5 dias habiles de ningun mes (lunes a
+        // viernes; un festivo cuenta como dia habil). Todo mes tiene 2 o 3
+        // verdes; la tarifa depende de cuantas tiene el mes y del lugar de la
+        // semana: la primera paga mas y van bajando hacia el cierre.
+        // Ambar: todas las demas, las que cruzan de mes y las del cierre.
+        // Se paga la tarifa por cada bloque completo de la meta ($2,000).
+        const BONO_TARIFAS_DEF = { ambar: 100, dos: [175, 150], tres: [175, 155, 140] };
+        const _bonoHabil = d => d.getDay() !== 0 && d.getDay() !== 6;
+        // d es uno de los ultimos 5 dias habiles de su mes
+        function _bonoEsCierre(d) {
+            if (!_bonoHabil(d)) return false;
+            let despues = 0;
+            for (let x = new Date(d.getFullYear(), d.getMonth() + 1, 0); x > d; x = new Date(x.getFullYear(), x.getMonth(), x.getDate() - 1))
+                if (_bonoHabil(x)) despues++;
+            return despues < 5;
+        }
+        // Los lunes (en ms) de las semanas verdes del mes, en orden
+        function _bonoVerdesDelMes(y, m) {
+            const ini = new Date(y, m, 1), fin = new Date(y, m + 1, 0), out = [];
+            for (let lun = new Date(y, m, 1 - (ini.getDay() + 6) % 7); lun <= fin;
+                 lun = new Date(lun.getFullYear(), lun.getMonth(), lun.getDate() + 7)) {
+                const dias = [0, 1, 2, 3, 4, 5, 6].map(i => new Date(lun.getFullYear(), lun.getMonth(), lun.getDate() + i));
+                if (dias.every(d => d.getFullYear() === y && d.getMonth() === m) && !dias.some(_bonoEsCierre)) out.push(lun.getTime());
+            }
+            return out;
+        }
+        // { tipo: 'verde'|'ambar', tarifa, lugar (1..3, 0 si ambar), nVerdes }
+        function _bonoTarifaSemana(lun, tarifas) {
+            const t = tarifas || BONO_TARIFAS_DEF;
+            const l = new Date(lun.getFullYear(), lun.getMonth(), lun.getDate());
+            const verdes = _bonoVerdesDelMes(l.getFullYear(), l.getMonth());
+            const i = verdes.indexOf(l.getTime());
+            if (i < 0) return { tipo: 'ambar', tarifa: Number(t.ambar) || 0, lugar: 0, nVerdes: verdes.length };
+            const escala = (verdes.length >= 3 ? t.tres : t.dos) || [];
+            return { tipo: 'verde', tarifa: Number(escala[Math.min(i, escala.length - 1)]) || 0, lugar: i + 1, nVerdes: verdes.length };
+        }
+        // Normaliza lo que venga de config/{dc}_bono.tarifas
+        function _bonoTarifas(cfg) {
+            const t = (cfg && cfg.tarifas) || {};
+            const num = (v, d) => (Number(v) > 0 ? Number(v) : d);
+            return {
+                ambar: num(t.ambar, BONO_TARIFAS_DEF.ambar),
+                dos:  BONO_TARIFAS_DEF.dos.map((d, i) => num((t.dos || [])[i], d)),
+                tres: BONO_TARIFAS_DEF.tres.map((d, i) => num((t.tres || [])[i], d))
+            };
+        }
         function _bonoSemanasAgente(anio) {
             const ene4 = new Date(anio, 0, 4);
             const lunes1 = new Date(anio, 0, 4 - ((ene4.getDay() + 6) % 7));
@@ -8984,6 +9059,7 @@
         }
 
         let _bonoCfg = null;
+        let _bonoMesVer = null;      // primer dia del mes que muestra el calendario
 
         // El boton solo aparece si la region tiene config/{dc}_bono, o sea si
         // su director ya configuro el bono. Sin esto, una region sin bono veria
@@ -9000,6 +9076,8 @@
 
         window.openBonoModal = async function () {
             document.getElementById('bono-modal').classList.add('open');
+            const hoy = serverNow || new Date();
+            _bonoMesVer = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
             // La primera vez se espera la config (sin ella las reglas saldrian
             // con numeros por defecto); despues se pinta lo que ya habia y se
             // relee por si el director subio una semana mientras tanto.
@@ -9020,20 +9098,56 @@
             document.getElementById('bono-modal').classList.remove('open');
         };
 
+        window.bonoMesCambiar = function (d) {
+            _bonoMesVer = new Date(_bonoMesVer.getFullYear(), _bonoMesVer.getMonth() + d, 1);
+            const c = document.getElementById('bono-cal');
+            if (c) c.innerHTML = _bonoCalendarioHtml(_bonoMesVer, _bonoTarifas(_bonoCfg), Number((_bonoCfg || {}).meta) || 2000);
+        };
+
+        const _bonoMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+        // Calendario de un mes: cada renglon es una semana (lunes a domingo)
+        // pintada verde o ambar con lo que paga por cada bloque de la meta.
+        function _bonoCalendarioHtml(mes1, tarifas, meta) {
+            const y = mes1.getFullYear(), m = mes1.getMonth();
+            const hoy = serverNow || new Date();
+            const esHoy = d => d.getFullYear() === hoy.getFullYear() && d.getMonth() === hoy.getMonth() && d.getDate() === hoy.getDate();
+            const fin = new Date(y, m + 1, 0);
+            const filas = [];
+            for (let lun = new Date(y, m, 1 - (mes1.getDay() + 6) % 7); lun <= fin; lun = new Date(lun.getFullYear(), lun.getMonth(), lun.getDate() + 7)) {
+                const info = _bonoTarifaSemana(lun, tarifas);
+                const dias = [0, 1, 2, 3, 4, 5, 6].map(i => {
+                    const d = new Date(lun.getFullYear(), lun.getMonth(), lun.getDate() + i);
+                    const cls = [d.getMonth() !== m ? 'fuera' : '', d.getMonth() === m && _bonoEsCierre(d) ? 'cie' : '', esHoy(d) ? 'hoy' : ''].join(' ').trim();
+                    return `<td class="${cls}">${d.getDate()}</td>`;
+                }).join('');
+                filas.push(`<tr class="${info.tipo === 'verde' ? 'v' : 'a'}"><td class="tar"><b>${info.tarifa}</b><span>por cada ${_money(meta)}</span></td>${dias}</tr>`);
+            }
+            const verdes = _bonoVerdesDelMes(y, m).length;
+            return `<div class="bcal-cab">
+                    <button type="button" class="bcal-nav" onclick="bonoMesCambiar(-1)" aria-label="Mes anterior">‹</button>
+                    <strong>${_bonoMeses[m]} ${y}</strong>
+                    <button type="button" class="bcal-nav" onclick="bonoMesCambiar(1)" aria-label="Mes siguiente">›</button>
+                </div>
+                <table class="bcal"><thead><tr><th class="tar">Totopos</th><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th><th>D</th></tr></thead>
+                <tbody>${filas.join('')}</tbody></table>
+                <p class="bcal-pie">${verdes} semanas azules este mes · subrayados: días del cierre (últimos 5 días hábiles)</p>`;
+        }
+
         function _pintarBono() {
             const cont = document.getElementById('bono-body');
             if (!cont) return;
             const cfg  = _bonoCfg || {};
             const meta = Number(cfg.meta) || 2000;
-            const tot  = Number(cfg.totopos) || 10;
-            const { anio, semanas } = _bonoEstados(serverNow || new Date(), state.karmaLog,
-                                                   cfg.subidas, state.approvedAt);
+            const tarifas = _bonoTarifas(cfg);
+            const hoy = serverNow || new Date();
+            const { anio, semanas } = _bonoEstados(hoy, state.karmaLog, cfg.subidas, state.approvedAt);
             const nGan = semanas.filter(s => s.est === 'ganada').length;
             const nPer = semanas.filter(s => s.est === 'perdida').length;
             const ptsAnio = semanas.reduce((a, s) => a + s.pts, 0);
             const fecha = d => d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
             const ESTADO = {
-                'ganada':     s => `<span class="bono-est" style="color:var(--green);">🏆 Ganada +${s.pts}</span>`,
+                'ganada':     s => `<span class="bono-est" style="color:var(--green);">🏆 Ganada +${s.pts.toLocaleString('es-MX')}</span>`,
                 'perdida':    () => '<span class="bono-est" style="color:var(--red);">❌ Perdida</span>',
                 'esperando':  () => '<span class="bono-est" style="color:var(--slate);">⏳ Esperando resultados</span>',
                 'curso':      () => '<span class="bono-est" style="color:var(--blue);">🕒 En curso</span>',
@@ -9042,23 +9156,34 @@
                 'futura':     () => '<span class="bono-est" style="color:var(--slate);font-weight:500;">—</span>'
             };
             const filas = semanas.map(s => {
-                const tenue = ['futura', 'antes-bono', 'antes-alta'].includes(s.est) ? ' style="opacity:.55;"' : '';
+                const info = _bonoTarifaSemana(s.lun, tarifas);
+                const tenue = ['futura', 'antes-bono', 'antes-alta'].includes(s.est) ? ' style="opacity:.6;"' : '';
                 return `<div class="bono-fila${s.est === 'curso' ? ' actual' : ''}"${tenue}>
                     <span class="bono-sem">Semana ${s.num}</span>
                     <span class="bono-fechas">${fecha(s.lun)} – ${fecha(s.dom)}</span>
+                    <span class="bono-tar ${info.tipo === 'verde' ? 'v' : 'a'}" title="Paga ${info.tarifa} por cada ${_money(meta)}">${info.tarifa}</span>
                     ${ESTADO[s.est](s)}
                 </div>`;
             }).join('');
 
+            const mesHoy = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+
             cont.innerHTML = `
-                <p><strong>¿Cómo se gana?</strong> Cada semana, de <strong>lunes a domingo</strong>, si la prima
-                   que se te ingresa en Promessa suma al menos <strong>${_money(meta)}</strong>, ganas
-                   <strong>${tot} totopos</strong>.</p>
+                <p><strong>¿Cómo se gana?</strong> Cada semana, de <strong>lunes a domingo</strong>, ganas totopos
+                   <strong>por cada ${_money(meta)}</strong> que ingreses a Promessa. Si en una misma semana ingresas
+                   ${_money(meta * 2)} cobras <strong>2 veces</strong>; ${_money(meta * 3)}, <strong>3 veces</strong>, y así.</p>
+                <p style="margin-top:10px;"><strong>Cuánto vale cada ${_money(meta)} depende de la semana:</strong></p>
+                <ul>
+                    <li><span class="bono-tar v">${tarifas.tres[0]}</span> <strong>Semanas azules</strong>: completas dentro del mes y lejos del cierre (${tarifas.dos[0]} → ${tarifas.tres[2]}).</li>
+                    <li><span class="bono-tar a">${tarifas.ambar}</span> <strong>Semanas ámbar</strong>: las que cruzan de un mes a otro y las del cierre (últimos 5 días hábiles del mes).</li>
+                </ul>
+                <p style="font-size:13px;color:var(--slate);">Las semanas azules pagan más, y la primera azul de cada mes es la que más paga.</p>
+                <div class="bcal-caja" id="bono-cal">${_bonoCalendarioHtml(_bonoMesVer || mesHoy, tarifas, meta)}</div>
                 <ul>
                     <li>📈 <strong>Cuenta lo que ingresas a Promessa.</strong> La prima excedente no cuenta.</li>
                     <li>✅ <strong>No necesitas reportar.</strong> Este bono no depende de tu bitácora: se calcula solo con lo que ingresas a Promessa.</li>
                     <li>🗓️ <strong>Promessa recibe producción hasta el viernes.</strong> La excepción son los días de cierre de mes, que pueden caer en fin de semana: lo que ingreses esos días también cuenta para su semana.</li>
-                    <li>📅 <strong>Cada semana cuenta sola.</strong> Si no llegas, esa semana se pierde: no se junta con la siguiente.</li>
+                    <li>📅 <strong>Cada semana cuenta sola.</strong> Lo que no llegue a ${_money(meta)} esa semana se pierde: no se junta con la siguiente.</li>
                     <li>📬 <strong>Los resultados salen cuando tu director sube el reporte de la semana</strong>, normalmente el lunes siguiente.</li>
                     <li>➕ <strong>Es aparte</strong> de los totopos por reportar tu día: los dos se suman.</li>
                 </ul>
