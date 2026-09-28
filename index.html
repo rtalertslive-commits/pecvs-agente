@@ -3818,7 +3818,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.30.0';
+        window.APP_HTML_VERSION = 'v2.31.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -8976,7 +8976,8 @@
         // verdes; la tarifa depende de cuantas tiene el mes y del lugar de la
         // semana: la primera paga mas y van bajando hacia el cierre.
         // Ambar: todas las demas, las que cruzan de mes y las del cierre.
-        // Se paga la tarifa por cada bloque completo de la meta ($2,000).
+        // Se paga la tarifa por cada $2,000 (la meta), en proporcion: con la meta
+        // cumplida, $3,500 a tarifa 100 son 175. Abajo de la meta no se paga.
         const BONO_TARIFAS_DEF = { ambar: 100, dos: [175, 150], tres: [175, 155, 140] };
         const _bonoHabil = d => d.getDay() !== 0 && d.getDay() !== 6;
         // d es uno de los ultimos 5 dias habiles de su mes
@@ -9169,9 +9170,9 @@
             const mesHoy = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
 
             cont.innerHTML = `
-                <p><strong>¿Cómo se gana?</strong> Cada semana, de <strong>lunes a domingo</strong>, ganas totopos
-                   <strong>por cada ${_money(meta)}</strong> que ingreses a Promessa. Si en una misma semana ingresas
-                   ${_money(meta * 2)} cobras <strong>2 veces</strong>; ${_money(meta * 3)}, <strong>3 veces</strong>, y así.</p>
+                <p><strong>¿Cómo se gana?</strong> Cada semana, de <strong>lunes a domingo</strong>, si ingresas al menos
+                   <strong>${_money(meta)}</strong> a Promessa, ganas totopos <strong>por todo lo que ingresaste</strong>,
+                   no solo por los primeros ${_money(meta)}. Mientras más ingreses en la semana, más ganas.</p>
                 <p style="margin-top:10px;"><strong>Cuánto vale cada ${_money(meta)} depende de la semana:</strong></p>
                 <ul>
                     <li><span class="bono-tar v">${tarifas.tres[0]}</span> <strong>Semanas azules</strong>: completas dentro del mes y lejos del cierre (${tarifas.dos[0]} → ${tarifas.tres[2]}).</li>
