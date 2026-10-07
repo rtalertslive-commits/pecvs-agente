@@ -3818,7 +3818,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.31.0';
+        window.APP_HTML_VERSION = 'v2.32.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -5310,11 +5310,36 @@
                 // Esto duplica la defensa de loadFromCloud por si algún flujo deja undefined.
                 const agentOwnedFields = {
                     entries: Array.isArray(state.entries) ? state.entries : [],
-                    karma: typeof state.karma === 'number' ? state.karma : 0,
-                    karmaLog: Array.isArray(state.karmaLog) ? state.karmaLog : [],
                     karmaLastNotified: typeof state.karmaLastNotified === 'number' ? state.karmaLastNotified : 0
                 };
-                await setDoc(doc(db, "users", user.email), agentOwnedFields, { merge: true });
+                // Totopos: NO se sube la copia local del historial (si la app
+                // estuvo dormida, no trae los canjes/pagos que el director
+                // escribio mientras tanto y los borraba). Se lee el del servidor
+                // y solo se le agregan los cierres de dia (sin `type`) que aun
+                // no tiene; el saldo sube exactamente lo que suman esos cierres.
+                const userRef = doc(db, "users", user.email);
+                let fusion = null;
+                try {
+                    await runTransaction(db, async (tx) => {
+                        const srv = (await tx.get(userRef)).data() || {};
+                        const logSrv = Array.isArray(srv.karmaLog) ? srv.karmaLog : [];
+                        const pagadas = new Set(logSrv.filter(k => k && k.date && !k.type).map(k => k.date));
+                        const nuevos = (Array.isArray(state.karmaLog) ? state.karmaLog : [])
+                            .filter(k => k && k.date && !k.type && !pagadas.has(k.date));
+                        fusion = {
+                            karma: (typeof srv.karma === 'number' ? srv.karma : 0) + nuevos.reduce((a, k) => a + (Number(k.points) || 0), 0),
+                            karmaLog: logSrv.concat(nuevos)
+                        };
+                        tx.set(userRef, { ...agentOwnedFields, ...fusion }, { merge: true });
+                    });
+                    state.karma = fusion.karma;
+                    state.karmaLog = fusion.karmaLog;
+                } catch (txErr) {
+                    // Sin conexion la transaccion falla: se guarda el reporte y los
+                    // totopos pendientes quedan en state.karmaLog para la siguiente.
+                    console.warn('[syncToCloud] totopos pendientes:', txErr);
+                    await setDoc(userRef, agentOwnedFields, { merge: true });
+                }
                 // Mantener _lastKnownCloudSize en sync (lo que acabamos de escribir)
                 _lastKnownCloudSize = agentOwnedFields.entries.length;
                 console.log("Synced to cloud");
