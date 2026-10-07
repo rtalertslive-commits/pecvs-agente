@@ -3818,7 +3818,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.32.0';
+        window.APP_HTML_VERSION = 'v2.33.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -7636,8 +7636,12 @@
                 const items = snap.exists() ? (snap.data().items || []).filter(i => i.activo) : [];
                 if (!items.length) { container.innerHTML = '<div class="empty-state"><i class="fa fa-box-open"></i> Sin items disponibles por ahora.</div>'; return; }
                 const karmaDisponible = (state.karma || 0) - _karmaComprometido;
+                // AGOTADO lo marca el director a mano (stock 0 no basta: puede reponer); van al final.
+                items.sort((a, b) => (a.agotado === true) - (b.agotado === true));
                 container.innerHTML = items.map(item => {
-                    const sinStock = item.stock === 0;
+                    const agotado = item.agotado === true;
+                    const sinStock = item.stock === 0 || agotado;
+                    const quedanPocos = !agotado && item.stock > 0 && item.stock < 5;
                     const costoNum = Number(item.costo) || 0;
                     const puedo = karmaDisponible >= costoNum;
                     // Escapar TODOS los strings que vengan del catálogo (controlado por
@@ -7654,15 +7658,18 @@
                         : `<div style="font-size:36px;text-align:center;">${eEmoji}</div>`;
                     const disabled = !puedo || sinStock;
                     let btnLabel;
-                    if (sinStock)     btnLabel = 'Sin stock';
+                    if (agotado)      btnLabel = 'Agotado';
+                    else if (sinStock) btnLabel = 'Sin stock';
                     else if (!puedo)  btnLabel = 'Totopos insuficientes';
                     else              btnLabel = '🛒 Solicitar canje';
-                    return `<div style="background:var(--panel2);border-radius:8px;padding:16px;border:1px solid rgba(32, 85, 154,0.15);display:flex;flex-direction:column;gap:8px;">
-                        ${visualHtml}
-                        <div style="font-weight:700;font-size:14px;text-align:center;">${eNombre}</div>
+                    return `<div style="position:relative;overflow:hidden;background:var(--panel2);border-radius:8px;padding:16px;border:1px solid rgba(32, 85, 154,0.15);display:flex;flex-direction:column;gap:8px;">
+                        ${agotado ? `<div style="position:absolute;top:44px;left:50%;transform:translateX(-50%) rotate(-14deg);z-index:2;pointer-events:none;border:3px solid #E5484D;color:#E5484D;background:rgba(10,20,40,0.78);font-weight:900;font-size:18px;letter-spacing:3px;padding:3px 12px;border-radius:6px;white-space:nowrap;">AGOTADO</div>` : ''}
+                        <div style="${agotado ? 'filter:grayscale(1);opacity:0.45;' : ''}">${visualHtml}</div>
+                        <div style="font-weight:700;font-size:14px;text-align:center;${agotado ? 'opacity:0.6;' : ''}">${eNombre}</div>
                         <div style="font-size:12px;color:var(--slate);text-align:center;">${eDesc}</div>
-                        <div style="text-align:center;font-weight: 900;color:var(--gold);"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoNum} totopos</div>
-                        ${item.stock >= 0 ? `<div style="text-align:center;font-size:11px;color:var(--slate);">Stock: ${Number(item.stock)||0}</div>` : ''}
+                        <div style="text-align:center;font-weight: 900;color:var(--gold);${agotado ? 'opacity:0.5;' : ''}"><svg class="totopo-icon"><use href="#totopo"/></svg> ${costoNum} totopos</div>
+                        ${quedanPocos ? `<div style="text-align:center;font-size:12px;font-weight:800;color:#F5B83D;">¡Quedan pocos! (${Number(item.stock)})</div>`
+                          : (item.stock >= 0 && !agotado) ? `<div style="text-align:center;font-size:11px;color:var(--slate);">Stock: ${Number(item.stock)||0}</div>` : ''}
                         <button class="btn btn-sm ${(!disabled)?'btn-green':''}" ${disabled?'disabled':''} onclick="solicitarCanje('${eId}','${eNombre}',${costoNum},'${eEmoji}','${eCatalog}',${item.stock >= 0 ? Number(item.stock) : -1})" style="${sinStock?'opacity:0.5':''}">
                             ${btnLabel}
                         </button>
@@ -8198,6 +8205,7 @@
                     if (idx < 0) throw new Error(`El item "${itemNombre}" ya no está en el catálogo.`);
                     const item = items[idx];
                     if (item.activo === false) throw new Error(`El item "${itemNombre}" fue desactivado.`);
+                    if (item.agotado === true) throw new Error(`"${itemNombre}" está agotado.`);
                     const stock = Number(item.stock);
                     // stock < 0 = ilimitado, stock >= 0 = decrementable
                     if (stock >= 0 && stock < qty) {
