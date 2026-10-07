@@ -3818,7 +3818,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.33.0';
+        window.APP_HTML_VERSION = 'v2.34.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -9155,7 +9155,7 @@
                     const cls = [d.getMonth() !== m ? 'fuera' : '', d.getMonth() === m && _bonoEsCierre(d) ? 'cie' : '', esHoy(d) ? 'hoy' : ''].join(' ').trim();
                     return `<td class="${cls}">${d.getDate()}</td>`;
                 }).join('');
-                filas.push(`<tr class="${info.tipo === 'verde' ? 'v' : 'a'}"><td class="tar"><b>${info.tarifa}</b><span>por cada ${_money(meta)}</span></td>${dias}</tr>`);
+                filas.push(`<tr class="${info.tipo === 'verde' ? 'v' : 'a'}"><td class="tar"><b>${info.tarifa}</b><span>al llegar a ${_money(meta)}</span></td>${dias}</tr>`);
             }
             const verdes = _bonoVerdesDelMes(y, m).length;
             return `<div class="bcal-cab">
@@ -9165,6 +9165,7 @@
                 </div>
                 <table class="bcal"><thead><tr><th class="tar">Totopos</th><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th><th>D</th></tr></thead>
                 <tbody>${filas.join('')}</tbody></table>
+                <p class="bcal-pie" style="font-weight:700;">El excedente arriba de ${_money(meta)} también se paga, en proporción a la tarifa de la semana.</p>
                 <p class="bcal-pie">${verdes} semanas azules este mes · subrayados: días del cierre (últimos 5 días hábiles)</p>`;
         }
 
@@ -9195,7 +9196,7 @@
                 return `<div class="bono-fila${s.est === 'curso' ? ' actual' : ''}"${tenue}>
                     <span class="bono-sem">Semana ${s.num}</span>
                     <span class="bono-fechas">${fecha(s.lun)} – ${fecha(s.dom)}</span>
-                    <span class="bono-tar ${info.tipo === 'verde' ? 'v' : 'a'}" title="Paga ${info.tarifa} por cada ${_money(meta)}">${info.tarifa}</span>
+                    <span class="bono-tar ${info.tipo === 'verde' ? 'v' : 'a'}" title="Paga ${info.tarifa} al llegar a ${_money(meta)}, y el excedente en proporción">${info.tarifa}</span>
                     ${ESTADO[s.est](s)}
                 </div>`;
             }).join('');
