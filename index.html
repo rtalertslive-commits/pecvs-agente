@@ -2719,7 +2719,7 @@
     <div class="modal-overlay" id="notif-modal">
         <div class="modal-box">
             <h2 style="font-family:'Source Sans Pro',sans-serif; color:var(--gold); margin-top:0;"><i class="fa fa-bell" style="margin-right:8px;"></i>Notificaciones</h2>
-            <p style="font-size:12px; color:var(--slate); margin:0 0 18px;">Recibí avisos importantes de la dirección directamente en tu dispositivo.</p>
+            <p style="font-size:12px; color:var(--slate); margin:0 0 18px;">Recibí avisos importantes de la dirección y cuando ganes un multiplicador o BONO! directamente en tu dispositivo.</p>
 
             <label id="notif-master-row" style="display:none; align-items:center; justify-content:space-between; padding:14px 16px; background:rgba(var(--vk),0.04); border:1px solid rgba(var(--vk),0.1); border-radius:8px; margin-bottom:12px; cursor:pointer; gap:12px;">
                 <div style="flex:1; min-width:0;">
@@ -2741,6 +2741,22 @@
                         <div style="font-size:11px; color:var(--slate); margin-top:2px;">Broadcasts importantes del director, promotor y coach.</div>
                     </div>
                     <input type="checkbox" id="notif-pref-anuncios" onchange="saveNotifPrefs()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;" checked>
+                </label>
+
+                <label class="notif-toggle-row" style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(var(--vk),0.05); cursor:pointer;">
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:14px; color: var(--white); font-weight:600;">🚀 Multiplicador</div>
+                        <div style="font-size:11px; color:var(--slate); margin-top:2px;">Cuando ganas un multiplicador de totopos.</div>
+                    </div>
+                    <input type="checkbox" id="notif-pref-multiplicador" onchange="saveNotifPrefs()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;" checked>
+                </label>
+
+                <label class="notif-toggle-row" style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(var(--vk),0.05); cursor:pointer;">
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:14px; color: var(--white); font-weight:600;">💰 BONO!</div>
+                        <div style="font-size:11px; color:var(--slate); margin-top:2px;">Cuando ganas el bono semanal por tu producción.</div>
+                    </div>
+                    <input type="checkbox" id="notif-pref-bono" onchange="saveNotifPrefs()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;" checked>
                 </label>
 
                 <div style="padding:12px 0;">
@@ -3825,7 +3841,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.35.0';
+        window.APP_HTML_VERSION = 'v2.36.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -4018,13 +4034,15 @@
                 : [CHART_COLORS.V, CHART_COLORS.S];
         }
 
-        // notifPrefs por defecto: anuncios ON, recordatorio OFF a las 19:00.
+        // notifPrefs por defecto: anuncios, multiplicador y bono ON; recordatorio OFF a las 19:00.
         // subscribed=true por defecto (first-time = enabled si acepta el banner).
         // bannerDismissed=false → mostrar banner si perm=default.
         const DEFAULT_NOTIF_PREFS = {
             subscribed: true,
             bannerDismissed: false,
             anuncios: true,
+            multiplicador: true,     // aviso cuando ganas un multiplicador
+            bono: true,              // aviso cuando ganas un BONO!
             recordatorio: { enabled: false, time: '19:00' }
         };
         let state = { agentName: '', teamCode: '', directorCode: '', regionName: '', companyCode: '', entries: [], karma: 0, karmaLog: [], karmaLastNotified: 0, skipWeekends: false, skipWeekendsActivatedAt: null, notifPrefs: { ...DEFAULT_NOTIF_PREFS } };
@@ -4963,6 +4981,10 @@
             const recordM  = document.getElementById('notif-pref-recordatorio-min');
             const recordRow= document.getElementById('notif-recordatorio-time-row');
             if (anuncios) anuncios.checked = !!p.anuncios;
+            const multi = document.getElementById('notif-pref-multiplicador');
+            const bonoEl = document.getElementById('notif-pref-bono');
+            if (multi)  multi.checked  = p.multiplicador !== false;
+            if (bonoEl) bonoEl.checked = p.bono !== false;
             const rec = (p.recordatorio && typeof p.recordatorio === 'object') ? p.recordatorio : DEFAULT_NOTIF_PREFS.recordatorio;
             if (record)   record.checked = !!rec.enabled;
             // Migrar valores legacy: round down al múltiplo de 10 más cercano y cap a 23:40.
@@ -4987,6 +5009,8 @@
         window.saveNotifPrefs = function () {
             if (!user) return;
             const anuncios = !!document.getElementById('notif-pref-anuncios')?.checked;
+            const multiplicador = !!document.getElementById('notif-pref-multiplicador')?.checked;
+            const bono     = !!document.getElementById('notif-pref-bono')?.checked;
             const recordEn = !!document.getElementById('notif-pref-recordatorio')?.checked;
             const _hourEl = document.getElementById('notif-pref-recordatorio-hour');
             const _minEl  = document.getElementById('notif-pref-recordatorio-min');
@@ -5004,6 +5028,8 @@
             const currentRec = (state.notifPrefs && state.notifPrefs.recordatorio) || {};
             const newPrefs = {
                 anuncios,
+                multiplicador,
+                bono,
                 recordatorio: { ...currentRec, enabled: recordEn, time: recordT }
             };
             state.notifPrefs = Object.assign(state.notifPrefs || {}, newPrefs);
@@ -5237,6 +5263,8 @@
                         if (typeof state.notifPrefs.subscribed !== 'boolean') state.notifPrefs.subscribed = DEFAULT_NOTIF_PREFS.subscribed;
                         if (typeof state.notifPrefs.bannerDismissed !== 'boolean') state.notifPrefs.bannerDismissed = DEFAULT_NOTIF_PREFS.bannerDismissed;
                         if (typeof state.notifPrefs.anuncios !== 'boolean') state.notifPrefs.anuncios = DEFAULT_NOTIF_PREFS.anuncios;
+                        if (typeof state.notifPrefs.multiplicador !== 'boolean') state.notifPrefs.multiplicador = DEFAULT_NOTIF_PREFS.multiplicador;
+                        if (typeof state.notifPrefs.bono !== 'boolean') state.notifPrefs.bono = DEFAULT_NOTIF_PREFS.bono;
                         if (!state.notifPrefs.recordatorio || typeof state.notifPrefs.recordatorio !== 'object') {
                             state.notifPrefs.recordatorio = { ...DEFAULT_NOTIF_PREFS.recordatorio };
                         } else {
@@ -5360,8 +5388,38 @@
             });
         }
 
+        // Una escritura que no se confirma en `ms` cuenta como fallida. Sin internet,
+        // setDoc no rechaza: se queda esperando, y el agente creeria que se guardo.
+        function _conTope(p, ms) {
+            let t;
+            return Promise.race([p, new Promise((_, rej) => { t = setTimeout(() => rej(new Error('sin confirmacion del servidor')), ms); })])
+                .finally(() => clearTimeout(t));
+        }
+
+        // Aviso rojo mientras lo ultimo que se intento guardar NO llego al servidor.
+        let _guardadoPendiente = false;
+        function _avisarGuardado(ok) {
+            _guardadoPendiente = !ok;
+            let b = document.getElementById('sync-fail-banner');
+            if (ok) { if (b) b.style.display = 'none'; return true; }
+            if (!b) {
+                b = document.createElement('div');
+                b.id = 'sync-fail-banner';
+                b.style.cssText = 'position:fixed; top:0; left:0; right:0; z-index:99998; background:#B3261E; color:#fff; padding:12px 16px; display:flex; align-items:center; gap:12px; font-family:Inter,sans-serif; box-shadow:0 4px 16px rgba(0,0,0,0.25);';
+                b.innerHTML = '<div style="font-size:22px;">⚠️</div>' +
+                    '<div style="flex:1; font-size:13px; line-height:1.35;"><div style="font-weight:900;">Tu registro NO se guardó</div>' +
+                    '<div style="opacity:.92; font-size:12px;">No hay internet (o la señal es muy mala). Conéctate y toca Reintentar; no cierres la app hasta que este aviso desaparezca.</div></div>' +
+                    '<button style="padding:8px 14px; background:#fff; color:#B3261E; border:none; border-radius:8px; font-weight:900; font-size:13px; cursor:pointer; white-space:nowrap;">Reintentar</button>';
+                b.querySelector('button').onclick = () => syncToCloud();
+                document.body.appendChild(b);
+            }
+            b.style.display = 'flex';
+            return false;
+        }
+        window.addEventListener('online', () => { if (_guardadoPendiente) syncToCloud(); });
+
         async function syncToCloud() {
-            if (!user || firebaseConfig.apiKey === "TU_API_KEY") return;
+            if (!user || firebaseConfig.apiKey === "TU_API_KEY") return true;
 
             // ═══ GUARDAS ANTI DATA-LOSS ═══════════════════════════════════════
             // Guarda 1: si loadFromCloud no completó, no escribimos (data en
@@ -5369,7 +5427,7 @@
             if (!_cloudLoadOk) {
                 console.warn('[syncToCloud] BLOQUEADO — loadFromCloud no completó OK');
                 showLoadErrorBanner();
-                return;
+                return _avisarGuardado(false);
             }
             // Guarda 2: si state.entries se achicó respecto a lo que cargamos,
             // hay algo raro (state corrupto/perdido). No escribir.
@@ -5378,10 +5436,12 @@
                 console.warn('[syncToCloud] BLOQUEADO — entries menores que en cloud:',
                              currentSize, '<', _lastKnownCloudSize);
                 alert('⚠️ No se pudo guardar tu reporte. Para evitar pérdida de datos, cerrá y volvé a abrir la app, después reintenta.');
-                return;
+                return _avisarGuardado(false);
             }
+            if (navigator.onLine === false) return _avisarGuardado(false);
             // ═══════════════════════════════════════════════════════════════
 
+            let _guardadoOk = false;
             try {
                 // WHITELIST: solo escribir los campos que el agente posee.
                 // Los campos admin (agentName, teamCode, coachNum, promotorTeamCode,
@@ -5403,7 +5463,7 @@
                 const userRef = doc(db, "users", user.email);
                 let fusion = null;
                 try {
-                    await runTransaction(db, async (tx) => {
+                    await _conTope(runTransaction(db, async (tx) => {
                         const srv = (await tx.get(userRef)).data() || {};
                         const logSrv = Array.isArray(srv.karmaLog) ? srv.karmaLog : [];
                         const pagadas = new Set(logSrv.filter(k => k && k.date && !k.type).map(k => k.date));
@@ -5414,19 +5474,22 @@
                             karmaLog: logSrv.concat(nuevos)
                         };
                         tx.set(userRef, { ...agentOwnedFields, ...fusion }, { merge: true });
-                    });
+                    }), 10000);
                     state.karma = fusion.karma;
                     state.karmaLog = fusion.karmaLog;
+                    _guardadoOk = true;
                 } catch (txErr) {
                     // Sin conexion la transaccion falla: se guarda el reporte y los
                     // totopos pendientes quedan en state.karmaLog para la siguiente.
                     console.warn('[syncToCloud] totopos pendientes:', txErr);
-                    await setDoc(userRef, agentOwnedFields, { merge: true });
+                    await _conTope(setDoc(userRef, agentOwnedFields, { merge: true }), 10000);
+                    _guardadoOk = true;
                 }
                 // Mantener _lastKnownCloudSize en sync (lo que acabamos de escribir)
                 _lastKnownCloudSize = agentOwnedFields.entries.length;
                 console.log("Synced to cloud");
             } catch (err) { console.error("Sync error:", err); }
+            return _avisarGuardado(_guardadoOk);
         }
 
         window.loadLastWeekWithData = function () {
@@ -5724,6 +5787,14 @@
         //
         // Las dos APIs de antes quedan de respaldo, y el reloj local como ultimo
         // recurso, igual que hasta ahora.
+        // La cabecera Date (y worldtimeapi) dan un INSTANTE; el resto de la app lo lee con
+        // getDate()/getDay(), que usan la zona del telefono. Se reconstruye con la pared de
+        // Monterrey para que el dia sea el de Mexico sin importar donde este el telefono.
+        function _aHoraMonterrey(d) {
+            const u = new Date(d.getTime() - 6 * 3600e3);  // Monterrey = UTC-6 fijo (sin horario de verano desde 2022); no depende de la base de zonas del telefono
+            return new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), u.getUTCHours(), u.getUTCMinutes(), u.getUTCSeconds());
+        }
+
         async function getServerTime() {
             try {
                 const r = await _fetchConTope('./manifest.json?t=' + Date.now(), 3000,
@@ -5732,7 +5803,7 @@
                 const d = h ? new Date(h) : null;
                 // Un encabezado corrupto da Invalid Date, y eso envenenaria todo
                 // lo que cuelga de serverNow. Mejor caer al siguiente intento.
-                if (d && !isNaN(d.getTime())) return d;
+                if (d && !isNaN(d.getTime())) return _aHoraMonterrey(d);
             } catch {}
             try {
                 const r = await _fetchConTope('https://timeapi.io/api/time/current/zone?timeZone=America/Monterrey', 3000);
@@ -5742,10 +5813,10 @@
             try {
                 const r = await _fetchConTope('https://worldtimeapi.org/api/timezone/America/Monterrey', 3000);
                 const { datetime } = await r.json();
-                return new Date(datetime);
+                return _aHoraMonterrey(new Date(datetime));
             } catch {}
             console.warn('⚠️ No se pudo verificar hora del servidor, usando reloj local');
-            return new Date();
+            return _aHoraMonterrey(new Date());
         }
 
         async function loadPointsConfig() {
@@ -8499,15 +8570,28 @@
             const dia = entry.dias.find(d => d.dia === dayName);
             if (!dia) { console.warn('[marcarSinActividad] dia no encontrado'); return; }
 
+            if (window._marcandoSinAct) return;
+            window._marcandoSinAct = true;
+            const antes = JSON.parse(JSON.stringify(dia));
             // Marcar y limpiar cualquier valor previo para que no se mezcle con la declaración
             dia.sinActividad = true;
             dia.P = dia.E = dia.C = dia.V = dia.S = 0;
             dia.prima = 0;
 
+            let guardado = false;
             try {
-                await syncToCloud();
+                guardado = (await syncToCloud()) !== false;
             } catch (err) {
                 console.error('[marcarSinActividad] sync falló:', err);
+            }
+            window._marcandoSinAct = false;
+            if (!guardado) {
+                // No llegó al servidor: se deshace para no mostrar como hecho algo que no se guardó.
+                Object.keys(dia).forEach(k => delete dia[k]);
+                Object.assign(dia, antes);
+                updateWeekTable();
+                alert('⚠️ No se pudo guardar porque no hay internet.\n\nTu registro de "sin intento" NO quedó guardado. Conéctate y vuelve a presionar el botón.');
+                return;
             }
             updateWeekTable();   // re-render → muestra la vista "🌙 Sin intento"
             awardKarma();        // por si es HOY y ya pasó medianoche con cambio de día
@@ -8525,7 +8609,14 @@
             if (!dia) return;
             delete dia.sinActividad;   // remueve el flag
 
-            try { await syncToCloud(); } catch (err) { console.error('[revertirSinActividad] sync falló:', err); }
+            let guardado = false;
+            try { guardado = (await syncToCloud()) !== false; } catch (err) { console.error('[revertirSinActividad] sync falló:', err); }
+            if (!guardado) {
+                dia.sinActividad = true;
+                updateWeekTable();
+                alert('⚠️ No se pudo guardar porque no hay internet.\n\nNo se editó el día. Conéctate y vuelve a intentarlo.');
+                return;
+            }
             updateWeekTable();   // re-render → vuelve a inputs editables
         };
 
