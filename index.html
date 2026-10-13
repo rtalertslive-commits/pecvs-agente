@@ -3233,6 +3233,14 @@
             cursor: pointer;
         }
         .foro-priv input { margin-top: 2px; flex: 0 0 auto; }
+        .foro-pdfs { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        .foro-pdf { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border);
+                    border-radius: 8px; background: rgba(var(--vk), 0.05); color: var(--white); font-size: 12.5px;
+                    text-decoration: none; max-width: 100%; box-sizing: border-box; }
+        .foro-pdf .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+        .foro-pdf small { color: var(--slate); flex-shrink: 0; }
+        .foro-pdf button { background: none; border: none; color: var(--red); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+        .foro-posts-pdf { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
         .foro-thumbs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
         .foro-thumb { position: relative; width: 64px; height: 64px; }
         .foro-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
@@ -3841,7 +3849,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.36.0';
+        window.APP_HTML_VERSION = 'v2.37.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -6875,6 +6883,8 @@
         const FORO_COMPRIMIR_DESDE = 1.5 * 1024 * 1024;
         const FORO_MAX_DIM = 2000;
         const FORO_MAX_IMGS = 5;
+        const FORO_MAX_PDFS = 3;
+        const FORO_PDF_MAX_BYTES = 5 * 1024 * 1024;   // igual que el limite de las reglas de Storage
 
         // Pseudo-categoria: no es una categoria real en Firestore, es una vista
         // distinta (otra consulta) que se pinta en la misma barra de pestañas.
@@ -6892,6 +6902,7 @@
         let _foroHilo = null;           // { id, ...data }
         let _foroResps = [];
         let _foroUnsub = null;          // listener de respuestas del hilo abierto
+        let _foroPdfs = [];             // [{ file, nombre, size }]
         let _foroImgs = [];             // [{ blob, previewUrl, nombre }]
         let _foroNavPrevia = null;      // pestaña resaltada antes de abrir el foro
         let _foroCargando = false;
@@ -7458,6 +7469,8 @@
             }
             const imgs = (d.imagenes || []).map(im =>
                 `<img src="${escapeHtml(im.url)}" alt="adjunto" onclick="window.open('${escapeHtml(im.url)}','_blank')">`).join('');
+            const pdfs = (Array.isArray(d.archivos) ? d.archivos : []).filter(a => a && /^https:\/\//.test(a.url || '')).map(a =>
+                `<a class="foro-pdf" href="${escapeHtml(a.url)}" target="_blank" rel="noopener"><i class="fa fa-file-pdf" style="color:#e5484d;"></i><span class="n">${escapeHtml(a.nombre || 'documento.pdf')}</span><small>${_foroTam(a.size)}</small></a>`).join('');
             return `<div class="foro-post">
                 <div class="foro-meta">
                     ${_foroBadge(d.autorRol)}
@@ -7469,6 +7482,7 @@
                 ${esHilo ? `<div style="font-size:15px; font-weight: 900; color:var(--white); margin-top:7px;">${escapeHtml(d.titulo || '')}</div>` : ''}
                 <div class="foro-texto">${escapeHtml(d.texto || '')}</div>
                 ${imgs ? `<div class="foro-imgs">${imgs}</div>` : ''}
+                ${pdfs ? `<div class="foro-posts-pdf">${pdfs}</div>` : ''}
             </div>`;
         }
 
@@ -7488,15 +7502,22 @@
                      <textarea id="foro-resp-txt" class="foro-area" style="min-height:80px;"
                        placeholder="Escribe tu respuesta…" maxlength="4000"></textarea>
                      <div class="foro-thumbs" id="foro-resp-thumbs"></div>
-                     <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+                     <div class="foro-pdfs" id="foro-resp-pdfs"></div>
+                     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
                        <label class="foro-link" style="cursor:pointer;">
                          <i class="fa fa-image"></i> Adjuntar
                          <input type="file" accept="image/*" multiple style="display:none;" onchange="foroElegirImgs(this,'foro-resp-thumbs')">
                        </label>
                        <span style="font-size:11px; color:var(--slate);">hasta ${FORO_MAX_IMGS} imágenes</span>
+                       <label class="foro-link" style="cursor:pointer;">
+                         <i class="fa fa-file-pdf"></i> PDF
+                         <input type="file" accept="application/pdf,.pdf" multiple style="display:none;" onchange="foroElegirPdfs(this,'foro-resp-pdfs')">
+                       </label>
+                       <span style="font-size:11px; color:var(--slate);">hasta ${FORO_MAX_PDFS} · 5 MB c/u</span>
                      </div>
                      <button class="foro-btn-primary" id="foro-resp-btn" onclick="foroResponder()">Responder</button>
                    </div>`;
+            _foroPintarPdfs('foro-resp-pdfs');
         }
 
         // ── COMPONER ──
@@ -7512,12 +7533,18 @@
                 <input id="foro-new-tit" class="foro-input" maxlength="120" placeholder="Título del tema">
                 <textarea id="foro-new-txt" class="foro-area" maxlength="4000" placeholder="Cuenta de qué se trata…"></textarea>
                 <div class="foro-thumbs" id="foro-new-thumbs"></div>
-                <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+                <div class="foro-pdfs" id="foro-new-pdfs"></div>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
                     <label class="foro-link" style="cursor:pointer;">
                         <i class="fa fa-image"></i> Adjuntar imágenes
                         <input type="file" accept="image/*" multiple style="display:none;" onchange="foroElegirImgs(this,'foro-new-thumbs')">
                     </label>
                     <span style="font-size:11px; color:var(--slate);">hasta ${FORO_MAX_IMGS}</span>
+                    <label class="foro-link" style="cursor:pointer;">
+                      <i class="fa fa-file-pdf"></i> PDF
+                      <input type="file" accept="application/pdf,.pdf" multiple style="display:none;" onchange="foroElegirPdfs(this,'foro-new-pdfs')">
+                    </label>
+                    <span style="font-size:11px; color:var(--slate);">hasta ${FORO_MAX_PDFS} · 5 MB c/u</span>
                 </div>
                 <label class="foro-priv">
                     <input type="checkbox" id="foro-new-priv">
@@ -7533,6 +7560,7 @@
         function _foroLimpiarImgs() {
             _foroImgs.forEach(i => { try { URL.revokeObjectURL(i.previewUrl); } catch (e) {} });
             _foroImgs = [];
+            _foroPdfs = [];
         }
         // Solo comprime lo que hace falta. Una captura de iPhone (~400 KB) sube
         // intacta, con su resolucion y su PNG; recomprimirla arruinaria el texto
@@ -7587,6 +7615,46 @@
             _foroImgs.splice(i, 1);
             _foroPintarThumbs(contenedorId);
         };
+        // ── PDFs ──
+        function _foroTam(n) {
+            n = Number(n) || 0;
+            return n >= 1024 * 1024 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+        }
+        window.foroElegirPdfs = function (input, contenedorId) {
+            const files = Array.from(input.files || []);
+            input.value = '';
+            for (const f of files) {
+                if (_foroPdfs.length >= FORO_MAX_PDFS) { alert('Máximo ' + FORO_MAX_PDFS + ' PDFs por publicación.'); break; }
+                if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) { alert('"' + f.name + '" no es un PDF.'); continue; }
+                if (f.size > FORO_PDF_MAX_BYTES) { alert('"' + f.name + '" pesa ' + _foroTam(f.size) + '. El máximo es 5 MB.'); continue; }
+                _foroPdfs.push({ file: f, nombre: f.name, size: f.size });
+            }
+            _foroPintarPdfs(contenedorId);
+        };
+        function _foroPintarPdfs(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = _foroPdfs.map((p, i) =>
+                `<div class="foro-pdf"><i class="fa fa-file-pdf" style="color:#e5484d;"></i><span class="n">${escapeHtml(p.nombre)}</span><small>${_foroTam(p.size)}</small>
+                 <button onclick="foroQuitarPdf(${i},'${id}')" aria-label="Quitar">&times;</button></div>`).join('');
+        }
+        window.foroQuitarPdf = function (i, contenedorId) {
+            _foroPdfs.splice(i, 1);
+            _foroPintarPdfs(contenedorId);
+        };
+        async function _foroSubirPdfs(threadId) {
+            const dc = _foroDC() || 'sin-dc';
+            const out = [];
+            for (let i = 0; i < _foroPdfs.length; i++) {
+                const p = _foroPdfs[i];
+                const path = `forum/${dc}/${threadId}/${Date.now()}_${i}.pdf`;
+                const r = storageRef(storage, path);
+                await uploadBytes(r, p.file, { contentType: 'application/pdf', cacheControl: 'public, max-age=2592000' });
+                out.push({ url: await getDownloadURL(r), path, nombre: p.nombre.slice(0, 120), size: p.size });
+            }
+            return out;
+        }
+
         // Se sube ANTES de crear el documento, con el id generado a mano. Las
         // reglas no permiten editar `imagenes` despues de crear, asi que no hay
         // opcion de crear primero y actualizar despues.
@@ -7617,6 +7685,7 @@
             try {
                 const refHilo = doc(collection(db, 'forum'));
                 const imagenes = await _foroSubirImgs(refHilo.id);
+                const archivos = await _foroSubirPdfs(refHilo.id);
                 await setDoc(refHilo, {
                     categoria: _foroCat,
                     visibilidad: priv ? 'privado' : 'publico',
@@ -7624,7 +7693,7 @@
                     autorNombre: state.agentName || _foroYo(),
                     autorRol: FORO_MI_ROL,
                     directorCode: _foroDC(),
-                    titulo: tit, texto: txt, imagenes,
+                    titulo: tit, texto: txt, imagenes, archivos,
                     numRespuestas: 0, oculto: false,
                     // Alimenta "Mis hilos". Las reglas solo dejan que te pongas
                     // a ti al crear, para que nadie fabrique un hilo privado con
@@ -7655,11 +7724,12 @@
             try {
                 const refResp = doc(collection(db, 'forum', _foroHilo.id, 'respuestas'));
                 const imagenes = await _foroSubirImgs(_foroHilo.id);
+                const archivos = await _foroSubirPdfs(_foroHilo.id);
                 await setDoc(refResp, {
                     autor: _foroYo(),
                     autorNombre: state.agentName || _foroYo(),
                     autorRol: FORO_MI_ROL,
-                    texto: txt, imagenes, oculto: false,
+                    texto: txt, imagenes, archivos, oculto: false,
                     // Denormalizados a proposito: sin esto las reglas tendrian que
                     // hacer get() del hilo padre en CADA respuesta que se lee.
                     visibilidad: _foroHilo.visibilidad,
@@ -7682,6 +7752,7 @@
                 _foroLimpiarImgs();
                 document.getElementById('foro-resp-txt').value = '';
                 _foroPintarThumbs('foro-resp-thumbs');
+                _foroPintarPdfs('foro-resp-pdfs');
             } catch (e) {
                 console.error('[foro] responder:', e);
                 alert('No se pudo enviar: ' + (e.message || e));
