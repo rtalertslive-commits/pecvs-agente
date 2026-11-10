@@ -3849,7 +3849,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.37.0';
+        window.APP_HTML_VERSION = 'v2.38.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -5569,7 +5569,7 @@
             // dejan entries negativos en karmaLog y contaminarían el delta
             // (ej: ganó 10 + canjeó 5 daba "+5" en lugar de "+10").
             const totalEarned = (state.karmaLog || [])
-                .filter(k => (Number(k.points) || 0) > 0)
+                .filter(k => k.type !== 'redemption_refund' && (Number(k.points) || 0) > 0)
                 .reduce((sum, k) => sum + (Number(k.points) || 0), 0);
             // Migración defensiva: karmaLastNotified pudo haberse guardado con la
             // fórmula vieja (que incluía negativos). Clamp para no quedar > totalEarned
@@ -5707,7 +5707,7 @@
                 // Solo positivos — los canjes aprobados (entries negativos) no cuentan
                 // como "ganado", solo como "gastado" del saldo total.
                 const totalEarned = (state.karmaLog || [])
-                    .filter(k => (Number(k.points) || 0) > 0)
+                    .filter(k => k.type !== 'redemption_refund' && (Number(k.points) || 0) > 0)
                     .reduce((sum, k) => sum + (Number(k.points) || 0), 0);
                 if ((Number(state.karmaLastNotified) || 0) > totalEarned) {
                     state.karmaLastNotified = totalEarned;
@@ -5962,7 +5962,7 @@
         // Toma los últimos entries positivos de karmaLog hasta sumar `targetSum`,
         // que representan lo que el user ganó desde la última vez que vio el modal.
         function _getRecentUncelebratedEntries(targetSum) {
-            const positives = (state.karmaLog || []).filter(k => (Number(k.points) || 0) > 0);
+            const positives = (state.karmaLog || []).filter(k => k.type !== 'redemption_refund' && (Number(k.points) || 0) > 0);
             const out = [];
             let sum = 0;
             for (let i = positives.length - 1; i >= 0 && sum < targetSum; i--) {
@@ -6038,7 +6038,7 @@
             // la página sin cerrar el modal, no vuelve a salir la misma celebración.
             // Solo positivos para mantener consistencia con cómo se calcula uncelebrated.
             const totalEarned = (state.karmaLog || [])
-                .filter(k => (Number(k.points) || 0) > 0)
+                .filter(k => k.type !== 'redemption_refund' && (Number(k.points) || 0) > 0)
                 .reduce((sum, k) => sum + (Number(k.points) || 0), 0);
             state.karmaLastNotified = totalEarned;
             syncToCloud();
