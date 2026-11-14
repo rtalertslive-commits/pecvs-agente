@@ -3849,7 +3849,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.38.0';
+        window.APP_HTML_VERSION = 'v2.39.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -5366,6 +5366,21 @@
                 // sincronizó, actualizamos el size esperado en cloud.
                 if (Array.isArray(fresh.entries)) {
                     _lastKnownCloudSize = fresh.entries.length;
+                    // Excepcion del director (corrigio un dia): adoptar su entry. Si no, el siguiente
+                    // sync subiria la copia vieja de esta app y la pisaria (entries se escribe completo).
+                    let adoptadas = false;
+                    if (!Array.isArray(state.entries)) state.entries = [];
+                    fresh.entries.forEach(fe => {
+                        if (!fe || !fe.editadoDirector) return;
+                        const i = state.entries.findIndex(e => e.mes === fe.mes && e.semana == fe.semana);
+                        if (i >= 0 && (state.entries[i].editadoDirector || '') >= fe.editadoDirector) return;
+                        if (i >= 0) state.entries[i] = fe; else state.entries.push(fe);
+                        adoptadas = true;
+                    });
+                    if (adoptadas) {
+                        try { if (typeof window.updateWeekTable === 'function' && currentWeeks.length) window.updateWeekTable(); } catch (e) { console.warn('[director-edit] tabla:', e); }
+                        awardKarmaForPastDays().catch(e => console.warn('[director-edit] karma:', e));
+                    }
                 }
 
                 // Campos admin (controlados por director). NO los escribimos en
