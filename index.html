@@ -3850,7 +3850,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.40.0';
+        window.APP_HTML_VERSION = 'v2.41.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -7927,12 +7927,109 @@
         let _pujasComprometidas = 0;
         let _subastasTerminadas = [];   // cerradas o canceladas en los ultimos 7 dias (para ver quien gano)
 
+        function _rankingSubasta(a) {
+            return Object.entries(a.bids || {}).map(([id, b]) => ({ id, name: b.name || id, amount: Number(b.amount) || 0, at: b.at || '' }))
+                .sort((x, y) => y.amount - x.amount || x.at.localeCompare(y.at));
+        }
+        const _multiSubasta = a => (a.unidades || 1) > 1;
+        // Totopos que esta subasta me tiene apartados: mi oferta si voy dentro de las N (o si lidero la de 1 unidad).
+        function _miReservaSubasta(a, me) {
+            if (!_multiSubasta(a)) return a.topBidderId === me ? (Number(a.topBid) || 0) : 0;
+            const rk = _rankingSubasta(a), i = rk.findIndex(b => b.id === me);
+            return i >= 0 && i < a.unidades ? rk[i].amount : 0;
+        }
+        // Oferta minima: si voy dentro, subir mi oferta; si no, superar al ultimo lugar de los demas.
+        function _minMulti(a, me) {
+            const rk = _rankingSubasta(a), i = rk.findIndex(b => b.id === me), yo = rk[i];
+            if (yo && i < a.unidades) return yo.amount + a.increment;
+            const otros = rk.filter(b => b.id !== me);
+            const entrar = otros.length >= a.unidades ? otros[a.unidades - 1].amount + a.increment : a.minBid;
+            return Math.max(entrar, yo ? yo.amount + a.increment : 0);
+        }
+
+        function _imgSubasta(a, grande) {
+            return a.imageUrl
+                ? (grande ? '<img src="' + escapeHtml(a.imageUrl) + '" alt="' + escapeHtml(a.nombre || '') + '" loading="lazy" onclick="openImagePreview(this.src)" style="display:block;margin:0 auto;width:160px;height:160px;max-width:100%;object-fit:cover;border-radius:10px;border:1px solid rgba(212,175,55,0.35);cursor:zoom-in;">'
+                          : '<img src="' + escapeHtml(a.imageUrl) + '" alt="" loading="lazy" onclick="openImagePreview(this.src)" style="width:56px;height:56px;object-fit:cover;border-radius:8px;cursor:zoom-in;flex-shrink:0;">')
+                : (grande ? '<div style="text-align:center;font-size:36px;">' : '<div style="font-size:32px;flex-shrink:0;">') + escapeHtml(a.emoji || '🔨') + '</div>';
+        }
+
+        function _tarjetaMulti(a, me) {
+            const eId = escapeHtml(a._id), N = a.unidades, item = escapeHtml(a.nombre || '');
+            const rk = _rankingSubasta(a), i = rk.findIndex(b => b.id === me), yo = rk[i], dentro = !!yo && i < N;
+            const terminada = Date.now() >= a.endsAtMs;
+            const min = _minMulti(a, me);
+            const disponible = (state.karma || 0) - _karmaComprometido + (dentro ? yo.amount : 0);
+            const puedo = !terminada && disponible >= min;
+            const estado = !yo ? ''
+                : dentro && rk.length >= N && i === N - 1
+                    ? '<div style="color:#F5B83D;font-weight:700;font-size:13px;">⚠️ Vas dentro, pero en el último lugar (' + N + ' de ' + N + ').</div><div style="font-size:12px;color:var(--slate);">Si alguien ofrece ' + (yo.amount + a.increment) + ' o más, te saca. Tus ' + yo.amount + ' totopos están apartados mientras sigas dentro.</div>'
+                : dentro
+                    ? '<div style="color:var(--green);font-weight:700;font-size:13px;">✅ Vas dentro con ' + yo.amount + ' totopos (lugar ' + (i + 1) + ' de ' + N + ').</div><div style="font-size:12px;color:var(--slate);">Si se cerrara ahorita, te llevas 1 ' + item + ' y pagas ' + yo.amount + '. Tus ' + yo.amount + ' totopos están apartados mientras sigas dentro.</div>'
+                    : '<div style="color:#E5484D;font-weight:700;font-size:13px;">❌ Te sacaron. Tus totopos ya están libres.</div><div style="font-size:12px;color:var(--slate);">Ofrece ' + min + ' o más para volver a entrar.</div>';
+            const accion = terminada
+                ? '<div style="font-size:12px;color:var(--slate);">⏰ La subasta terminó. El director asignará a los ganadores.</div>'
+                : '<div style="display:flex;gap:8px;align-items:center;">' +
+                  '<input type="number" id="puja-' + eId + '" min="' + min + '" step="1" value="' + min + '" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:inherit;">' +
+                  '<button class="btn btn-sm ' + (puedo ? 'btn-green' : '') + '" ' + (puedo ? '' : 'disabled') + ' onclick="pujarSubasta(\'' + eId + '\')">' + (!puedo ? 'Totopos insuficientes' : dentro ? '⬆️ Subir oferta' : '🔨 Ofrecer') + '</button></div>' +
+                  '<div style="font-size:11px;color:var(--slate);">Oferta mínima: ' + min + ' · Te quedan ' + disponible + ' disponibles.</div>';
+            return '<div class="card" style="margin-bottom:14px;border:1px solid rgba(212,175,55,0.45);">' +
+                '<p class="card-title">🔨 Subasta</p>' + _imgSubasta(a, true) +
+                '<div style="text-align:center;font-weight:700;font-size:15px;">' + item + '</div>' +
+                (a.descripcion ? '<div style="text-align:center;font-size:12px;color:var(--slate);">' + escapeHtml(a.descripcion) + '</div>' : '') +
+                '<div style="text-align:center;margin:8px 0;font-weight:900;color:var(--gold);">' + N + ' unidades · máximo 1 por persona</div>' +
+                '<div class="info-box" style="font-size:12px;line-height:1.5;margin-bottom:8px;">ℹ️ Ganan las ' + N + ' ofertas más altas. Ofrecer más <b>NO</b> te da más unidades: solo asegura tu lugar para llevarte 1 ' + item + '. Si ganas, pagas lo que ofreciste.</div>' +
+                (!dentro && !terminada ? '<div style="text-align:center;font-size:13px;font-weight:700;">Para entrar hoy necesitas: ' + min + ' totopos</div>' : '') +
+                '<div style="text-align:center;font-size:11px;color:var(--slate);margin-bottom:8px;">' + rk.length + ' agentes pujando · Cierra ' + new Date(a.endsAtMs).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }) + '</div>' +
+                '<div style="display:flex;flex-direction:column;gap:6px;">' + estado + accion + '</div></div>';
+        }
+
+        function _resultadoMulti(a, me) {
+            const item = escapeHtml(a.nombre || ''), gs = a.ganadores || [], mio = gs.find(g => g.id === me), participe = !!(a.bids || {})[me];
+            const corte = gs.length ? Math.min(...gs.map(g => g.amount)) : 0;
+            let linea, color;
+            if (a.status === 'cancelled') { linea = 'Subasta cancelada por el director.'; color = 'var(--slate)'; }
+            else if (!gs.length) { linea = 'Cerró sin ganadores.'; color = 'var(--slate)'; }
+            else { linea = '🏆 Ganaron ' + gs.length + ' agentes, con ofertas de ' + corte + ' a ' + Math.max(...gs.map(g => g.amount)) + ' totopos.'; color = 'var(--gold)'; }
+            const nota = mio ? '<div style="color:var(--green);font-weight:700;font-size:12px;margin-top:2px;">🏆 ¡Ganaste 1 ' + item + '! Se descontaron ' + mio.amount + ' totopos y tu premio queda por entregar.</div>'
+                : (participe && a.status === 'closed') ? '<div style="color:var(--slate);font-size:12px;margin-top:2px;">' + (gs.length ? 'No alcanzaste lugar (el corte quedó en ' + corte + '). ' : '') + 'Tus totopos no se descontaron.</div>' : '';
+            return '<div class="card" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;">' + _imgSubasta(a, false) +
+                '<div style="min-width:0;"><div style="font-weight:700;font-size:13px;">Subasta terminada: ' + item + ' ×' + a.unidades + '</div>' +
+                '<div style="font-size:13px;color:' + color + ';">' + linea + '</div>' + nota + '</div></div>';
+        }
+
+        async function _pujarMulti(id) {
+            const monto = Math.floor(Number(document.getElementById('puja-' + id)?.value));
+            const me = user.email || user.uid, nombre = state.agentName || user.displayName || me;
+            try {
+                await renderMisSolicitudes();   // lo comprometido al dia
+                await runTransaction(db, async (tx) => {
+                    const ref = doc(db, 'auctions', id), s = await tx.get(ref);
+                    if (!s.exists()) throw new Error('La subasta ya no existe.');
+                    const a = s.data();
+                    if (a.status !== 'open' || Date.now() >= a.endsAtMs) throw new Error('La subasta ya cerró.');
+                    const min = _minMulti(a, me);
+                    if (!(monto >= min)) throw new Error('La oferta mínima es ' + min + ' totopos.');
+                    const disp = (state.karma || 0) - _karmaComprometido + _miReservaSubasta(a, me);
+                    if (monto > disp) throw new Error('No te alcanzan los totopos disponibles (' + disp + ').');
+                    const at = new Date().toISOString();
+                    tx.update(ref, {
+                        bids: { ...(a.bids || {}), [me]: { name: nombre, amount: monto, at } },
+                        history: [...(a.history || []), { id: me, name: nombre, amount: monto, at }]
+                    });
+                });
+                alert('✅ Ofreciste ' + monto + ' totopos. Mientras vayas dentro de los ganadores, quedan apartados.');
+            } catch (e) { alert('No se pudo ofrecer:\n' + e.message); }
+            renderSubastas();
+            renderTiendaItems();
+        }
+
         async function cargarSubastas() {
             const dc = state.directorCode || '', me = user && (user.email || user.uid);
             if (!dc || !me) { _subastas = []; _subastasTerminadas = []; _pujasComprometidas = 0; return; }
             const snap = await getDocs(query(collection(db, 'auctions'), where('directorCode', '==', dc), where('status', '==', 'open')));
             _subastas = snap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a, b) => a.endsAtMs - b.endsAtMs);
-            _pujasComprometidas = _subastas.filter(a => a.topBidderId === me).reduce((s, a) => s + (Number(a.topBid) || 0), 0);
+            _pujasComprometidas = _subastas.reduce((s, a) => s + _miReservaSubasta(a, me), 0);
             try {
                 const fin = await getDocs(query(collection(db, 'auctions'), where('directorCode', '==', dc), where('status', 'in', ['closed', 'cancelled'])));
                 const desde = Date.now() - 7 * 864e5;
@@ -7949,6 +8046,7 @@
             if (!_subastas.length && !_subastasTerminadas.length) { box.innerHTML = ''; return; }
             const me = user.email || user.uid;
             const resultados = _subastasTerminadas.map(a => {
+                if (_multiSubasta(a)) return _resultadoMulti(a, me);
                 const participe = (a.history || []).some(h => h.id === me);
                 const gane = a.winnerId === me;
                 const img = a.imageUrl ? '<img src="' + escapeHtml(a.imageUrl) + '" alt="" loading="lazy" onclick="openImagePreview(this.src)" style="width:56px;height:56px;object-fit:cover;border-radius:8px;cursor:zoom-in;flex-shrink:0;">' : '<div style="font-size:32px;flex-shrink:0;">' + escapeHtml(a.emoji || '🔨') + '</div>';
@@ -7963,6 +8061,7 @@
                     '<div style="font-size:13px;color:' + color + ';">' + linea + '</div>' + nota + '</div></div>';
             }).join('');
             box.innerHTML = _subastas.map(a => {
+                if (_multiSubasta(a)) return _tarjetaMulti(a, me);
                 const eId = escapeHtml(a._id);
                 const terminada = Date.now() >= a.endsAtMs;
                 const lidero = a.topBidderId === me;
@@ -7995,6 +8094,8 @@
         }
 
         window.pujarSubasta = async function(id) {
+            const _a = _subastas.find(x => x._id === id);
+            if (_a && _multiSubasta(_a)) return _pujarMulti(id);
             const monto = Math.floor(Number(document.getElementById('puja-' + id)?.value));
             const me = user.email || user.uid;
             try {
