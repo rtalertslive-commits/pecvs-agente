@@ -2483,6 +2483,7 @@
 
             <!-- Sub-view: COMPRAR -->
             <div id="ts-view-comprar">
+                <div id="subastas-box"></div>
                 <div class="card">
                     <p class="card-title"><i class="fa fa-store"></i> Canjea tus Totopos</p>
                     <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Selecciona un item y solicita el canje. El director lo aprobará.</p>
@@ -3849,7 +3850,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.39.0';
+        window.APP_HTML_VERSION = 'v2.40.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -7855,6 +7856,7 @@
             // renderTiendaItems pueda decidir habilitar/deshabilitar botones.
             await renderMisSolicitudes();
             await renderTiendaItems();
+            renderSubastas();
             // Default a sub-tab "Comprar" al entrar.
             switchTiendaSubtab('comprar');
         };
@@ -7918,6 +7920,105 @@
             } catch(e) { container.innerHTML = '<div class="empty-state">Error cargando tienda.</div>'; }
         }
 
+        // ─── SUBASTAS ─────────────────────────────────────────────────────────────────
+        // auctions/{id} (lo crea el director). Pujar NO descuenta karma: la puja que va ganando cuenta
+        // como comprometida (_pujasComprometidas) hasta que la superen; el director cobra al cerrar.
+        let _subastas = [];
+        let _pujasComprometidas = 0;
+        let _subastasTerminadas = [];   // cerradas o canceladas en los ultimos 7 dias (para ver quien gano)
+
+        async function cargarSubastas() {
+            const dc = state.directorCode || '', me = user && (user.email || user.uid);
+            if (!dc || !me) { _subastas = []; _subastasTerminadas = []; _pujasComprometidas = 0; return; }
+            const snap = await getDocs(query(collection(db, 'auctions'), where('directorCode', '==', dc), where('status', '==', 'open')));
+            _subastas = snap.docs.map(d => ({ _id: d.id, ...d.data() })).sort((a, b) => a.endsAtMs - b.endsAtMs);
+            _pujasComprometidas = _subastas.filter(a => a.topBidderId === me).reduce((s, a) => s + (Number(a.topBid) || 0), 0);
+            try {
+                const fin = await getDocs(query(collection(db, 'auctions'), where('directorCode', '==', dc), where('status', 'in', ['closed', 'cancelled'])));
+                const desde = Date.now() - 7 * 864e5;
+                _subastasTerminadas = fin.docs.map(d => ({ _id: d.id, ...d.data() }))
+                    .filter(a => new Date(a.closedAt || 0).getTime() >= desde)
+                    .sort((a, b) => (b.closedAt || '').localeCompare(a.closedAt || ''));
+            } catch (e) { _subastasTerminadas = []; console.warn('subastas terminadas:', e.message); }
+        }
+
+        async function renderSubastas() {
+            const box = document.getElementById('subastas-box');
+            if (!box) return;
+            try { await renderMisSolicitudes(); } catch {}   // refresca _subastas y lo comprometido
+            if (!_subastas.length && !_subastasTerminadas.length) { box.innerHTML = ''; return; }
+            const me = user.email || user.uid;
+            const resultados = _subastasTerminadas.map(a => {
+                const participe = (a.history || []).some(h => h.id === me);
+                const gane = a.winnerId === me;
+                const img = a.imageUrl ? '<img src="' + escapeHtml(a.imageUrl) + '" alt="" loading="lazy" onclick="openImagePreview(this.src)" style="width:56px;height:56px;object-fit:cover;border-radius:8px;cursor:zoom-in;flex-shrink:0;">' : '<div style="font-size:32px;flex-shrink:0;">' + escapeHtml(a.emoji || '🔨') + '</div>';
+                let linea, color;
+                if (a.status === 'cancelled') { linea = 'Subasta cancelada por el director.'; color = 'var(--slate)'; }
+                else if (!a.winnerId) { linea = 'Cerró sin ganador.'; color = 'var(--slate)'; }
+                else { linea = '🏆 Ganó <b>' + escapeHtml(a.winnerName || '') + '</b> con ' + a.winningBid + ' totopos.'; color = 'var(--gold)'; }
+                const nota = gane ? '<div style="color:var(--green);font-weight:700;font-size:12px;margin-top:2px;">¡Ganaste! Ya se descontaron tus totopos y tu premio queda por entregar.</div>'
+                    : (participe && a.winnerId) ? '<div style="color:var(--slate);font-size:12px;margin-top:2px;">No ganaste; tus totopos no se descontaron.</div>' : '';
+                return '<div class="card" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;">' + img +
+                    '<div style="min-width:0;"><div style="font-weight:700;font-size:13px;">Subasta terminada: ' + escapeHtml(a.nombre || '') + '</div>' +
+                    '<div style="font-size:13px;color:' + color + ';">' + linea + '</div>' + nota + '</div></div>';
+            }).join('');
+            box.innerHTML = _subastas.map(a => {
+                const eId = escapeHtml(a._id);
+                const terminada = Date.now() >= a.endsAtMs;
+                const lidero = a.topBidderId === me;
+                const min = a.topBid > 0 ? a.topBid + a.increment : a.minBid;
+                const superado = !lidero && (a.history || []).some(h => h.id === me);
+                const disponible = (state.karma || 0) - _karmaComprometido + (lidero ? a.topBid : 0);
+                const puedo = !terminada && !lidero && disponible >= min;
+                const estado = lidero
+                    ? '<div style="color:var(--green);font-weight:700;font-size:13px;">🏆 Vas ganando con ' + a.topBid + ' totopos (reservados)</div>'
+                    : superado ? '<div style="color:#E5484D;font-weight:700;font-size:13px;">Te superaron. Tus totopos ya están libres.</div>' : '';
+                const accion = terminada
+                    ? '<div style="font-size:12px;color:var(--slate);">⏰ La subasta terminó. El director asignará al ganador.</div>'
+                    : lidero ? ''
+                    : '<div style="display:flex;gap:8px;align-items:center;">' +
+                      '<input type="number" id="puja-' + eId + '" min="' + min + '" step="1" value="' + min + '" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:inherit;">' +
+                      '<button class="btn btn-sm ' + (puedo ? 'btn-green' : '') + '" ' + (puedo ? '' : 'disabled') + ' onclick="pujarSubasta(\'' + eId + '\')">' + (puedo ? '🔨 Pujar' : 'Totopos insuficientes') + '</button></div>' +
+                      '<div style="font-size:11px;color:var(--slate);">Puja mínima: ' + min + ' · Te quedan ' + disponible + ' disponibles.</div>';
+                return '<div class="card" style="margin-bottom:14px;border:1px solid rgba(212,175,55,0.45);">' +
+                    '<p class="card-title">🔨 Subasta</p>' +
+                    (a.imageUrl
+                        ? '<img src="' + escapeHtml(a.imageUrl) + '" alt="' + escapeHtml(a.nombre || '') + '" loading="lazy" onclick="openImagePreview(this.src)" style="display:block;margin:0 auto;width:160px;height:160px;max-width:100%;object-fit:cover;border-radius:10px;border:1px solid rgba(212,175,55,0.35);cursor:zoom-in;">'
+                        : '<div style="text-align:center;font-size:36px;">' + escapeHtml(a.emoji || '🔨') + '</div>') +
+                    '<div style="text-align:center;font-weight:700;font-size:15px;">' + escapeHtml(a.nombre || '') + '</div>' +
+                    (a.descripcion ? '<div style="text-align:center;font-size:12px;color:var(--slate);">' + escapeHtml(a.descripcion) + '</div>' : '') +
+                    '<div style="text-align:center;margin:8px 0;font-weight:900;color:var(--gold);">' +
+                    (a.topBid > 0 ? 'Puja más alta: ' + a.topBid + ' totopos — ' + escapeHtml(a.topBidderName || '') : 'Sin pujas todavía') + '</div>' +
+                    '<div style="text-align:center;font-size:11px;color:var(--slate);margin-bottom:8px;">Cierra ' + new Date(a.endsAtMs).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }) + '</div>' +
+                    '<div style="display:flex;flex-direction:column;gap:6px;">' + estado + accion + '</div></div>';
+            }).join('') + resultados;
+        }
+
+        window.pujarSubasta = async function(id) {
+            const monto = Math.floor(Number(document.getElementById('puja-' + id)?.value));
+            const me = user.email || user.uid;
+            try {
+                await renderMisSolicitudes();   // lo comprometido al dia
+                await runTransaction(db, async (tx) => {
+                    const ref = doc(db, 'auctions', id), s = await tx.get(ref);
+                    if (!s.exists()) throw new Error('La subasta ya no existe.');
+                    const a = s.data();
+                    if (a.status !== 'open' || Date.now() >= a.endsAtMs) throw new Error('La subasta ya cerró.');
+                    if (a.topBidderId === me) throw new Error('Ya vas ganando esta subasta.');
+                    const min = a.topBid > 0 ? a.topBid + a.increment : a.minBid;
+                    if (!(monto >= min)) throw new Error('La puja mínima es ' + min + ' totopos.');
+                    if (monto > (state.karma || 0) - _karmaComprometido) throw new Error('No te alcanzan los totopos disponibles (' + ((state.karma || 0) - _karmaComprometido) + ').');
+                    tx.update(ref, {
+                        topBid: monto, topBidderId: me, topBidderName: state.agentName || user.displayName || me,
+                        history: [...(a.history || []), { id: me, name: state.agentName || user.displayName || me, amount: monto, at: new Date().toISOString() }]
+                    });
+                });
+                alert('✅ Vas ganando con ' + monto + ' totopos. Quedan reservados hasta que alguien te supere.');
+            } catch (e) { alert('No se pudo pujar:\n' + e.message); }
+            renderSubastas();
+            renderTiendaItems();
+        };
+
         async function renderMisSolicitudes() {
             const container = document.getElementById('tienda-mis-solicitudes');
             if (!container || !user) return;
@@ -7929,6 +8030,7 @@
                 _karmaComprometido = reqs
                     .filter(r => r.status === 'pending')
                     .reduce((sum, r) => sum + (Number(r.costo) || 0) * (Number(r.cantidad) || 1), 0);
+                try { await cargarSubastas(); _karmaComprometido += _pujasComprometidas; } catch (e) { console.warn('subastas:', e.message); }
                 container.innerHTML = reqs.length ? reqs.map(r => {
                     const isPending = r.status === 'pending';
                     const isCancelled = r.status === 'cancelled';
@@ -8001,7 +8103,7 @@
             });
             if (which === 'actividad') { renderActividadTab(); }
             if (which === 'solicitudes') renderMisSolicitudes();
-            if (which === 'comprar') renderTiendaItems();
+            if (which === 'comprar') { renderTiendaItems(); renderSubastas(); }
         };
 
         // Tiempo relativo en español ("hace 5 min", "hace 2 h", "hace 3 días").
