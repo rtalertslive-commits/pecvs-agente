@@ -3850,7 +3850,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.41.0';
+        window.APP_HTML_VERSION = 'v2.42.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -7947,6 +7947,15 @@
             return Math.max(entrar, yo ? yo.amount + a.increment : 0);
         }
 
+        // Debajo de la caja de oferta: minima y saldo disponible (saldo menos lo apartado en canjes pendientes y subastas).
+        function _lineaSaldoSubasta(min, disponible, apartado, palabra) {
+            const ap = apartado > 0 ? ' (ya descontando ' + apartado + ' apartados en canjes pendientes o subastas)' : '';
+            return disponible >= min
+                ? palabra + ' mínima: ' + min + ' · Tienes ' + disponible + ' totopos disponibles' + ap + '.'
+                : 'No te alcanza: la ' + palabra.toLowerCase() + ' mínima es ' + min + ' y tienes ' + disponible + ' totopos disponibles' + ap + '.';
+        }
+        const _nombreSubasta = a => escapeHtml((a.nombre || '').replace(/[.\s]+$/, ''));   // sin punto final: va dentro de frases
+
         function _imgSubasta(a, grande) {
             return a.imageUrl
                 ? (grande ? '<img src="' + escapeHtml(a.imageUrl) + '" alt="' + escapeHtml(a.nombre || '') + '" loading="lazy" onclick="openImagePreview(this.src)" style="display:block;margin:0 auto;width:160px;height:160px;max-width:100%;object-fit:cover;border-radius:10px;border:1px solid rgba(212,175,55,0.35);cursor:zoom-in;">'
@@ -7955,7 +7964,7 @@
         }
 
         function _tarjetaMulti(a, me) {
-            const eId = escapeHtml(a._id), N = a.unidades, item = escapeHtml(a.nombre || '');
+            const eId = escapeHtml(a._id), N = a.unidades, item = _nombreSubasta(a);
             const rk = _rankingSubasta(a), i = rk.findIndex(b => b.id === me), yo = rk[i], dentro = !!yo && i < N;
             const terminada = Date.now() >= a.endsAtMs;
             const min = _minMulti(a, me);
@@ -7972,7 +7981,7 @@
                 : '<div style="display:flex;gap:8px;align-items:center;">' +
                   '<input type="number" id="puja-' + eId + '" min="' + min + '" step="1" value="' + min + '" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:inherit;">' +
                   '<button class="btn btn-sm ' + (puedo ? 'btn-green' : '') + '" ' + (puedo ? '' : 'disabled') + ' onclick="pujarSubasta(\'' + eId + '\')">' + (!puedo ? 'Totopos insuficientes' : dentro ? '⬆️ Subir oferta' : '🔨 Ofrecer') + '</button></div>' +
-                  '<div style="font-size:11px;color:var(--slate);">Oferta mínima: ' + min + ' · Te quedan ' + disponible + ' disponibles.</div>';
+                  '<div style="font-size:11px;color:var(--slate);">' + _lineaSaldoSubasta(min, disponible, _karmaComprometido - (dentro ? yo.amount : 0), 'Oferta') + '</div>';
             return '<div class="card" style="margin-bottom:14px;border:1px solid rgba(212,175,55,0.45);">' +
                 '<p class="card-title">🔨 Subasta</p>' + _imgSubasta(a, true) +
                 '<div style="text-align:center;font-weight:700;font-size:15px;">' + item + '</div>' +
@@ -7985,7 +7994,7 @@
         }
 
         function _resultadoMulti(a, me) {
-            const item = escapeHtml(a.nombre || ''), gs = a.ganadores || [], mio = gs.find(g => g.id === me), participe = !!(a.bids || {})[me];
+            const item = _nombreSubasta(a), gs = a.ganadores || [], mio = gs.find(g => g.id === me), participe = !!(a.bids || {})[me];
             const corte = gs.length ? Math.min(...gs.map(g => g.amount)) : 0;
             let linea, color;
             if (a.status === 'cancelled') { linea = 'Subasta cancelada por el director.'; color = 'var(--slate)'; }
@@ -8078,7 +8087,7 @@
                     : '<div style="display:flex;gap:8px;align-items:center;">' +
                       '<input type="number" id="puja-' + eId + '" min="' + min + '" step="1" value="' + min + '" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:inherit;">' +
                       '<button class="btn btn-sm ' + (puedo ? 'btn-green' : '') + '" ' + (puedo ? '' : 'disabled') + ' onclick="pujarSubasta(\'' + eId + '\')">' + (puedo ? '🔨 Pujar' : 'Totopos insuficientes') + '</button></div>' +
-                      '<div style="font-size:11px;color:var(--slate);">Puja mínima: ' + min + ' · Te quedan ' + disponible + ' disponibles.</div>';
+                      '<div style="font-size:11px;color:var(--slate);">' + _lineaSaldoSubasta(min, disponible, _karmaComprometido, 'Puja') + '</div>';
                 return '<div class="card" style="margin-bottom:14px;border:1px solid rgba(212,175,55,0.45);">' +
                     '<p class="card-title">🔨 Subasta</p>' +
                     (a.imageUrl
