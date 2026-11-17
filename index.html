@@ -3850,7 +3850,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.42.0';
+        window.APP_HTML_VERSION = 'v2.43.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -8004,7 +8004,13 @@
                 : (participe && a.status === 'closed') ? '<div style="color:var(--slate);font-size:12px;margin-top:2px;">' + (gs.length ? 'No alcanzaste lugar (el corte quedó en ' + corte + '). ' : '') + 'Tus totopos no se descontaron.</div>' : '';
             return '<div class="card" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;">' + _imgSubasta(a, false) +
                 '<div style="min-width:0;"><div style="font-weight:700;font-size:13px;">Subasta terminada: ' + item + ' ×' + a.unidades + '</div>' +
-                '<div style="font-size:13px;color:' + color + ';">' + linea + '</div>' + nota + '</div></div>';
+                '<div style="font-size:13px;color:' + color + ';">' + linea + '</div>' + nota +
+                (a.status === 'closed' && gs.length
+                    ? '<details style="margin-top:6px;font-size:12px;"><summary style="cursor:pointer;font-weight:700;">Ver los ' + gs.length + ' ganadores</summary>' +
+                      '<ol style="margin:6px 0 0 18px;padding:0;line-height:1.6;">' +
+                      gs.slice().sort((x, y) => y.amount - x.amount).map(g => '<li>' + escapeHtml(g.name || '') + (g.id === me ? ' <b>(tú)</b>' : '') + ' — ' + g.amount + ' totopos</li>').join('') +
+                      '</ol></details>'
+                    : '') + '</div></div>';
         }
 
         async function _pujarMulti(id) {
@@ -8096,7 +8102,7 @@
                     '<div style="text-align:center;font-weight:700;font-size:15px;">' + escapeHtml(a.nombre || '') + '</div>' +
                     (a.descripcion ? '<div style="text-align:center;font-size:12px;color:var(--slate);">' + escapeHtml(a.descripcion) + '</div>' : '') +
                     '<div style="text-align:center;margin:8px 0;font-weight:900;color:var(--gold);">' +
-                    (a.topBid > 0 ? 'Puja más alta: ' + a.topBid + ' totopos — ' + escapeHtml(a.topBidderName || '') : 'Sin pujas todavía') + '</div>' +
+                    (a.topBid > 0 ? 'Puja más alta: ' + a.topBid + ' totopos' : 'Sin pujas todavía') + '</div>' +
                     '<div style="text-align:center;font-size:11px;color:var(--slate);margin-bottom:8px;">Cierra ' + new Date(a.endsAtMs).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }) + '</div>' +
                     '<div style="display:flex;flex-direction:column;gap:6px;">' + estado + accion + '</div></div>';
             }).join('') + resultados;
