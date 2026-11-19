@@ -3856,7 +3856,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.44.0';
+        window.APP_HTML_VERSION = 'v2.45.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -8272,7 +8272,7 @@
                 const nota = gane ? '<div style="color:var(--green);font-weight:700;font-size:12px;margin-top:2px;">¡Ganaste! Ya se descontaron tus totopos y tu premio queda por entregar.</div>'
                     : (participe && a.winnerId) ? '<div style="color:var(--slate);font-size:12px;margin-top:2px;">No ganaste; tus totopos no se descontaron.</div>' : '';
                 return '<div class="card" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;">' + img +
-                    '<div style="min-width:0;"><div style="font-weight:700;font-size:13px;">Subasta terminada: ' + escapeHtml(a.nombre || '') + '</div>' +
+                    '<div style="min-width:0;"><div style="font-weight:700;font-size:13px;">Subasta terminada: ' + (a.tipo === 'lote' ? 'Lote de ' + a.loteDe + ' · ' : '') + escapeHtml(a.nombre || '') + '</div>' +
                     '<div style="font-size:13px;color:' + color + ';">' + linea + '</div>' + nota + '</div></div>';
             }).join('');
             box.innerHTML = _subastas.map(a => {
@@ -8296,11 +8296,11 @@
                       '<input type="number" id="puja-' + eId + '" min="' + min + '" step="1" value="' + min + '" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:inherit;">' +
                       '<button class="btn btn-sm ' + (puedo ? 'btn-green' : '') + '" ' + (puedo ? '' : 'disabled') + ' onclick="pujarSubasta(\'' + eId + '\')">' + (puedo ? '🔨 Pujar' : 'Totopos insuficientes') + '</button></div>' +
                       '<div style="font-size:11px;color:var(--slate);">' + _lineaSaldoSubasta(min, disponible, _karmaComprometido, 'Puja') + '</div>';
-                return _abrirTarjetaSubasta('persona', 'La oferta más alta gana') +
+                return _abrirTarjetaSubasta('persona', a.tipo === 'lote' ? 'La oferta más alta se lleva las ' + a.loteDe : 'La oferta más alta gana') +
                     (a.imageUrl
                         ? '<img src="' + escapeHtml(a.imageUrl) + '" alt="' + escapeHtml(a.nombre || '') + '" loading="lazy" onclick="openImagePreview(this.src)" style="display:block;margin:0 auto;width:160px;height:160px;max-width:100%;object-fit:cover;border-radius:10px;border:1px solid rgba(212,175,55,0.35);cursor:zoom-in;">'
                         : '<div style="text-align:center;font-size:36px;">' + escapeHtml(a.emoji || '🔨') + '</div>') +
-                    '<div style="text-align:center;font-weight:700;font-size:15px;">' + escapeHtml(a.nombre || '') + '</div>' +
+                    '<div style="text-align:center;font-weight:700;font-size:15px;">' + (a.tipo === 'lote' ? 'Lote de ' + a.loteDe + ' · ' : '') + escapeHtml(a.nombre || '') + '</div>' +
                     (a.descripcion ? '<div style="text-align:center;font-size:12px;color:var(--slate);">' + escapeHtml(a.descripcion) + '</div>' : '') +
                     '<div style="text-align:center;margin:8px 0;font-weight:900;color:var(--gold);">' +
                     (a.topBid > 0 ? 'Puja más alta: ' + a.topBid + ' totopos' : 'Sin pujas todavía') + '</div>' +
