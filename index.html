@@ -2476,14 +2476,14 @@
         <div id="tab-tienda" class="tab-panel">
             <!-- Sub-tabs -->
             <div id="tienda-subtabs" style="display:flex; gap:6px; margin-bottom:16px; border-bottom:1px solid rgba(var(--vk),0.08); padding-bottom:2px;">
-                <button id="ts-btn-comprar" onclick="switchTiendaSubtab('comprar')" style="flex:1; padding:10px; background:rgba(32, 85, 154,0.15); border:1px solid rgba(32, 85, 154,0.4); border-radius:8px 6px 0 0; color:var(--gold-l); font-weight:700; font-size:13px; cursor:pointer;">🛒 Comprar</button>
+                <button id="ts-btn-comprar" onclick="switchTiendaSubtab('comprar')" style="flex:1; padding:10px; background:rgba(32, 85, 154,0.15); border:1px solid rgba(32, 85, 154,0.4); border-radius:8px 6px 0 0; color:var(--gold-l); font-weight:700; font-size:13px; cursor:pointer;">🛒 Items</button>
+                <button id="ts-btn-subastas" onclick="switchTiendaSubtab('subastas')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(var(--vk),0.10); border-radius:8px 6px 0 0; color:rgba(var(--vk),0.7); font-weight:600; font-size:13px; cursor:pointer;">🔨 Subastas</button>
                 <button id="ts-btn-solicitudes" onclick="switchTiendaSubtab('solicitudes')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(var(--vk),0.10); border-radius:8px 6px 0 0; color:rgba(var(--vk),0.7); font-weight:600; font-size:13px; cursor:pointer;">📜 Mis solicitudes</button>
                 <button id="ts-btn-actividad" onclick="switchTiendaSubtab('actividad')" style="flex:1; padding:10px; background:transparent; border:1px solid rgba(var(--vk),0.10); border-radius:8px 6px 0 0; color:rgba(var(--vk),0.7); font-weight:600; font-size:13px; cursor:pointer;">🔥 Actividad</button>
             </div>
 
             <!-- Sub-view: COMPRAR -->
             <div id="ts-view-comprar">
-                <div id="subastas-box"></div>
                 <div class="card">
                     <p class="card-title"><i class="fa fa-store"></i> Canjea tus Totopos</p>
                     <p style="font-size:12px;color:var(--slate);margin-bottom:12px;">Selecciona un item y solicita el canje. El director lo aprobará.</p>
@@ -2491,6 +2491,11 @@
                         <div class="empty-state"><i class="fa fa-spinner fa-spin"></i> Cargando...</div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Sub-view: SUBASTAS -->
+            <div id="ts-view-subastas" style="display:none;">
+                <div id="subastas-box"></div>
             </div>
 
             <!-- Sub-view: MIS SOLICITUDES -->
@@ -3466,6 +3471,7 @@
         :root[data-tema="claro"] #kpiEfectividad { background: #dde5ef !important; }
         :root[data-tema="claro"] #ts-btn-comprar { color: #061837 !important; background: #dce4ee !important; }
         :root[data-tema="claro"] #ts-view-comprar div.card { background: #dde5ef !important; }
+        :root[data-tema="claro"] #ts-view-subastas div.card { background: #dde5ef !important; }
         :root[data-tema="claro"] nav.bottom-nav button.bn-btn i.fa.fa-book-open { color: #071d49 !important; }
         :root[data-tema="claro"] #tab-charts div.card { background: #dde5ef !important; }
         :root[data-tema="claro"] #foro-body { background: #dde5ef !important; }
@@ -3850,7 +3856,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.43.0';
+        window.APP_HTML_VERSION = 'v2.44.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -7934,12 +7940,14 @@
         const _multiSubasta = a => (a.unidades || 1) > 1;
         // Totopos que esta subasta me tiene apartados: mi oferta si voy dentro de las N (o si lidero la de 1 unidad).
         function _miReservaSubasta(a, me) {
+            if (a.tipo === 'bolsa') return Number((a.bids || {})[me]?.amount) || 0;   // bolsa: todo lo que meti queda apartado
             if (!_multiSubasta(a)) return a.topBidderId === me ? (Number(a.topBid) || 0) : 0;
             const rk = _rankingSubasta(a), i = rk.findIndex(b => b.id === me);
             return i >= 0 && i < a.unidades ? rk[i].amount : 0;
         }
         // Oferta minima: si voy dentro, subir mi oferta; si no, superar al ultimo lugar de los demas.
         function _minMulti(a, me) {
+            if (a.tipo === 'bolsa') { const yo = (a.bids || {})[me]; return yo ? Number(yo.amount) + a.increment : a.minBid; }
             const rk = _rankingSubasta(a), i = rk.findIndex(b => b.id === me), yo = rk[i];
             if (yo && i < a.unidades) return yo.amount + a.increment;
             const otros = rk.filter(b => b.id !== me);
@@ -7956,6 +7964,88 @@
         }
         const _nombreSubasta = a => escapeHtml((a.nombre || '').replace(/[.\s]+$/, ''));   // sin punto final: va dentro de frases
 
+        const _ESTILO_SUBASTA = {
+            persona: { color: '#E8833A', texto: '#2B1200', etiqueta: '🏆 SUBASTA · 1 POR PERSONA' },
+            bolsa:   { color: '#14A38B', texto: '#FFFFFF', etiqueta: '🫙 BOLSA · REPARTO PROPORCIONAL' }
+        };
+        // Marco + etiqueta + frase de que tipo de subasta es.
+        function _abrirTarjetaSubasta(tipo, frase) {
+            const e = _ESTILO_SUBASTA[tipo];
+            return '<div class="card" style="margin-bottom:14px;border:2px solid ' + e.color + ';">' +
+                '<div style="text-align:center;margin-bottom:10px;"><span style="display:inline-block;background:' + e.color + ';color:' + e.texto + ';font-weight:900;font-size:11px;letter-spacing:1px;padding:4px 12px;border-radius:999px;">' + e.etiqueta + '</span>' +
+                '<div style="font-size:12px;font-weight:700;margin-top:6px;">' + frase + '</div></div>';
+        }
+
+        // Alias anonimo por orden de llegada a ESTA subasta: A..Z, AA, AB... (como columnas de Excel).
+        function _letraSubasta(n) { let s = ''; for (n++; n > 0; n = Math.floor((n - 1) / 26)) s = String.fromCharCode(65 + (n - 1) % 26) + s; return s; }
+        function _aliasSubasta(a) {
+            const primera = {};
+            (a.history || []).forEach(h => { if (h && h.id && (!(h.id in primera) || (h.at || '') < primera[h.id])) primera[h.id] = h.at || ''; });
+            Object.entries(a.bids || {}).forEach(([id, b]) => { if (!(id in primera)) primera[id] = b.at || ''; });
+            const alias = {};
+            Object.keys(primera).sort((x, y) => primera[x].localeCompare(primera[y]) || x.localeCompare(y)).forEach((id, i) => { alias[id] = 'Pujador ' + _letraSubasta(i); });
+            return alias;
+        }
+        // filas: [{ id, amount, dentro, extra?, barra? }] ya ordenadas; corte: indice de la primera fila fuera (-1 = sin linea).
+        // Se ven los primeros 5, los de alrededor del corte y mi fila; el resto en "Ver ranking completo".
+        function _rankingSubastaHtml(a, filas, me, corte, textoCorte) {
+            if (!filas.length) return '';
+            const alias = _aliasSubasta(a);
+            const fila = (f, i) => {
+                const yo = f.id === me;
+                const est = yo ? 'background:rgba(55,138,221,0.18);font-weight:700;' : f.dentro ? 'background:rgba(29,158,117,0.14);' : 'color:var(--slate);';
+                return '<div style="display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:2px 6px;align-items:center;font-size:12px;padding:5px 8px;border-radius:6px;' + est + '">' +
+                    '<span style="opacity:0.7;text-align:right;">' + (i + 1) + '</span><span>' + (yo ? '👤 Tú' : escapeHtml(alias[f.id] || 'Pujador')) + '</span>' +
+                    '<span>' + f.amount + (f.extra ? ' · ' + f.extra : '') + '</span>' +
+                    (f.barra != null ? '<div style="grid-column:2 / 4;height:5px;border-radius:3px;background:rgba(var(--vk),0.10);"><div style="width:' + f.barra + '%;height:5px;border-radius:3px;background:' + (yo ? '#378ADD' : '#1D9E75') + ';"></div></div>' : '') +
+                    '</div>';
+            };
+            const linea = '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--gold-l);margin:3px 0;"><span style="flex:1;border-top:1px dashed currentColor;"></span>' + textoCorte + '<span style="flex:1;border-top:1px dashed currentColor;"></span></div>';
+            const pinta = idx => {
+                let h = '', prev = -1, cortada = false;
+                idx.forEach(i => {
+                    if (prev >= 0 && i > prev + 1) h += '<div style="text-align:center;font-size:11px;color:var(--slate);line-height:1;">⋯</div>';
+                    if (corte >= 0 && !cortada && i >= corte) { h += linea; cortada = true; }
+                    h += fila(filas[i], i); prev = i;
+                });
+                return h;
+            };
+            const ver = new Set([0, 1, 2, 3, 4]);
+            if (corte >= 0) [corte - 2, corte - 1, corte, corte + 1].forEach(i => ver.add(i));
+            const mi = filas.findIndex(f => f.id === me); if (mi >= 0) ver.add(mi);
+            const todos = filas.map((_, i) => i), idx = todos.filter(i => ver.has(i));
+            return '<div style="margin:8px 0;">' +
+                '<div style="font-size:11px;font-weight:700;letter-spacing:0.5px;color:var(--slate);margin-bottom:4px;">RANKING DE PUJAS · ANÓNIMO</div>' +
+                (idx.length < filas.length
+                    ? '<div class="rk-corto">' + pinta(idx) + '</div><div class="rk-todo" style="display:none;">' + pinta(todos) + '</div>' +
+                      '<button type="button" onclick="_verRankingCompleto(this)" data-n="' + filas.length + '" style="margin-top:4px;background:none;border:none;padding:4px 0;font-size:12px;font-weight:700;color:inherit;cursor:pointer;">▸ Ver ranking completo (' + filas.length + ')</button>'
+                    : pinta(idx)) +
+                '</div>';
+        }
+        // Cambia entre la lista corta y la completa (una en lugar de la otra, sin repetir lugares).
+        window._verRankingCompleto = function (btn) {
+            const caja = btn.parentNode, todo = caja.querySelector('.rk-todo'), abrir = todo.style.display === 'none';
+            todo.style.display = abrir ? '' : 'none';
+            caja.querySelector('.rk-corto').style.display = abrir ? 'none' : '';
+            btn.textContent = abrir ? '▴ Ver menos' : '▸ Ver ranking completo (' + btn.dataset.n + ')';
+        };
+        function _rankingUna(a, me) {   // 1 pieza: la mejor puja de cada quien
+            const mejor = {};
+            (a.history || []).forEach(h => { if (h && h.id && (!(h.id in mejor) || Number(h.amount) > mejor[h.id])) mejor[h.id] = Number(h.amount) || 0; });
+            const filas = Object.entries(mejor).map(([id, amount]) => ({ id, amount })).sort((x, y) => y.amount - x.amount);
+            filas.forEach((r, i) => { r.dentro = i === 0; });
+            return _rankingSubastaHtml(a, filas, me, filas.length > 1 ? 1 : -1, 'arriba gana hoy');
+        }
+        function _rankingMulti(a, me) {
+            const rk = _rankingSubasta(a), N = a.unidades;
+            return _rankingSubastaHtml(a, rk.map((b, i) => ({ id: b.id, amount: b.amount, dentro: i < N })), me, rk.length > N ? N : -1, rk.length > N ? 'corte: ' + rk[N - 1].amount : '');
+        }
+        function _rankingBolsa(a, me, r) {
+            const filas = r.reparto.slice().sort((x, y) => y.unidades - x.unidades || y.amount - x.amount), max = Math.max(1, ...filas.map(x => x.amount));
+            const corte = filas.findIndex(x => !x.unidades);
+            return _rankingSubastaHtml(a, filas.map(x => ({ id: x.id, amount: x.amount, dentro: x.unidades > 0, extra: x.unidades + ' pzas', barra: Math.round(x.amount / max * 100) })), me, corte, 'abajo no alcanza hoy');
+        }
+
         function _imgSubasta(a, grande) {
             return a.imageUrl
                 ? (grande ? '<img src="' + escapeHtml(a.imageUrl) + '" alt="' + escapeHtml(a.nombre || '') + '" loading="lazy" onclick="openImagePreview(this.src)" style="display:block;margin:0 auto;width:160px;height:160px;max-width:100%;object-fit:cover;border-radius:10px;border:1px solid rgba(212,175,55,0.35);cursor:zoom-in;">'
@@ -7969,6 +8059,7 @@
             const terminada = Date.now() >= a.endsAtMs;
             const min = _minMulti(a, me);
             const disponible = (state.karma || 0) - _karmaComprometido + (dentro ? yo.amount : 0);
+            const rankingHtml = _rankingMulti(a, me);
             const puedo = !terminada && disponible >= min;
             const estado = !yo ? ''
                 : dentro && rk.length >= N && i === N - 1
@@ -7982,15 +8073,14 @@
                   '<input type="number" id="puja-' + eId + '" min="' + min + '" step="1" value="' + min + '" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:inherit;">' +
                   '<button class="btn btn-sm ' + (puedo ? 'btn-green' : '') + '" ' + (puedo ? '' : 'disabled') + ' onclick="pujarSubasta(\'' + eId + '\')">' + (!puedo ? 'Totopos insuficientes' : dentro ? '⬆️ Subir oferta' : '🔨 Ofrecer') + '</button></div>' +
                   '<div style="font-size:11px;color:var(--slate);">' + _lineaSaldoSubasta(min, disponible, _karmaComprometido - (dentro ? yo.amount : 0), 'Oferta') + '</div>';
-            return '<div class="card" style="margin-bottom:14px;border:1px solid rgba(212,175,55,0.45);">' +
-                '<p class="card-title">🔨 Subasta</p>' + _imgSubasta(a, true) +
+            return _abrirTarjetaSubasta('persona', 'Las ' + N + ' ofertas más altas ganan 1 cada una') + _imgSubasta(a, true) +
                 '<div style="text-align:center;font-weight:700;font-size:15px;">' + item + '</div>' +
                 (a.descripcion ? '<div style="text-align:center;font-size:12px;color:var(--slate);">' + escapeHtml(a.descripcion) + '</div>' : '') +
                 '<div style="text-align:center;margin:8px 0;font-weight:900;color:var(--gold);">' + N + ' unidades · máximo 1 por persona</div>' +
                 '<div class="info-box" style="font-size:12px;line-height:1.5;margin-bottom:8px;">ℹ️ Ganan las ' + N + ' ofertas más altas. Ofrecer más <b>NO</b> te da más unidades: solo asegura tu lugar para llevarte 1 ' + item + '. Si ganas, pagas lo que ofreciste.</div>' +
                 (!dentro && !terminada ? '<div style="text-align:center;font-size:13px;font-weight:700;">Para entrar hoy necesitas: ' + min + ' totopos</div>' : '') +
                 '<div style="text-align:center;font-size:11px;color:var(--slate);margin-bottom:8px;">' + rk.length + ' agentes pujando · Cierra ' + new Date(a.endsAtMs).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }) + '</div>' +
-                '<div style="display:flex;flex-direction:column;gap:6px;">' + estado + accion + '</div></div>';
+                rankingHtml + '<div style="display:flex;flex-direction:column;gap:6px;">' + estado + accion + '</div></div>';
         }
 
         function _resultadoMulti(a, me) {
@@ -8009,6 +8099,111 @@
                     ? '<details style="margin-top:6px;font-size:12px;"><summary style="cursor:pointer;font-weight:700;">Ver los ' + gs.length + ' ganadores</summary>' +
                       '<ol style="margin:6px 0 0 18px;padding:0;line-height:1.6;">' +
                       gs.slice().sort((x, y) => y.amount - x.amount).map(g => '<li>' + escapeHtml(g.name || '') + (g.id === me ? ' <b>(tú)</b>' : '') + ' — ' + g.amount + ' totopos</li>').join('') +
+                      '</ol></details>'
+                    : '') + '</div></div>';
+        }
+
+        function _repartoBolsa(a, montos) {
+            const lista = (montos || _rankingSubasta(a)).filter(b => b.amount > 0);
+            const total = lista.reduce((s, b) => s + b.amount, 0), N = a.unidades;
+            const pide = p => lista.reduce((s, b) => s + Math.floor(b.amount / p), 0);   // unidades enteras que alcanzan todos a precio p
+            // Precio = el mas alto al que todavia se reparten las N (nunca menos del minimo). Si ni al minimo se
+            // piden N, se queda en el minimo y sobran.
+            let precio = a.minBid;
+            if (pide(precio) > N) {
+                let lo = precio, hi = Math.max(...lista.map(b => b.amount));
+                while (lo < hi) { const mid = Math.ceil((lo + hi) / 2); if (pide(mid) >= N) lo = mid; else hi = mid - 1; }
+                precio = lo;
+            }
+            const quiere = lista.map(b => Math.floor(b.amount / precio)), D = quiere.reduce((s, q) => s + q, 0);
+            let unidades = quiere.slice();
+            if (D > N) {
+                // A ese precio se piden mas de las que hay: a cada quien su parte proporcional; las que quedan por
+                // redondeo, a quien le falto mas para la siguiente. Empate: quien metio mas; si siguen, quien entro
+                // primero (su PRIMERA oferta, para que subir nunca te haga perder lugar).
+                unidades = quiere.map(q => Math.floor(q * N / D));
+                let faltan = N - unidades.reduce((s, u) => s + u, 0);
+                const primera = {};
+                (a.history || []).forEach(h => { if (h && h.id && h.at && (!primera[h.id] || h.at < primera[h.id])) primera[h.id] = h.at; });
+                lista.map((b, i) => ({ i, resto: quiere[i] * N / D - unidades[i], amount: b.amount, at: primera[b.id] || b.at || '' }))
+                    .sort((x, y) => y.resto - x.resto || y.amount - x.amount || x.at.localeCompare(y.at))
+                    .forEach(x => { if (faltan > 0 && x.resto > 0) { unidades[x.i]++; faltan--; } });
+            }
+            const reparto = lista.map((b, i) => ({ ...b, unidades: unidades[i], paga: unidades[i] * precio }));
+            const asignadas = unidades.reduce((s, u) => s + u, 0);
+            return { total, precio, reparto, asignadas, sobran: N - asignadas };
+        }
+
+        // Total minimo que tendria que meter `me` para tener al menos `meta` unidades, simulando el reparto con las
+        // ofertas de hoy. `subenOtros`: ids que en la simulacion meten un poco mas (para ver si mi lugar esta seguro).
+        function _cuantoParaBolsa(a, me, meta, subenOtros) {
+            const inc = a.increment || 1, bids = { ...(a.bids || {}) };
+            (subenOtros || []).forEach(id => { bids[id] = { ...bids[id], amount: Number(bids[id].amount) + inc }; });
+            const yo = bids[me], desde = Math.max(yo ? Number(yo.amount) : 0, a.minBid);
+            const unidadesCon = m => _repartoBolsa({ ...a, bids: { ...bids, [me]: { ...(yo || { name: me, at: new Date().toISOString() }), amount: m } } }).reparto.find(x => x.id === me)?.unidades || 0;
+            for (let m = desde, k = 0; k <= 400; k++, m += inc) if (unidadesCon(m) >= meta) return m;
+            const paso = Math.max(inc, _repartoBolsa(a).precio);   // si hace falta mucho mas, busca en saltos de 1 unidad
+            for (let m = desde + 400 * inc, k = 0; k <= 200; k++, m += paso) if (unidadesCon(m) >= meta) return m;
+            return null;
+        }
+
+        function _tarjetaBolsa(a, me) {
+            const eId = escapeHtml(a._id), N = a.unidades, item = _nombreSubasta(a);
+            const _r = _repartoBolsa(a), { total, precio, reparto } = _r, mio = reparto.find(r => r.id === me);
+            const rankingHtml = _rankingBolsa(a, me, _r);
+            const terminada = Date.now() >= a.endsAtMs;
+            const min = _minMulti(a, me);
+            const disponible = (state.karma || 0) - _karmaComprometido + (mio ? mio.amount : 0);
+            const puedo = !terminada && disponible >= min;
+            // Cuanto meter: para entrar (si no me toca) o para asegurar lo mio (si hay empatados fuera que podrian subir).
+            const paraUna = !terminada && (!mio || !mio.unidades) ? _cuantoParaBolsa(a, me, 1) : null;
+            const fuera = mio && mio.unidades ? reparto.filter(x => x.id !== me && x.unidades < Math.floor(x.amount / precio)).map(x => x.id) : [];
+            const seguro = !terminada && fuera.length ? _cuantoParaBolsa(a, me, mio.unidades, fuera) : null;
+            const enRiesgo = !terminada && fuera.length > 0 && seguro !== mio.amount;
+            const sugerido = Math.max(min, (enRiesgo ? seguro : paraUna) || 0);
+            const meteX = x => x ? ' Sube a <b>' + x + ' totopos</b> para que te alcance 1 unidad.' : ' Sube tu total para que te alcance 1 unidad.';
+            const estado = !mio ? (paraUna ? '<div style="font-size:13px;font-weight:700;">Para que te toque al menos 1 hoy: mete ' + paraUna + ' o más.</div>' : '')
+                : (mio.unidades > 0
+                    ? '<div style="color:var(--green);font-weight:700;font-size:13px;">Metiste ' + mio.amount + '. Si cerrara ahorita te tocan ' + mio.unidades + ' ' + item + ' a ' + precio + ' c/u = ' + mio.paga + ' totopos.</div>' +
+                      (mio.amount > mio.paga ? '<div style="font-size:12px;color:var(--slate);">Los otros ' + (mio.amount - mio.paga) + ' totopos se te regresan a tu balance al final de la subasta.</div>' : '') +
+                      (enRiesgo ? '<div style="color:var(--gold-l);font-weight:700;font-size:12px;">⚠️ Vas en el límite: hay empatados que se quedaron fuera y, si meten un poco más, te tocarían menos.' + (seguro ? ' Sube a <b>' + seguro + ' totopos</b> para asegurar tus ' + mio.unidades + '.' : ' Sube un poco tu total para asegurarlas.') + '</div>' : '')
+                    : '<div style="color:var(--gold-l);font-weight:700;font-size:13px;">Metiste ' + mio.amount + (mio.amount >= precio
+                        ? ', pero a ' + precio + ' c/u hay más pedidos que unidades y quedaste fuera en el desempate (gana quien metió más y, si empatan, quien entró primero).' + meteX(paraUna)
+                        : ', pero ahorita no alcanza ni para 1 (cada una va en ' + precio + ').' + meteX(paraUna)) + ' Si no, esos ' + mio.amount + ' totopos de cualquier manera se te regresan a tu balance al final de la subasta.</div>') +
+                  '<div style="font-size:12px;color:var(--slate);">Ojo: el precio por unidad puede subir entre más totopos metan todos. Tus ' + mio.amount + ' quedan apartados hasta el cierre.</div>';
+            const accion = terminada
+                ? '<div style="font-size:12px;color:var(--slate);">⏰ La subasta terminó. El director hará el reparto.</div>'
+                : (mio ? '<div style="font-size:12px;">Escribe tu <b>nuevo total</b> en la bolsa (hoy tienes ' + mio.amount + '):</div>' : '') +
+                  '<div style="display:flex;gap:8px;align-items:center;">' +
+                  '<input type="number" id="puja-' + eId + '" min="' + min + '" step="1" value="' + sugerido + '" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:inherit;">' +
+                  '<button class="btn btn-sm ' + (puedo ? 'btn-green' : '') + '" ' + (puedo ? '' : 'disabled') + ' onclick="pujarSubasta(\'' + eId + '\')">' + (!puedo ? 'Totopos insuficientes' : mio ? '⬆️ Subir mi total' : '💰 Meter a la bolsa') + '</button></div>' +
+                  '<div style="font-size:11px;color:var(--slate);">' + _lineaSaldoSubasta(min, disponible, _karmaComprometido - (mio ? mio.amount : 0), 'Cantidad') + '</div>';
+            return _abrirTarjetaSubasta('bolsa', 'Entre más metes, más te toca · todos al mismo precio') + _imgSubasta(a, true) +
+                '<div style="text-align:center;font-weight:700;font-size:15px;">' + item + '</div>' +
+                (a.descripcion ? '<div style="text-align:center;font-size:12px;color:var(--slate);">' + escapeHtml(a.descripcion) + '</div>' : '') +
+                '<div style="text-align:center;margin:8px 0;font-weight:900;color:var(--gold);">' + N + ' unidades en bolsa · precio mínimo ' + a.minBid + ' c/u</div>' +
+                '<div class="info-box" style="font-size:12px;line-height:1.5;margin-bottom:8px;">ℹ️ Las ' + N + ' unidades se reparten proporcionalmente según los totopos que mete cada quien: entre más metes, más unidades te tocan.<br>Mientras la bolsa no pase de <b>' + (N * a.minBid).toLocaleString('es-MX') + ' totopos</b>, cada unidad cuesta <b>' + a.minBid + '</b>. Si más gente mete y la bolsa crece, el precio por unidad puede subir para todos por igual.</div>' +
+                '<div style="text-align:center;font-size:13px;font-weight:700;">Bolsa actual: ' + total.toLocaleString('es-MX') + ' totopos · precio por unidad hoy: ' + precio + '</div>' +
+                '<div style="text-align:center;font-size:11px;color:var(--slate);margin-bottom:8px;">' + reparto.length + ' agentes en la bolsa · Cierra ' + new Date(a.endsAtMs).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }) + '</div>' +
+                rankingHtml + '<div style="display:flex;flex-direction:column;gap:6px;">' + estado + accion + '</div></div>';
+        }
+
+        function _resultadoBolsa(a, me) {
+            const item = _nombreSubasta(a), gs = a.ganadores || [], mio = gs.find(g => g.id === me), participe = !!(a.bids || {})[me];
+            const u = gs.reduce((s, g) => s + (g.unidades || 0), 0);
+            let linea, color;
+            if (a.status === 'cancelled') { linea = 'Subasta cancelada por el director.'; color = 'var(--slate)'; }
+            else if (!gs.length) { linea = 'A nadie le alcanzó ni para 1 unidad.'; color = 'var(--slate)'; }
+            else { linea = '🏆 Se repartieron ' + u + ' entre ' + gs.length + ' agentes, a ' + a.precioFinal + ' c/u.'; color = 'var(--gold)'; }
+            const nota = mio ? '<div style="color:var(--green);font-weight:700;font-size:12px;margin-top:2px;">🏆 ¡Te tocaron ' + mio.unidades + ' ' + item + '! Se descontaron ' + mio.amount + ' totopos y tu premio queda por entregar.</div>'
+                : (participe && a.status === 'closed') ? '<div style="color:var(--slate);font-size:12px;margin-top:2px;">Con lo que metiste no alcanzó para 1. Tus ' + (Number(a.bids[me].amount) || 0) + ' totopos regresaron a tu balance.</div>' : '';
+            return '<div class="card" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;">' + _imgSubasta(a, false) +
+                '<div style="min-width:0;"><div style="font-weight:700;font-size:13px;">Subasta terminada: ' + item + ' (bolsa de ' + a.unidades + ')</div>' +
+                '<div style="font-size:13px;color:' + color + ';">' + linea + '</div>' + nota +
+                (a.status === 'closed' && gs.length
+                    ? '<details style="margin-top:6px;font-size:12px;"><summary style="cursor:pointer;font-weight:700;">Ver a quién le tocó (' + gs.length + ')</summary>' +
+                      '<ol style="margin:6px 0 0 18px;padding:0;line-height:1.6;">' +
+                      gs.slice().sort((x, y) => y.unidades - x.unidades || y.amount - x.amount).map(g => '<li>' + escapeHtml(g.name || '') + (g.id === me ? ' <b>(tú)</b>' : '') + ' — ' + g.unidades + ' unidades, pagó ' + g.amount + '</li>').join('') +
                       '</ol></details>'
                     : '') + '</div></div>';
         }
@@ -8033,7 +8228,9 @@
                         history: [...(a.history || []), { id: me, name: nombre, amount: monto, at }]
                     });
                 });
-                alert('✅ Ofreciste ' + monto + ' totopos. Mientras vayas dentro de los ganadores, quedan apartados.');
+                alert(_subastas.find(x => x._id === id)?.tipo === 'bolsa'
+                    ? '✅ Tu total en la bolsa: ' + monto + ' totopos. Quedan apartados hasta el cierre; solo se cobra lo que se convierta en unidades enteras.'
+                    : '✅ Ofreciste ' + monto + ' totopos. Mientras vayas dentro de los ganadores, quedan apartados.');
             } catch (e) { alert('No se pudo ofrecer:\n' + e.message); }
             renderSubastas();
             renderTiendaItems();
@@ -8058,9 +8255,12 @@
             const box = document.getElementById('subastas-box');
             if (!box) return;
             try { await renderMisSolicitudes(); } catch {}   // refresca _subastas y lo comprometido
-            if (!_subastas.length && !_subastasTerminadas.length) { box.innerHTML = ''; return; }
+            const btnSub = document.getElementById('ts-btn-subastas');
+            if (btnSub) btnSub.textContent = '🔨 Subastas' + (_subastas.length ? ' (' + _subastas.length + ')' : '');
+            if (!_subastas.length && !_subastasTerminadas.length) { box.innerHTML = '<div class="card"><div class="empty-state"><i class="fa fa-gavel"></i> No hay subastas por ahora.</div></div>'; return; }
             const me = user.email || user.uid;
             const resultados = _subastasTerminadas.map(a => {
+                if (a.tipo === 'bolsa') return _resultadoBolsa(a, me);
                 if (_multiSubasta(a)) return _resultadoMulti(a, me);
                 const participe = (a.history || []).some(h => h.id === me);
                 const gane = a.winnerId === me;
@@ -8076,8 +8276,10 @@
                     '<div style="font-size:13px;color:' + color + ';">' + linea + '</div>' + nota + '</div></div>';
             }).join('');
             box.innerHTML = _subastas.map(a => {
+                if (a.tipo === 'bolsa') return _tarjetaBolsa(a, me);
                 if (_multiSubasta(a)) return _tarjetaMulti(a, me);
                 const eId = escapeHtml(a._id);
+                const rankingHtml = _rankingUna(a, me);
                 const terminada = Date.now() >= a.endsAtMs;
                 const lidero = a.topBidderId === me;
                 const min = a.topBid > 0 ? a.topBid + a.increment : a.minBid;
@@ -8094,8 +8296,7 @@
                       '<input type="number" id="puja-' + eId + '" min="' + min + '" step="1" value="' + min + '" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:inherit;">' +
                       '<button class="btn btn-sm ' + (puedo ? 'btn-green' : '') + '" ' + (puedo ? '' : 'disabled') + ' onclick="pujarSubasta(\'' + eId + '\')">' + (puedo ? '🔨 Pujar' : 'Totopos insuficientes') + '</button></div>' +
                       '<div style="font-size:11px;color:var(--slate);">' + _lineaSaldoSubasta(min, disponible, _karmaComprometido, 'Puja') + '</div>';
-                return '<div class="card" style="margin-bottom:14px;border:1px solid rgba(212,175,55,0.45);">' +
-                    '<p class="card-title">🔨 Subasta</p>' +
+                return _abrirTarjetaSubasta('persona', 'La oferta más alta gana') +
                     (a.imageUrl
                         ? '<img src="' + escapeHtml(a.imageUrl) + '" alt="' + escapeHtml(a.nombre || '') + '" loading="lazy" onclick="openImagePreview(this.src)" style="display:block;margin:0 auto;width:160px;height:160px;max-width:100%;object-fit:cover;border-radius:10px;border:1px solid rgba(212,175,55,0.35);cursor:zoom-in;">'
                         : '<div style="text-align:center;font-size:36px;">' + escapeHtml(a.emoji || '🔨') + '</div>') +
@@ -8104,7 +8305,7 @@
                     '<div style="text-align:center;margin:8px 0;font-weight:900;color:var(--gold);">' +
                     (a.topBid > 0 ? 'Puja más alta: ' + a.topBid + ' totopos' : 'Sin pujas todavía') + '</div>' +
                     '<div style="text-align:center;font-size:11px;color:var(--slate);margin-bottom:8px;">Cierra ' + new Date(a.endsAtMs).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }) + '</div>' +
-                    '<div style="display:flex;flex-direction:column;gap:6px;">' + estado + accion + '</div></div>';
+                    rankingHtml + '<div style="display:flex;flex-direction:column;gap:6px;">' + estado + accion + '</div></div>';
             }).join('') + resultados;
         }
 
@@ -8197,7 +8398,7 @@
 
         // ─── SUB-TABS DE LA TIENDA (Comprar / Mis solicitudes / Actividad) ────────
         window.switchTiendaSubtab = function (which) {
-            const tabs = ['comprar', 'solicitudes', 'actividad'];
+            const tabs = ['comprar', 'subastas', 'solicitudes', 'actividad'];
             tabs.forEach(t => {
                 const view = document.getElementById('ts-view-' + t);
                 const btn  = document.getElementById('ts-btn-' + t);
@@ -8219,7 +8420,8 @@
             });
             if (which === 'actividad') { renderActividadTab(); }
             if (which === 'solicitudes') renderMisSolicitudes();
-            if (which === 'comprar') { renderTiendaItems(); renderSubastas(); }
+            if (which === 'comprar') renderTiendaItems();
+            if (which === 'subastas') renderSubastas();
         };
 
         // Tiempo relativo en español ("hace 5 min", "hace 2 h", "hace 3 días").
