@@ -3247,6 +3247,11 @@
         .foro-pdf small { color: var(--slate); flex-shrink: 0; }
         .foro-pdf button { background: none; border: none; color: var(--red); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
         .foro-posts-pdf { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+        .foro-pdf-fila { display: flex; gap: 6px; }
+        .foro-pdf-fila .foro-pdf { flex: 1; min-width: 0; }
+        .foro-pdf-dl { flex-shrink: 0; display: flex; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid var(--border); border-radius: 8px;
+                       background: rgba(var(--vk), 0.05); color: var(--gold-l); font-size: 12.5px; font-weight: 700; cursor: pointer; }
+        .foro-pdf-dl:disabled { opacity: 0.6; cursor: wait; }
         .foro-thumbs { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
         .foro-thumb { position: relative; width: 64px; height: 64px; }
         .foro-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
@@ -3856,7 +3861,7 @@
         // version PUBLICADA y no la que se estaba EJECUTANDO: con el HTML viejo en
         // cache, el header decia una version y corria otra. Imposible darse cuenta
         // de que estabas desactualizado.
-        window.APP_HTML_VERSION = 'v2.45.0';
+        window.APP_HTML_VERSION = 'v2.46.0';
 
         // Escape hatch manual: tocar el numero de version fuerza la actualizacion.
         // Borra SOLO las entradas de navegacion del cache, no todo — purgar el
@@ -7492,7 +7497,8 @@
             const imgs = (d.imagenes || []).map(im =>
                 `<img src="${escapeHtml(im.url)}" alt="adjunto" onclick="window.open('${escapeHtml(im.url)}','_blank')">`).join('');
             const pdfs = (Array.isArray(d.archivos) ? d.archivos : []).filter(a => a && /^https:\/\//.test(a.url || '')).map(a =>
-                `<a class="foro-pdf" href="${escapeHtml(a.url)}" target="_blank" rel="noopener"><i class="fa fa-file-pdf" style="color:#e5484d;"></i><span class="n">${escapeHtml(a.nombre || 'documento.pdf')}</span><small>${_foroTam(a.size)}</small></a>`).join('');
+                `<div class="foro-pdf-fila"><a class="foro-pdf" href="${escapeHtml(a.url)}" target="_blank" rel="noopener"><i class="fa fa-file-pdf" style="color:#e5484d;"></i><span class="n">${escapeHtml(a.nombre || 'documento.pdf')}</span><small>${_foroTam(a.size)}</small></a>` +
+                `<button class="foro-pdf-dl" data-url="${escapeHtml(a.url)}" data-nombre="${escapeHtml(a.nombre || 'documento.pdf')}" onclick="foroDescargarPdf(this)" aria-label="Descargar ${escapeHtml(a.nombre || 'PDF')}"><i class="fa fa-download"></i> Descargar</button></div>`).join('');
             return `<div class="foro-post">
                 <div class="foro-meta">
                     ${_foroBadge(d.autorRol)}
@@ -7636,6 +7642,23 @@
             if (im) { try { URL.revokeObjectURL(im.previewUrl); } catch (e) {} }
             _foroImgs.splice(i, 1);
             _foroPintarThumbs(contenedorId);
+        };
+        // Descarga el PDF con su nombre original. Si el fetch falla (sin red, CORS), al menos lo abre.
+        window.foroDescargarPdf = async function (btn) {
+            const url = btn.dataset.url, nombre = btn.dataset.nombre || 'documento.pdf';
+            btn.disabled = true;
+            try {
+                const r = await fetch(url);
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(await r.blob());
+                a.download = /\.pdf$/i.test(nombre) ? nombre : nombre + '.pdf';
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+            } catch (e) {
+                window.open(url, '_blank', 'noopener');
+            }
+            btn.disabled = false;
         };
         // ── PDFs ──
         function _foroTam(n) {
